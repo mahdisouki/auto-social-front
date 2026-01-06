@@ -2,7 +2,8 @@ import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type { ApiResponse } from '../types/api';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// Use VITE_API_URL if set, otherwise default to the provided backend endpoint
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://autosocial-postoryaiback-0gwpgb-85ad3d-195-35-3-45.traefik.me/api';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
