@@ -3,7 +3,7 @@ import type { ApiResponse } from '../types/api';
 
 // API Configuration
 // Use VITE_API_URL if set, otherwise default to the provided backend endpoint
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://autosocial-postoryaiback-0gwpgb-85ad3d-195-35-3-45.traefik.me/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
