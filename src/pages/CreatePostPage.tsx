@@ -280,7 +280,7 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const aiResponse = await fetch('http://localhost:8000/edit-product', {
+			const aiResponse = await fetch('https://ai.postoryai.com/edit-product', {
 				method: 'POST',
 				body: formDataAI,
 			});

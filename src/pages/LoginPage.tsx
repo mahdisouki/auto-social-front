@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { GoogleIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
 import sunglassesImage from '../assets/Rectangle 9873.png';
@@ -78,7 +78,7 @@ export function LoginPage() {
 			</div>
 
 			{/* Left Column - Product Image Only */}
-			<div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-purple-900">
+			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900">
 				<img 
 					src={sunglassesImage} 
 					alt="Premium Sunglasses" 
@@ -95,25 +95,16 @@ export function LoginPage() {
 			</div>
 
 			{/* Right Column - Login Form */}
-			<div className="w-full lg:w-1/2 flex items-center justify-center pl-2 pr-34 py-10 relative z-10 ">
-				<div className="w-full max-w-md">
-					{/* Back Button */}
-					<button 
-						type="button"
-						className="flex items-center gap-2 text-gray-400 text-sm mb-8 hover:text-gray-600 transition-colors"
-					>
-						<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-						</svg>
-						RETOUR
-					</button>
+			<div className="w-full lg:w-3/5 flex items-center justify-center px-4 sm:px-8 md:px-16 py-10 relative z-10">
+				<div className="w-full max-w-xl">
+					
 
 					{/* White Card Container */}
-					<div className="bg-white rounded-lg shadow-xl border border-gray-200" style={{ width: '709px', height: '709', padding: '40px' }}>
+					<div className="bg-white rounded-3xl shadow-lg px-6 sm:px-12 py-12">
 						{/* Title */}
-						<div className="text-center mb-8">
-							<h1 className="text-2xl font-bold text-gray-900 mb-2">ESPACE</h1>
-							<h2 className="text-2xl font-bold bg-[#9333EA] bg-clip-text text-transparent">
+						<div className="text-center mb-10">
+							<h1 className="text-3xl font-bold text-gray-900 mb-1">ESPACE</h1>
+							<h2 className="text-3xl font-bold text-[#9333EA]">
 								DE CONNEXION
 							</h2>
 						</div>
@@ -126,54 +117,54 @@ export function LoginPage() {
 						)}
 						
 						{/* Login Form */}
-						<form onSubmit={handleSubmit} className='pt-8 pb-3'>
+						<form onSubmit={handleSubmit} className='space-y-8'>
 							{/* Email Input */}
-							<div className="mb-10">
-								<label className="block text-xs font-medium text-gray-500 uppercase mb-3 tracking-wider">E-mail</label>
-								<div className="relative">
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-										</svg>
-									</div>
-								<input 
-									type="email" 
-									name="email"
-									value={formData.email}
-									onChange={handleInputChange}
-									placeholder="ademmhiri489@gmail.com"
-									required
-									className="w-full pl-10 pr-4 py-3 border-0 border-b-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-400"
-									/>
+							<div>
+									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">E-mail</label>
+									<div className="relative">
+										<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+											<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+											</svg>
+										</div>
+										<input 
+											type="email" 
+											name="email"
+											value={formData.email}
+											onChange={handleInputChange}
+											placeholder="ademmhiri489@gmail.com"
+											required
+											className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+										/>
 								</div>
 							</div>
-							
+						
 							{/* Password Input */}
-							<div className="mb-10">
-								<label className="block text-xs font-medium text-gray-500 uppercase mb-3 tracking-wider">Mot de passe</label>
-								<div className="relative">
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-										</svg>
+							<div>
+									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Mot de passe</label>
+									<div className="relative">
+										<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+											<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+											</svg>
+										</div>
+										<input 
+											type="password" 
+											name="password"
+											value={formData.password}
+											onChange={handleInputChange}
+											placeholder="••••••••••••"
+											required
+											className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+										/>
 									</div>
-									<input 
-										type="password" 
-										name="password"
-										value={formData.password}
-										onChange={handleInputChange}
-										placeholder="••••••••••••"
-										required
-										className="w-full pl-10 pr-4 py-3 border-0 border-b-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-colors bg-white text-gray-400"
-									/>
 								</div>
-							</div>
 							
 							{/* Submit Button */}
 							<button 
 								type="submit"
 								disabled={isLoading}
-								className="w-full bg-[#9333EA] text-white py-4 rounded-xl font-semibold text-lg hover:shadow-lg hover:scale-[1.02] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mb-6"							>
+								className="w-full bg-[#9333EA] text-white py-3.5 rounded-xl font-semibold text-sm tracking-wider hover:bg-[#7e22ce] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"							>
 								{isLoading ? (
 									<div className="flex items-center justify-center">
 										<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
@@ -186,20 +177,19 @@ export function LoginPage() {
 						</form>
 						
 						{/* Sign Up Link */}
-						<div className="text-center text-sm pt-5">
-							<span className="text-gray-500">PAS DE COMPTE ? </span>
-							<button 
-								type="button"
-								onClick={() => setIsSignUp(true)}
-								className="text-purple-600 font-semibold hover:text-purple-700 transition-colors"
+						<div className="text-center text-xs mt-6">
+							<span className="text-gray-600">PAS DE COMPTE ? </span>
+							<Link 
+								to="/signup"
+								className="text-[#9333EA] font-semibold hover:text-[#7e22ce] transition-colors"
 							>
 								Créer un accès
-							</button>
+							</Link>
 						</div>
 					</div>
 				</div>
 			</div>
-			
+
 			{/* Help Icon */}
 			<div className="fixed bottom-6 right-6">
 				<button className="w-12 h-12 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
