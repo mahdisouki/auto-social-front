@@ -2,10 +2,13 @@ import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type { ApiResponse } from '../types/api';
 
 // API Configuration
-// Use VITE_API_URL if set, otherwise default to the provided backend endpoint
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Parse API URLs (supports comma-separated list)
+const apiUrlsString = import.meta.env.VITE_API_URL;
+const apiUrls = apiUrlsString ? apiUrlsString.split(',').map((url: string) => url.trim()) : [];
+const API_BASE_URL = apiUrls[0];
 
-console.log('API Base URL:', API_BASE_URL);
+console.log('API URLs:', apiUrls);
+console.log('Using API Base URL:', API_BASE_URL);
 
 // Create axios instance
 const api: AxiosInstance = axios.create({

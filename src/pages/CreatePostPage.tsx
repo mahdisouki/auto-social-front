@@ -280,7 +280,9 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const aiResponse = await fetch('https://ai.postoryai.com/edit-product', {
+			const pythonApiUrls = import.meta.env.VITE_PYTHON_API_URL?.split(',').map((url: string) => url.trim()) || [];
+			const pythonApiUrl = pythonApiUrls[0];
+			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
 				method: 'POST',
 				body: formDataAI,
 			});
