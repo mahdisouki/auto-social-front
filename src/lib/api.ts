@@ -3,9 +3,13 @@ import type { ApiResponse } from '../types/api';
 
 // API Configuration
 // Use VITE_API_URL if set, otherwise default to the provided backend endpoint
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://api.postoryai.com/api';
 
-console.log('API Base URL:', API_BASE_URL);
+if (!import.meta.env.VITE_API_URL) {
+  console.warn('⚠️ VITE_API_URL is not set! Using default:', API_BASE_URL);
+} else {
+  console.log('✅ API Base URL:', API_BASE_URL);
+}
 
 // Create axios instance
 const api: AxiosInstance = axios.create({

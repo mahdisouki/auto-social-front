@@ -1,6 +1,12 @@
 # Build stage
 FROM node:18-alpine AS builder
 
+# Accept build arguments
+ARG VITE_API_URL
+
+# Set as environment variable for Vite to pick up during build
+ENV VITE_API_URL=${VITE_API_URL}
+
 WORKDIR /app
 
 # Install dependencies
