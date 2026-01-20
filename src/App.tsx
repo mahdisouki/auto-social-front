@@ -9,6 +9,7 @@ import {
 	CreatePostPage,
 	SchedulerPage,
 	MyPostsPage,
+	PostDetailPage,
 	ChatbotPage,
 	AutomationsPage,
 	SettingsPage
@@ -33,7 +34,7 @@ function Shell() {
 								<DashboardPage />
 							</ProtectedRoute>
 						} />
-						<Route path="/create" element={
+						<Route path="/create-post" element={
 							<ProtectedRoute>
 								<CreatePostPage />
 							</ProtectedRoute>
@@ -46,6 +47,11 @@ function Shell() {
 						<Route path="/posts" element={
 							<ProtectedRoute>
 								<MyPostsPage />
+							</ProtectedRoute>
+						} />
+						<Route path="/posts/:id" element={
+							<ProtectedRoute>
+								<PostDetailPage />
 							</ProtectedRoute>
 						} />
 						<Route path="/chatbot" element={

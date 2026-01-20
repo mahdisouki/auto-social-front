@@ -16,7 +16,7 @@ interface SidebarProps {
 
 const nav = [
 	{ to: '/', label: 'Dashboard', icon: GridIcon },
-	{ to: '/create', label: 'Create Post', icon: PlusIcon },
+	{ to: '/create-post', label: 'Create Post', icon: PlusIcon },
 	{ to: '/scheduler', label: 'Scheduler', icon: CalendarIcon },
 	{ to: '/posts', label: 'My Posts', icon: ImageIcon },
 	{ to: '/chatbot', label: 'Chatbot', icon: ChatIcon },
