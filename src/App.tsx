@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Topbar, Sidebar } from './components/layout';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { 
@@ -11,7 +11,8 @@ import {
 	MyPostsPage,
 	ChatbotPage,
 	AutomationsPage,
-	SettingsPage
+	SettingsPage,
+	LandingPage
 } from './pages';
 import { initializeAuth } from './stores/authStore';
 
@@ -24,15 +25,21 @@ function Shell() {
 	return (
 		<div className="min-h-screen flex">
 			<Sidebar isOpen={isMenuOpen} onClose={closeMenu} />
-			<div className="flex-1 flex flex-col md:ml-64">
+			<div className="flex-1 flex flex-col md:ml-60">
 				<Topbar onMenuToggle={toggleMenu} isMenuOpen={isMenuOpen} />
 				<main className="flex-1 overflow-x-hidden">
 					<Routes>
 						<Route path="/" element={
 							<ProtectedRoute>
+								<Navigate to="/dashboard" replace />
+							</ProtectedRoute>
+						} />
+						<Route path="/dashboard" element={
+							<ProtectedRoute>
 								<DashboardPage />
 							</ProtectedRoute>
 						} />
+						
 						<Route path="/create" element={
 							<ProtectedRoute>
 								<CreatePostPage />
@@ -79,6 +86,7 @@ export default function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
+				<Route path="/landing" element={<LandingPage />} />
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/signup" element={<SignupPage />} />
 				<Route path="/*" element={<Shell />} />

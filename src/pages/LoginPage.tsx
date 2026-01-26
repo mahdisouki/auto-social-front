@@ -54,31 +54,60 @@ export function LoginPage() {
 				await login(formData.email, formData.password);
 			}
 			
-			// Redirect to the page they were trying to access, or dashboard
-			navigate(from, { replace: true });
+			// Redirect to dashboard
+			navigate('/dashboard', { replace: true });
 		} catch (err) {
 			// Error is handled by the store
 			console.error(isSignUp ? 'Registration failed:' : 'Login failed:', err);
 		}
 	};
 	
-	const handleGoogleLogin = () => {
-		// TODO: Implement Google OAuth
-		console.log('Google login clicked');
-	};
+	
 
 	return (
-		<div className="h-screen flex relative overflow-hidden">
-			{/* Animated background particles */}
-			<div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-600/5">
-				<div className="absolute top-20 left-20 w-2 h-2 bg-primary rounded-full animate-ping"></div>
-				<div className="absolute top-40 right-32 w-1 h-1 bg-blue-400 rounded-full animate-pulse"></div>
-				<div className="absolute bottom-32 left-40 w-3 h-3 bg-purple-400 rounded-full animate-bounce"></div>
-				<div className="absolute top-60 right-20 w-2 h-2 bg-primary rounded-full animate-ping" style={{ animationDelay: '1s' }}></div>
-			</div>
+		<div className="h-screen flex relative overflow-hidden" style={{ background: '#000000' }}>
+			{/* Blur Circle - Top Left (Behind both columns) */}
+			<div 
+				className="absolute pointer-events-none"
+				style={{
+					left: '20%',
+					top: '0%',
+					width: '700px',
+					height: '400px',
+					borderRadius: '50%',
+					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
+					backdropFilter: 'blur(800px)',
+					WebkitBackdropFilter: 'blur(800px)',
+					zIndex: 10,
+					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					filter: 'blur(60px)',
+					WebkitFilter: 'blur(60px)'
+				}}
+			></div>
+
+			{/* Blur Circle - Bottom Right (Behind both columns) */}
+			<div 
+				className="absolute pointer-events-none"
+				style={{
+					right: '-10%',
+					bottom: '0%',
+					width: '700px',
+					height: '400px',
+					borderRadius: '50%',
+					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
+					backdropFilter: 'blur(800px)',
+					WebkitBackdropFilter: 'blur(800px)',
+					zIndex: 10,
+					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					filter: 'blur(60px)',
+					WebkitFilter: 'blur(60px)'
+				}}
+			></div>
 
 			{/* Left Column - Product Image Only */}
-			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900">
+			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
 				<img 
 					src={sunglassesImage} 
 					alt="Premium Sunglasses" 
@@ -96,17 +125,64 @@ export function LoginPage() {
 
 			{/* Right Column - Login Form */}
 			<div className="w-full lg:w-3/5 flex items-center justify-center px-4 sm:px-8 md:px-16 py-10 relative z-10">
-				<div className="w-full max-w-xl">
+				{/* Return Arrow - Top Left */}
+				<Link 
+					to="/landing"
+					className="absolute top-10 left-10 z-20 flex items-center justify-center transition-colors"
+					
+				>
+					{/* Inner dotted border container */}
+					<div
+						className="flex items-center gap-2"
+						
+					>
+						<svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+						</svg>
+						<span className="text-white text-sm " style={{ fontFamily: 'Inter, sans-serif' }}>RETOUR</span>
+					</div>
+				</Link>
+				
+				<div className="w-full max-w-md relative z-10">
 					
 
 					{/* White Card Container */}
-					<div className="bg-white rounded-3xl shadow-lg px-6 sm:px-12 py-12">
+					<div 
+						className="rounded-3xl shadow-lg px-6 sm:px-8 py-12"
+						style={{
+							background: '#0E0E13',
+							border: '1px solid #FFFFFF0D',
+							width: '100%',
+							maxWidth: '500px'
+						}}
+					>
 						{/* Title */}
-						<div className="text-center mb-10">
-							<h1 className="text-3xl font-bold text-gray-900 mb-1">ESPACE</h1>
-							<h2 className="text-3xl font-bold text-[#9333EA]">
-								DE CONNEXION
-							</h2>
+						<div className="mb-6">
+							<h1 
+								className="mb-3 text-white"
+								style={{
+									fontFamily: 'Playfair Display, serif',
+									fontWeight: 700,
+									fontSize: '40px',
+									lineHeight: '50px',
+									letterSpacing: '-2.4px',
+									textAlign: 'left',
+									verticalAlign: 'middle',
+									textTransform: 'capitalize'
+								}}
+							>
+								Se Connecter
+							</h1>
+							{/* Purple Rectangle Line */}
+							<div 
+								className="mt-2"
+								style={{
+									width: '180px',
+									height: '4px',
+									background: '#9747FF',
+									borderRadius: '2px'
+								}}
+							></div>
 						</div>
 						
 						{/* Error Message */}
@@ -117,10 +193,10 @@ export function LoginPage() {
 						)}
 						
 						{/* Login Form */}
-						<form onSubmit={handleSubmit} className='space-y-8'>
+						<form onSubmit={handleSubmit} className='space-y-6'>
 							{/* Email Input */}
 							<div>
-									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">E-mail</label>
+									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Adresse E-mail</label>
 									<div className="relative">
 										<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 											<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -134,7 +210,11 @@ export function LoginPage() {
 											onChange={handleInputChange}
 											placeholder="ademmhiri489@gmail.com"
 											required
-											className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											style={{
+												background: '#000000',
+												border: '1px solid #9747FF'
+											}}
 										/>
 								</div>
 							</div>
@@ -155,7 +235,11 @@ export function LoginPage() {
 											onChange={handleInputChange}
 											placeholder="••••••••••••"
 											required
-											className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											style={{
+												background: '#000000',
+												border: '1px solid #9747FF'
+											}}
 										/>
 									</div>
 								</div>
@@ -164,21 +248,21 @@ export function LoginPage() {
 							<button 
 								type="submit"
 								disabled={isLoading}
-								className="w-full bg-[#9333EA] text-white py-3.5 rounded-xl font-semibold text-sm tracking-wider hover:bg-[#7e22ce] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"							>
+								className="w-full bg-[#9333EA] text-white py-3.5 rounded-xl font-semibold text-sm tracking-wider hover:bg-[#7e22ce] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-6"							>
 								{isLoading ? (
 									<div className="flex items-center justify-center">
 										<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
 										Chargement...
 									</div>
 								) : (
-									"S'AUTHENTIFIER"
+									"Se Connecter"
 								)}
 							</button>
 						</form>
 						
 						{/* Sign Up Link */}
-						<div className="text-center text-xs mt-6">
-							<span className="text-gray-600">PAS DE COMPTE ? </span>
+						<div className="text-center text-xs mt-10">
+							<span className="text-white pr-2">PAS DE COMPTE ? </span>
 							<Link 
 								to="/signup"
 								className="text-[#9333EA] font-semibold hover:text-[#7e22ce] transition-colors"

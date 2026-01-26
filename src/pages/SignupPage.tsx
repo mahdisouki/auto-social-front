@@ -8,11 +8,13 @@ export function SignupPage() {
 	const { register, isLoading, error, clearError } = useAuthStore();
 	
 	const [formData, setFormData] = useState({
-		name: '',
+		firstName: '',
+		lastName: '',
 		email: '',
 		password: '',
 		confirmPassword: '',
 	});
+	const [acceptedTerms, setAcceptedTerms] = useState(false);
 	
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -29,8 +31,12 @@ export function SignupPage() {
 		
 		try {
 			// Validate registration form
-			if (!formData.name.trim()) {
-				alert('Please enter your name');
+			if (!formData.firstName.trim()) {
+				alert('Please enter your first name');
+				return;
+			}
+			if (!formData.lastName.trim()) {
+				alert('Please enter your last name');
 				return;
 			}
 			if (formData.password !== formData.confirmPassword) {
@@ -41,11 +47,16 @@ export function SignupPage() {
 				alert('Password must be at least 6 characters long');
 				return;
 			}
+			if (!acceptedTerms) {
+				alert('Please accept the Terms of Use and Privacy Policy');
+				return;
+			}
 			
-			await register(formData.name, formData.email, formData.password);
+			const fullName = `${formData.firstName} ${formData.lastName}`;
+			await register(fullName, formData.email, formData.password);
 			
 			// Redirect to dashboard after successful signup
-			navigate('/', { replace: true });
+			navigate('/dashboard', { replace: true });
 		} catch (err) {
 			// Error is handled by the store
 			console.error('Registration failed:', err);
@@ -53,29 +64,113 @@ export function SignupPage() {
 	};
 
 	return (
-		<div className="w-screen h-screen flex relative overflow-hidden">
-			{/* Left Column - Signup Form */}
-			<div className="w-full lg:w-3/5 flex items-center justify-center px-4 sm:px-8 md:px-16 py-10 relative" style={{ background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)' }}>
-				<div className="w-full max-w-2xl">
-					{/* Back Button */}
-					<Link 
-						to="/login"
-						className="flex items-center gap-2 text-purple-400 text-xs mb-8 hover:text-purple-600 transition-colors tracking-widest"
-					>
-						<svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-						</svg>
-						RETOUR
-					</Link>
+		<div className="h-screen flex relative overflow-hidden" style={{ background: '#000000' }}>
+			{/* Blur Circle - Top Left (Behind both columns) */}
+			<div 
+				className="absolute pointer-events-none"
+				style={{
+					left: '20%',
+					top: '0%',
+					width: '700px',
+					height: '400px',
+					borderRadius: '50%',
+					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
+					backdropFilter: 'blur(800px)',
+					WebkitBackdropFilter: 'blur(800px)',
+					zIndex: 10,
+					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					filter: 'blur(60px)',
+					WebkitFilter: 'blur(60px)'
+				}}
+			></div>
 
-					{/* White Container Box */}
-					<div className="bg-white rounded-3xl shadow-lg px-6 sm:px-12 py-12">
+			{/* Blur Circle - Bottom Right (Behind both columns) */}
+			<div 
+				className="absolute pointer-events-none"
+				style={{
+					right: '-10%',
+					bottom: '0%',
+					width: '700px',
+					height: '400px',
+					borderRadius: '50%',
+					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
+					backdropFilter: 'blur(800px)',
+					WebkitBackdropFilter: 'blur(800px)',
+					zIndex: 10,
+					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
+					filter: 'blur(60px)',
+					WebkitFilter: 'blur(60px)'
+				}}
+			></div>
+
+			{/* Left Column - Image */}
+			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
+				<img 
+					src={signupImage} 
+					alt="Signup" 
+					className="w-full h-full object-cover"
+				/>
+			</div>
+
+			{/* Right Column - Signup Form */}
+			<div className="w-full lg:w-3/5 flex items-center justify-center px-4 sm:px-8 md:px-16 py-10 relative z-10">
+				{/* Return Arrow - Top Left */}
+				<Link 
+					to="/login"
+					className="absolute top-10 left-10 z-20 flex items-center justify-center transition-colors"
+				>
+					{/* Inner dotted border container */}
+					<div
+						className="flex items-center gap-2"
+					>
+						<svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+						</svg>
+						<span className="text-white text-sm" style={{ fontFamily: 'Inter, sans-serif' }}>RETOUR</span>
+					</div>
+				</Link>
+				
+				<div className="w-full max-w-lg relative z-10 mx-auto">
+					{/* White Card Container */}
+					<div 
+						className="rounded-3xl shadow-lg px-6 sm:px-8 py-4"
+						style={{
+							background: '#0E0E13',
+							border: '1px solid #FFFFFF0D',
+							width: '100%',
+							maxWidth: '450px',
+							margin: '0 auto'
+						}}
+					>
 						{/* Title */}
-						<div className="text-center mb-8">
-							<h1 className="text-3xl font-bold text-gray-900 mb-1">CREATION</h1>
-							<h2 className="text-3xl font-bold text-[#9333EA]">
-								DU COMPTE
-							</h2>
+						<div className="mb-6">
+							<h1 
+								className="mb-3 text-white"
+								style={{
+									fontFamily: 'Playfair Display, serif',
+									fontWeight: 700,
+									fontSize: '32px',
+									lineHeight: '50px',
+									letterSpacing: '-2.4px',
+									textAlign: 'left',
+									verticalAlign: 'middle',
+									textTransform: 'capitalize'
+								}}
+							>
+								Créer un compte
+							</h1>
+							{/* Purple Rectangle Line */}
+							<div 
+								className="mt-2"
+								style={{
+									width: '220px',
+									height: '4px',
+									background: '#9747FF',
+									borderRadius: '2px'
+								}}
+							></div>
 						</div>
 						
 						{/* Error Message */}
@@ -86,33 +181,63 @@ export function SignupPage() {
 						)}
 						
 						{/* Signup Form */}
-						<form onSubmit={handleSubmit} className='space-y-8'>
-						{/* Row 1: Name and Email */}
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-							{/* Name Input */}
-							<div>
-								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">NOM COMPLET</label>
-								<div className="relative">
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-										</svg>
+						<form onSubmit={handleSubmit} className='space-y-6'>
+							{/* First Name and Last Name Inputs */}
+							<div className="grid grid-cols-2 gap-4">
+								{/* First Name Input */}
+								<div>
+									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Prénom</label>
+									<div className="relative">
+										<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+											<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+											</svg>
+										</div>
+										<input 
+											type="text" 
+											name="firstName"
+											value={formData.firstName}
+											onChange={handleInputChange}
+											placeholder="azeem"
+											required
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											style={{
+												background: '#000000',
+												border: '1px solid #9747FF'
+											}}
+										/>
 									</div>
-									<input 
-										type="text" 
-										name="name"
-										value={formData.name}
-										onChange={handleInputChange}
-										placeholder="azeem mhiri"
-										required
-										className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
-									/>
+								</div>
+
+								{/* Last Name Input */}
+								<div>
+									<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Nom</label>
+									<div className="relative">
+										<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+											<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+											</svg>
+										</div>
+										<input 
+											type="text" 
+											name="lastName"
+											value={formData.lastName}
+											onChange={handleInputChange}
+											placeholder="mhiri"
+											required
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											style={{
+												background: '#000000',
+												border: '1px solid #9747FF'
+											}}
+										/>
+									</div>
 								</div>
 							</div>
 
 							{/* Email Input */}
 							<div>
-								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">E-MAIL</label>
+								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Adresse E-mail</label>
 								<div className="relative">
 									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 										<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,17 +251,18 @@ export function SignupPage() {
 										onChange={handleInputChange}
 										placeholder="ademmhiri489@gmail.com"
 										required
-										className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+										style={{
+											background: '#000000',
+											border: '1px solid #9747FF'
+										}}
 									/>
 								</div>
 							</div>
-						</div>
 						
-						{/* Row 2: Password and Confirm */}
-						<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 							{/* Password Input */}
 							<div>
-								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">MOT DE PASSE</label>
+								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Mot de passe</label>
 								<div className="relative">
 									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 										<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,71 +277,86 @@ export function SignupPage() {
 										placeholder="••••••••••••"
 										required
 										minLength={6}
-										className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
+										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+										style={{
+											background: '#000000',
+											border: '1px solid #9747FF'
+										}}
 									/>
 								</div>
 							</div>
 
-							{/* Confirm Password Input */}
-							<div>
-								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">CONFIRMER</label>
-								<div className="relative">
-									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-										<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-										</svg>
-									</div>
-									<input 
-										type="password" 
-										name="confirmPassword"
-										value={formData.confirmPassword}
-										onChange={handleInputChange}
-										placeholder="••••••••••••"
-										required
-										className="w-full pl-10 pr-4 py-3 bg-gray-50 rounded-lg border-0 focus:ring-2 focus:ring-purple-200 focus:outline-none transition-all text-gray-700 placeholder:text-gray-400 text-sm"
-									/>
-								</div>
+							
+
+							{/* Terms and Privacy Checkbox */}
+							<div className="flex items-start">
+								<input 
+									type="checkbox" 
+									id="terms"
+									checked={acceptedTerms}
+									onChange={(e) => setAcceptedTerms(e.target.checked)}
+									required
+									className="mt-1 mr-3 w-7 h-5 rounded appearance-none cursor-pointer focus:ring-[#9747FF] focus:ring-2"
+									style={{
+										backgroundColor: acceptedTerms ? '#9747FF' : '#000000',
+										borderColor: '#9747FF',
+										borderWidth: '1px',
+										borderStyle: 'solid',
+										backgroundImage: acceptedTerms ? "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23ffffff' stroke-width='2' d='M2 6l3 3 5-5'/%3E%3C/svg%3E\")" : 'none',
+										backgroundRepeat: 'no-repeat',
+										backgroundPosition: 'center',
+										backgroundSize: 'contain'
+									}}
+								/>
+								<label htmlFor="terms" className="text-xs text-gray-300 leading-relaxed">
+									En créant un compte, j'accepte les{' '}
+									<Link to="/terms" className="text-[#9747FF] hover:text-[#7e22ce] underline">
+										Conditions d'Utilisation
+									</Link>
+									{' '}et la{' '}
+									<Link to="/privacy" className="text-[#9747FF] hover:text-[#7e22ce] underline">
+										Politique de Confidentialité
+									</Link>
+									.
+								</label>
 							</div>
-						</div>
+							
+							{/* Submit Button */}
+							<button 
+								type="submit"
+								disabled={isLoading}
+								className="w-full bg-[#9333EA] text-white py-3.5 rounded-xl font-semibold text-sm tracking-wider hover:bg-[#7e22ce] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+							>
+								{isLoading ? (
+									<div className="flex items-center justify-center">
+										<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+										Chargement...
+									</div>
+								) : (
+									"Créer mon compte"
+								)}
+							</button>
+						</form>
 						
-						{/* Submit Button */}
-						<button 
-							type="submit"
-							disabled={isLoading}
-							className="w-full bg-[#9333EA] text-white py-3.5 rounded-xl font-semibold text-sm tracking-wider hover:bg-[#7e22ce] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed mt-8"
-						>
-							{isLoading ? (
-								<div className="flex items-center justify-center">
-									<div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-									Chargement...
-								</div>
-							) : (
-								"CRÉER MON COMPTE"
-							)}
-						</button>
-					</form>
-					
-					{/* Login Link */}
-					<div className="text-center text-xs mt-6">
-						<span className="text-gray-600">DÉJÀ MEMBRE? </span>
-						<Link 
-							to="/login"
-							className="text-[#9333EA] font-semibold hover:text-[#7e22ce] transition-colors"
-						>
-							se connecter
-						</Link>
+						{/* Login Link */}
+						<div className="text-center text-xs mt-10">
+							<span className="text-white pr-2">DÉJÀ MEMBRE ? </span>
+							<Link 
+								to="/login"
+								className="text-[#9333EA] font-semibold hover:text-[#7e22ce] transition-colors"
+							>
+								Se connecter
+							</Link>
+						</div>
 					</div>
-				</div>
 				</div>
 			</div>
 
-			{/* Right Column - Image */}
-			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden items-center justify-center">
-				<img 
-					src={signupImage} 
-					alt="Signup" 
-					className="w-full h-full object-cover"
-				/>
+			{/* Help Icon */}
+			<div className="fixed bottom-6 right-6">
+				<button className="w-12 h-12 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
+					<span className="text-gray-600 font-bold">?</span>
+				</button>
 			</div>
 		</div>
 	);

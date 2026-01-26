@@ -24,6 +24,13 @@ interface PostsActions {
     price?: string;
     productName?: string;
     description?: string;
+    backgroundType?: string;
+    backgroundColor?: string;
+    useModel?: string;
+    modelType?: string;
+    modelEthnicity?: string;
+    modelGender?: string;
+    addText?: string;
   }) => Promise<Post>;
   updatePost: (id: string, data: any) => Promise<Post>;
   deletePost: (id: string) => Promise<void>;

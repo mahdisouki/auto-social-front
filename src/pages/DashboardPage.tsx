@@ -33,7 +33,7 @@ export function DashboardPage() {
 	// Show loading state
 	if (isLoading && !stats) {
 		return (
-			<div className="container-max py-6">
+			<div className="container-max py-6" style={{ background: '#000000', minHeight: '100vh' }}>
 				<div className="flex items-center justify-center h-64">
 					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
 				</div>
@@ -44,7 +44,7 @@ export function DashboardPage() {
 	// Show error state
 	if (error) {
 		return (
-			<div className="container-max py-6">
+			<div className="container-max py-6" style={{ background: '#000000', minHeight: '100vh' }}>
 				<div className="bg-red-50 border border-red-200 rounded-lg p-4">
 					<p className="text-red-600">{error}</p>
 					<button 
@@ -62,7 +62,7 @@ export function DashboardPage() {
 	}
 
 	return (
-		<div className="container-max py-6">
+		<div className="container-max py-6" style={{ background: '#000000', minHeight: '100vh' }}>
 			<SectionTitle 
 				title="Dashboard" 
 				subtitle="Welcome back! Here's what's happening with your social media." 

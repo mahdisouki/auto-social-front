@@ -7,3 +7,4 @@ export { MyPostsPage } from './MyPostsPage';
 export { ChatbotPage } from './ChatbotPage';
 export { AutomationsPage } from './AutomationsPage';
 export { SettingsPage } from './SettingsPage';
+export { default as LandingPage } from './LandingPage';

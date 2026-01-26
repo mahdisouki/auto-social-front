@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { SectionTitle } from '../components/layout';
-import { UploadIcon, EyeIcon } from '../components/icons';
+import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import { uploadApi } from '../lib/api';
 
@@ -404,6 +404,7 @@ export function CreatePostPage() {
 
 		await createPost({
 			caption: formData.caption || '',
+			aiPrompt: '',
 			platform: formData.platform,
 			scheduledAt: formData.scheduledAt || undefined,
 			images: uploadedImageUrls,
@@ -415,6 +416,8 @@ export function CreatePostPage() {
 			backgroundType: formData.backgroundType,
 			backgroundColor: formData.backgroundColor,
 			useModel: formData.useModel,
+			modelType: formData.modelType,
+			modelEthnicity: formData.modelEthnicity,
 			modelGender: formData.modelGender,
 			addText: formData.addText,
 		});		navigate('/posts');
