@@ -127,7 +127,7 @@ export function LoginPage() {
 			<div className="w-full lg:w-3/5 flex items-center justify-center px-4 sm:px-8 md:px-16 py-10 relative z-10">
 				{/* Return Arrow - Top Left */}
 				<Link 
-					to="/landing"
+					to="/"
 					className="absolute top-10 left-10 z-20 flex items-center justify-center transition-colors"
 					
 				>

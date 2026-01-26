@@ -1,4 +1,10 @@
+import { useEffect } from 'react';
+
 export function PrivacyPolicyPage() {
+	useEffect(() => {
+		window.scrollTo(0, 0);
+	}, []);
+
 	return (
 		<div className="w-full py-6 px-4 md:px-6 lg:px-8" style={{ background: '#000000', minHeight: '100vh', width: '100%' }}>
 			<div className="max-w-4xl mx-auto">
@@ -16,7 +22,7 @@ export function PrivacyPolicyPage() {
 							textTransform: 'capitalize'
 						}}
 					>
-						Privacy Policy
+						Politique de Confidentialité
 					</h1>
 					<p 
 						className="text-white"
@@ -27,7 +33,7 @@ export function PrivacyPolicyPage() {
 							color: '#FFFFFFB2'
 						}}
 					>
-						Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+						Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
 					</p>
 				</div>
 
@@ -49,7 +55,7 @@ export function PrivacyPolicyPage() {
 							color: '#FFFFFFB2'
 						}}
 					>
-						PostoryAI ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, store, and protect your information when you use our website, application, and services (collectively, the "Service").
+						PostoryAI ("nous", "notre" ou "nos") s'engage à protéger votre vie privée. Cette Politique de Confidentialité explique comment nous collectons, utilisons, stockons et protégeons vos informations lorsque vous utilisez notre site web, application et services (collectivement, le "Service").
 					</p>
 
 					{/* Section 1 */}
@@ -66,7 +72,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							1. Information We Collect
+							1. Informations que Nous Collectons
 						</h2>
 						
 						<h3 
@@ -78,7 +84,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFF'
 							}}
 						>
-							1.1 Information You Provide
+							1.1 Informations que Vous Fournissez
 						</h3>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -90,9 +96,9 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Name and email address</li>
-							<li>Account credentials</li>
-							<li>Support or contact messages</li>
+							<li>Nom et adresse e-mail</li>
+							<li>Identifiants de compte</li>
+							<li>Messages de support ou de contact</li>
 						</ul>
 
 						<h3 
@@ -104,7 +110,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFF'
 							}}
 						>
-							1.2 Social Media Data
+							1.2 Données des Réseaux Sociaux
 						</h3>
 						<p 
 							className="mb-4"
@@ -116,7 +122,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							When you connect your Instagram or other social media accounts, we may access:
+							Lorsque vous connectez votre compte Instagram ou d'autres comptes de réseaux sociaux, nous pouvons accéder à :
 						</p>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -128,9 +134,9 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Posts, captions, media URLs</li>
-							<li>Likes count and comments count</li>
-							<li>Timestamps and permalinks</li>
+							<li>Publications, légendes, URLs des médias</li>
+							<li>Nombre de likes et de commentaires</li>
+							<li>Horodatages et permaliens</li>
 						</ul>
 						<p 
 							className="mb-6"
@@ -142,7 +148,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We only access data you explicitly authorize.
+							Nous n'accédons qu'aux données que vous autorisez explicitement.
 						</p>
 
 						<h3 
@@ -154,7 +160,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFF'
 							}}
 						>
-							1.3 Technical Data
+							1.3 Données Techniques
 						</h3>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -166,9 +172,9 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>IP address</li>
-							<li>Browser and device information</li>
-							<li>Log files and usage data</li>
+							<li>Adresse IP</li>
+							<li>Informations sur le navigateur et l'appareil</li>
+							<li>Fichiers journaux et données d'utilisation</li>
 						</ul>
 					</div>
 
@@ -186,7 +192,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							2. How We Use Your Information
+							2. Comment Nous Utilisons Vos Informations
 						</h2>
 						<p 
 							className="mb-4"
@@ -198,7 +204,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We use your information to:
+							Nous utilisons vos informations pour :
 						</p>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -210,11 +216,11 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Provide and operate the Service</li>
-							<li>Display analytics and engagement insights</li>
-							<li>Improve performance and user experience</li>
-							<li>Ensure security and prevent fraud</li>
-							<li>Communicate with you (support, updates)</li>
+							<li>Fournir et exploiter le Service</li>
+							<li>Afficher des analyses et des insights d'engagement</li>
+							<li>Améliorer les performances et l'expérience utilisateur</li>
+							<li>Assurer la sécurité et prévenir la fraude</li>
+							<li>Communiquer avec vous (support, mises à jour)</li>
 						</ul>
 					</div>
 
@@ -232,7 +238,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							3. Legal Basis for Processing (GDPR)
+							3. Base Légale du Traitement (RGPD)
 						</h2>
 						<p 
 							className="mb-4"
@@ -244,7 +250,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							If you are located in the EU or UK, we process your data based on:
+							Si vous êtes situé dans l'UE ou au Royaume-Uni, nous traitons vos données sur la base de :
 						</p>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -256,10 +262,10 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Your consent</li>
-							<li>Performance of a contract</li>
-							<li>Legitimate business interests</li>
-							<li>Legal obligations</li>
+							<li>Votre consentement</li>
+							<li>L'exécution d'un contrat</li>
+							<li>Des intérêts légitimes de l'entreprise</li>
+							<li>Des obligations légales</li>
 						</ul>
 					</div>
 
@@ -321,7 +327,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							5. Data Storage & Security
+							5. Stockage et Sécurité des Données
 						</h2>
 						<p 
 							className="mb-6"
@@ -333,7 +339,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We implement appropriate technical and organizational measures to protect your data. However, no online service can guarantee absolute security.
+							Nous mettons en œuvre des mesures techniques et organisationnelles appropriées pour protéger vos données. Cependant, aucun service en ligne ne peut garantir une sécurité absolue.
 						</p>
 					</div>
 
@@ -394,7 +400,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							7. Data Retention
+							7. Conservation des Données
 						</h2>
 						<p 
 							className="mb-6"
@@ -406,7 +412,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We retain personal and social media data only for as long as necessary to provide the Service or comply with legal obligations. You may request deletion at any time.
+							Nous conservons les données personnelles et des réseaux sociaux uniquement aussi longtemps que nécessaire pour fournir le Service ou respecter les obligations légales. Vous pouvez demander la suppression à tout moment.
 						</p>
 					</div>
 
@@ -424,7 +430,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							8. Your Rights
+							8. Vos Droits
 						</h2>
 						<p 
 							className="mb-4"
@@ -436,7 +442,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							Depending on your location, you may have the right to:
+							Selon votre localisation, vous pouvez avoir le droit de :
 						</p>
 						<ul 
 							className="list-disc list-inside mb-4 ml-4 space-y-2"
@@ -448,11 +454,11 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Access your data</li>
-							<li>Correct inaccurate data</li>
-							<li>Request deletion</li>
-							<li>Withdraw consent</li>
-							<li>Data portability</li>
+							<li>Accéder à vos données</li>
+							<li>Corriger les données inexactes</li>
+							<li>Demander la suppression</li>
+							<li>Retirer votre consentement</li>
+							<li>Portabilité des données</li>
 						</ul>
 						<p 
 							className="mb-6"
@@ -464,7 +470,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							To exercise these rights, contact us using the details below.
+							Pour exercer ces droits, contactez-nous en utilisant les coordonnées ci-dessous.
 						</p>
 					</div>
 
@@ -494,7 +500,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We may use cookies or similar technologies to:
+							Nous pouvons utiliser des cookies ou des technologies similaires pour :
 						</p>
 						<ul 
 							className="list-disc list-inside mb-6 ml-4 space-y-2"
@@ -506,9 +512,9 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							<li>Maintain sessions</li>
-							<li>Analyze usage</li>
-							<li>Improve performance</li>
+							<li>Maintenir les sessions</li>
+							<li>Analyser l'utilisation</li>
+							<li>Améliorer les performances</li>
 						</ul>
 						<p 
 							className="mb-6"
@@ -520,7 +526,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							You can control cookies through your browser settings.
+							Vous pouvez contrôler les cookies via les paramètres de votre navigateur.
 						</p>
 					</div>
 
@@ -538,7 +544,7 @@ export function PrivacyPolicyPage() {
 								textTransform: 'capitalize'
 							}}
 						>
-							10. Changes to This Policy
+							10. Modifications de Cette Politique
 						</h2>
 						<p 
 							className="mb-6"
@@ -550,7 +556,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							We may update this Privacy Policy from time to time. Continued use of the Service after changes means you accept the updated policy.
+							Nous pouvons mettre à jour cette Politique de Confidentialité de temps à autre. L'utilisation continue du Service après les modifications signifie que vous acceptez la politique mise à jour.
 						</p>
 					</div>
 
@@ -580,7 +586,7 @@ export function PrivacyPolicyPage() {
 								color: '#FFFFFFB2'
 							}}
 						>
-							If you have questions or privacy requests, contact us at:
+							Pour toute question ou demande relative à la confidentialité, veuillez nous contacter à l'adresse suivante :
 						</p>
 						<a 
 							href="mailto:privacy@postoryai.com"
@@ -593,7 +599,7 @@ export function PrivacyPolicyPage() {
 								textDecoration: 'none'
 							}}
 						>
-							📧 privacy@postoryai.com
+							📧 contact@postoryai.com
 						</a>
 					</div>
 				</div>

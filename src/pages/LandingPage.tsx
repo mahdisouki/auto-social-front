@@ -338,10 +338,10 @@ const LandingPage = () => {
         <div 
           className="absolute pointer-events-none"
           style={{
-            right: '-10%',
-            top: '20%',
+            right: '-20%',
+            top: '10%',
             width: '800px',
-            height: '800px',
+            height: '700px',
             borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
             backdropFilter: 'blur(800px)',
@@ -353,7 +353,7 @@ const LandingPage = () => {
             WebkitFilter: 'blur(60px)'
           }}
         ></div>
-        <div className="max-w-7xl mx-auto relative z-10">
+        <div className="max-w-7xl mx-auto relative" style={{ zIndex: 10 }}>
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
@@ -554,7 +554,7 @@ const LandingPage = () => {
               <p className="text-gray-600 text-sm mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
               
               <div className="mb-6">
-                <span className="text-5xl font-bold">99</span>
+                <span className="text-5xl text-black font-bold">99</span>
                 <span className="text-black text-2xl font-bold">Dt/mois</span>
               </div>
 
@@ -688,7 +688,8 @@ const LandingPage = () => {
         className="py-20 px-4 sm:px-6 lg:px-8 relative" 
         style={{ 
           fontFamily: 'Poppins, sans-serif', 
-          background: 'transparent'
+          background: 'transparent',
+          zIndex: 10
         }}
       >
         <div className="max-w-7xl mx-auto relative z-10">
@@ -753,21 +754,37 @@ const LandingPage = () => {
             </div>
 
             {/* Social Icons */}
-            <div className="flex items-center gap-4">
-              <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
-                <img src={tikIcon} alt="TikTok" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
-              </a>
-              <a href="#" className="w-10 h-10 flex items-center justify-center transition-colors">
-                <img src={instaIcon} alt="Instagram" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
-              </a>
-              <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
-                <img src={fbIcon} alt="Facebook" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
-              </a>
-              <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
-                <svg className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                </svg>
-              </a>
+            <div className="flex flex-col items-center gap-3">
+              <div className="flex items-center gap-4">
+                <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
+                  <img src={tikIcon} alt="TikTok" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
+                </a>
+                <a href="#" className="w-10 h-10 flex items-center justify-center transition-colors">
+                  <img src={instaIcon} alt="Instagram" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
+                </a>
+                <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
+                  <img src={fbIcon} alt="Facebook" className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity" />
+                </a>
+                <a href="#" className="w-10 h-10 flex items-center justify-center  transition-colors">
+                  <svg className="w-5 h-5 opacity-60 hover:opacity-100 transition-opacity text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                  </svg>
+                </a>
+              </div>
+              <Link 
+                to="/privacy"
+                className="text-white hover:text-purple-400 transition-colors"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '10px',
+                  fontWeight: 200,
+                  textDecoration: 'underline',
+                  textDecorationColor: '#000000',
+                  textAlign: 'center'
+                }}
+              >
+                Politiques et Conditions
+              </Link>
             </div>
           </div>
         </div>

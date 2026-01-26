@@ -78,7 +78,6 @@ function Shell() {
 							<SettingsPage />
 						</ProtectedRoute>
 					} />
-					<Route path="/privacy" element={<PrivacyPolicyPage />} />
 					</Routes>
 				</main>
 			</div>
@@ -95,12 +94,14 @@ export default function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
+				<Route path="/" element={<LandingPage />} />
 				<Route path="/landing" element={<LandingPage />} />
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/signup" element={<SignupPage />} />
 				<Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
 				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
-				<Route path="/*" element={<Shell />} />
+				<Route path="/privacy" element={<PrivacyPolicyPage />} />
+				
 			</Routes>
 		</BrowserRouter>
 	);
