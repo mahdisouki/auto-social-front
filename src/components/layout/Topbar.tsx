@@ -43,7 +43,7 @@ export function Topbar({ onMenuToggle, isMenuOpen }: TopbarProps) {
 	};
 
 	const handleNewPost = () => {
-		navigate('/create');
+		navigate('/create-post');
 	};
 
 	return (

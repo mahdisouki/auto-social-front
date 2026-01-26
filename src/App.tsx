@@ -9,6 +9,7 @@ import {
 	CreatePostPage,
 	SchedulerPage,
 	MyPostsPage,
+	PostDetailPage,
 	ChatbotPage,
 	AutomationsPage,
 	SettingsPage,
@@ -55,6 +56,11 @@ function Shell() {
 								<MyPostsPage />
 							</ProtectedRoute>
 						} />
+						<Route path="/posts/:id" element={
+							<ProtectedRoute>
+								<PostDetailPage />
+							</ProtectedRoute>
+						} />
 						<Route path="/chatbot" element={
 							<ProtectedRoute>
 								<ChatbotPage />
@@ -89,6 +95,8 @@ export default function App() {
 				<Route path="/landing" element={<LandingPage />} />
 				<Route path="/login" element={<LoginPage />} />
 				<Route path="/signup" element={<SignupPage />} />
+				<Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
+				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
 				<Route path="/*" element={<Shell />} />
 			</Routes>
 		</BrowserRouter>
