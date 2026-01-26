@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SectionTitle } from '../components/layout';
 import { SearchIcon, EyeIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
@@ -100,10 +99,7 @@ export function MyPostsPage() {
 
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="My Posts" 
-				subtitle="Manage and track your published content" 
-			/>
+			
 
 			{/* Error Message */}
 			{error && (

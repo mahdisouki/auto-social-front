@@ -1,14 +1,10 @@
 import React from 'react';
-import { SectionTitle } from '../components/layout';
 import { LightningIcon, CheckIcon, TrendingUpIcon } from '../components/icons';
 
 export function AutomationsPage() {
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="Automations" 
-				subtitle="Set up automated workflows to streamline your social media management" 
-			/>
+			
 			
 			{/* Automation Cards */}
 			<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">

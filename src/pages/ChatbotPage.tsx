@@ -1,14 +1,10 @@
 import React from 'react';
-import { SectionTitle } from '../components/layout';
 import { PaperAirplaneIcon, CheckIcon, InstagramIcon, FacebookIcon, TwitterIcon } from '../components/icons';
 
 export function ChatbotPage() {
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="AI Chatbot" 
-				subtitle="Manage automated responses and customer interactions" 
-			/>
+			
 			
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 				{/* Conversation List */}

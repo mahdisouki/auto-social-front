@@ -6,7 +6,8 @@ import {
 	ImageIcon, 
 	ChatIcon, 
 	LightningIcon, 
-	SettingsIcon
+	SettingsIcon,
+	ShieldIcon
 } from '../icons';
 import logoImage from '../../assets/postoruai.png';
 
@@ -23,6 +24,7 @@ const nav = [
 	{ to: '/chatbot', label: 'Chatbot', icon: ChatIcon },
 	{ to: '/automations', label: 'Automations', icon: LightningIcon },
 	{ to: '/settings', label: 'Settings', icon: SettingsIcon },
+	{ to: '/privacy', label: 'Privacy Policy', icon: ShieldIcon },
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {

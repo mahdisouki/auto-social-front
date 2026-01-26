@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SectionTitle } from '../components/layout';
 import { ChevronLeftIcon, ChevronRightIcon, ListIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
@@ -121,30 +120,7 @@ export function SchedulerPage() {
 
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="Content Scheduler" 
-				subtitle="Plan and schedule your social media posts" 
-				cta={
-					<div className="flex gap-2">
-						<button 
-							onClick={() => setViewMode(viewMode === 'calendar' ? 'list' : 'calendar')}
-							className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors ${
-								viewMode === 'list'
-									? 'bg-primary text-white border-primary'
-									: 'border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							<ListIcon />
-						</button>
-						<button 
-							onClick={() => navigate('/create-post')}
-							className="btn-primary"
-						>
-							New Schedule
-						</button>
-					</div>
-				}
-			/>
+			
 
 			{/* Error Message */}
 			{error && (

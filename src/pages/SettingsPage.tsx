@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { SectionTitle } from '../components/layout';
 import { PersonIcon, KeyIcon, CreditCardIcon, ShieldIcon, ToggleOnIcon, ToggleOffIcon, FacebookIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
 import { useMetaStore } from '../stores/metaStore';
@@ -155,10 +154,7 @@ export function SettingsPage() {
 
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="Settings" 
-				subtitle="Manage your account preferences and configuration" 
-			/>
+		
 			
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 				{/* Settings Navigation */}

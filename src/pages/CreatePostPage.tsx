@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { SectionTitle } from '../components/layout';
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import { uploadApi } from '../lib/api';
@@ -457,10 +456,7 @@ export function CreatePostPage() {
 
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="Create New Post" 
-				subtitle="Generate and schedule your next social media post" 
-			/>
+			
 
 			{/* Preview Modal */}
 			{showPreviewModal && (

@@ -1,17 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-	LightningIcon, 
-	PlusIcon, 
-	BellIcon, 
-	SearchIcon, 
-	ShareIcon, 
-	ChevronDownIcon,
+import {  
 	MenuIcon,
 	CloseIcon
 } from '../icons';
 import { useAuthStore } from '../../stores/authStore';
-
+import fbIcon from '../../assets/fb.png';
+import instaIcon from '../../assets/insta.png';
+import tikIcon from '../../assets/tik.png';
+import bell from '../../assets/bell.png';
 interface TopbarProps {
 	onMenuToggle: () => void;
 	isMenuOpen: boolean;
@@ -48,78 +45,75 @@ export function Topbar({ onMenuToggle, isMenuOpen }: TopbarProps) {
 
 	return (
 		<>
-			{/* Dark header bar */}
-			{/* <header className="bg-gray-800 text-blue-500">
-				<div className="container-max h-12 flex items-center justify-between">
-					<div className="flex items-center gap-4">
-						<span className="text-sm font-medium">AI</span>
-						<div className="hidden md:flex items-center gap-2">
-							<span className="text-sm">SaaS Dashboard UI/UX Design</span>
-							<ChevronDownIcon />
-						</div>
-					</div>
-					<div className="flex items-center gap-3">
-						<button className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-primary rounded-lg text-sm font-medium hover:bg-primary/90 transition-all duration-300 hover:scale-105">
-							<ShareIcon />
-							Share
-						</button>
-					</div>
-				</div>
-			</header> */}
-			
 			{/* Main header */}
-			<header className="bg-white border-b border-gray-200 relative">
-				<div className="container-max h-16 flex items-center justify-between">
+			<header 
+				className="relative"
+				style={{ background: '#000000' }}
+			>
+				<div className="container-max h-24 flex items-center justify-between">
 					<div className="flex items-center gap-4">
 						{/* Mobile menu button */}
 						<button 
 							onClick={onMenuToggle}
-							className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-300"
+							className="md:hidden p-2 rounded-lg hover:bg-gray-800 transition-colors duration-300"
 						>
-							{isMenuOpen ? <CloseIcon /> : <MenuIcon />}
+							{isMenuOpen ? <CloseIcon className="text-white" /> : <MenuIcon className="text-white" />}
 						</button>
-						
-						<div className="flex items-center gap-2">
-							
-							<span className="text-xl font-bold text-gray-900 bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-								welcome back
-							</span>
-						</div>
 					</div>
 					
-					<div className="hidden md:flex flex-1 max-w-md mx-8">
-						<div className="relative w-full">
-							<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-							<input 
-								placeholder="Search posts, messages..." 
-								className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 hover:shadow-md"
-							/>
-						</div>
-					</div>
-					
-					<div className="flex items-center gap-3">
-						<button 
-							onClick={handleNewPost}
-							className="hidden sm:flex btn-primary items-center gap-2 hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
-						>
-							<PlusIcon />
-							<span className="hidden lg:inline">New Post</span>
-						</button>
-						<div className="relative group">
-							<button className="p-2 rounded-lg hover:bg-gray-100 transition-all duration-300 hover:scale-110">
-								<BellIcon />
+					{/* Right side container with social icons, notification, and user */}
+					<div 
+						className="flex items-center gap-3 px-4 py-2 rounded-lg mt-6"
+						style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}
+					>
+						{/* Social Media Icons */}
+						<div className="flex items-center gap-3">
+							{/* Facebook Icon */}
+							<button className="relative p-2 hover:opacity-80 transition-opacity">
+								<img src={fbIcon} alt="Facebook" className="w-5 h-5" />
+								<div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#9747FF] rounded-full"></div>
 							</button>
-							<div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping"></div>
-							<div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+							
+							{/* Instagram Icon */}
+							<button className="p-2 hover:opacity-80 transition-opacity">
+								<img src={instaIcon} alt="Instagram" className="w-5 h-5" />
+							</button>
+							
+							{/* TikTok Icon */}
+							<button className="p-2 hover:opacity-80 transition-opacity">
+								<img src={tikIcon} alt="TikTok" className="w-5 h-5" />
+							</button>
 						</div>
+						
+						{/* Vertical Separator */}
+						<div className="w-px h-6 bg-white opacity-20"></div>
+						
+						{/* Notification Icon */}
+						<div className="relative">
+							<button className="p-2 hover:opacity-80 transition-opacity">
+								<img src={bell} alt="Notifications" className="w-4 h-4" />
+							</button>
+						</div>
+						
+						{/* User Profile Image */}
 						<div className="relative" ref={userMenuRef}>
 							<button 
 								onClick={() => setShowUserMenu(!showUserMenu)}
-								className="w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-300 hover:scale-110"
+								className="w-8 h-8 rounded-full overflow-hidden border-2 border-[#FF6B35] hover:opacity-80 transition-opacity"
 							>
-								<span className="text-xs font-medium text-gray-600">
-									{user?.name?.charAt(0).toUpperCase() || '👥'}
-								</span>
+								{user?.profileImage ? (
+									<img 
+										src={user.profileImage} 
+										alt={user?.name || 'User'} 
+										className="w-full h-full object-cover"
+									/>
+								) : (
+									<div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+										<span className="text-xs font-medium text-gray-600">
+											{user?.name?.charAt(0).toUpperCase() || '👥'}
+										</span>
+									</div>
+								)}
 							</button>
 							
 							{/* User Dropdown Menu */}

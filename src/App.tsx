@@ -13,7 +13,9 @@ import {
 	ChatbotPage,
 	AutomationsPage,
 	SettingsPage,
-	LandingPage
+	LandingPage,
+	FacebookCallbackPage,
+	PrivacyPolicyPage
 } from './pages';
 import { initializeAuth } from './stores/authStore';
 
@@ -24,11 +26,11 @@ function Shell() {
 	const closeMenu = () => setIsMenuOpen(false);
 
 	return (
-		<div className="min-h-screen flex">
+		<div className="min-h-screen flex" style={{ background: '#000000' }}>
 			<Sidebar isOpen={isMenuOpen} onClose={closeMenu} />
-			<div className="flex-1 flex flex-col md:ml-60">
+			<div className="flex-1 flex flex-col md:ml-60" style={{ background: '#000000' }}>
 				<Topbar onMenuToggle={toggleMenu} isMenuOpen={isMenuOpen} />
-				<main className="flex-1 overflow-x-hidden">
+				<main className="flex-1 overflow-x-hidden hide-scrollbar" style={{ overflowY: 'auto', background: '#000000' }}>
 					<Routes>
 						<Route path="/" element={
 							<ProtectedRoute>
@@ -71,11 +73,12 @@ function Shell() {
 								<AutomationsPage />
 							</ProtectedRoute>
 						} />
-						<Route path="/settings" element={
-							<ProtectedRoute>
-								<SettingsPage />
-							</ProtectedRoute>
-						} />
+					<Route path="/settings" element={
+						<ProtectedRoute>
+							<SettingsPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/privacy" element={<PrivacyPolicyPage />} />
 					</Routes>
 				</main>
 			</div>

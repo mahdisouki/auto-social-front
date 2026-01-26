@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { SectionTitle } from '../components/layout';
 import { postsApi } from '../lib/api';
 import type { Post } from '../types/api';
 
@@ -97,7 +96,6 @@ export function PostDetailPage() {
 	if (error || !post) {
 		return (
 			<div className="container-max py-6">
-				<SectionTitle title="Post Not Found" subtitle={error || 'The post you are looking for does not exist'} />
 				<div className="mt-6 text-center">
 					<button
 						onClick={() => navigate('/posts')}
@@ -114,10 +112,7 @@ export function PostDetailPage() {
 
 	return (
 		<div className="container-max py-6">
-			<SectionTitle 
-				title="Post Details" 
-				subtitle={post.productName || post.caption?.substring(0, 50) || 'View post information'} 
-			/>
+			
 
 			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
 				{/* Main Content */}
