@@ -67,3 +67,23 @@ export interface DashboardStats {
     accuracyRate: number;
   };
 }
+
+// Facebook Page interface
+export interface FacebookPage {
+  pageId: string;
+  pageName: string;
+  category: string;
+  connectedAt: string;
+  hasInstagram: boolean;
+  instagramUsername?: string;
+}
+
+// Published result interface
+export interface PublishedResult {
+  platform: 'facebook' | 'instagram';
+  pageId: string;
+  pageName: string;
+  postId: string;
+  instagramAccountId?: string;
+  instagramUsername?: string;
+}

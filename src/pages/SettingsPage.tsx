@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { SectionTitle } from '../components/layout';
-import { PersonIcon, KeyIcon, CreditCardIcon, ShieldIcon, ToggleOnIcon, ToggleOffIcon } from '../components/icons';
+import { PersonIcon, KeyIcon, CreditCardIcon, ShieldIcon, ToggleOnIcon, ToggleOffIcon, FacebookIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
+import { useMetaStore } from '../stores/metaStore';
 
 export function SettingsPage() {
 	const { user, updateProfile, changePassword, isLoading, error, clearError } = useAuthStore();
+	const { pages, isLoading: metaLoading, error: metaError, fetchPages, refreshPages, disconnectPage, initiateOAuth, clearError: clearMetaError } = useMetaStore();
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [activeTab, setActiveTab] = useState('account');
 	const [notifications, setNotifications] = useState({
 		email: true,
@@ -34,6 +38,25 @@ export function SettingsPage() {
 			});
 		}
 	}, [user]);
+
+	// Check URL params for tab and error
+	useEffect(() => {
+		const tabParam = searchParams.get('tab');
+		const errorParam = searchParams.get('error');
+		if (tabParam) {
+			setActiveTab(tabParam);
+		}
+		if (errorParam && tabParam === 'facebook') {
+			// Error will be shown in the Facebook tab
+		}
+	}, [searchParams]);
+
+	// Fetch Facebook pages when Facebook tab is active
+	useEffect(() => {
+		if (activeTab === 'facebook') {
+			fetchPages();
+		}
+	}, [activeTab, fetchPages]);
 	
 	const handleProfileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -95,10 +118,40 @@ export function SettingsPage() {
 
 	const tabs = [
 		{ id: 'account', label: 'Account', icon: PersonIcon },
+		{ id: 'facebook', label: 'Facebook', icon: FacebookIcon },
 		{ id: 'api', label: 'API Keys', icon: KeyIcon },
 		{ id: 'notifications', label: 'Notifications', icon: ShieldIcon },
 		{ id: 'billing', label: 'Billing', icon: CreditCardIcon }
 	];
+
+	const handleConnectFacebook = async () => {
+		try {
+			await initiateOAuth();
+		} catch (err: any) {
+			alert(err.message || 'Failed to initiate Facebook connection');
+		}
+	};
+
+	const handleRefreshPages = async () => {
+		try {
+			await refreshPages();
+			alert('Pages refreshed successfully!');
+		} catch (err: any) {
+			alert(err.message || 'Failed to refresh pages');
+		}
+	};
+
+	const handleDisconnectPage = async (pageId: string, pageName: string) => {
+		if (!confirm(`Are you sure you want to disconnect "${pageName}"?`)) {
+			return;
+		}
+		try {
+			await disconnectPage(pageId);
+			alert('Page disconnected successfully!');
+		} catch (err: any) {
+			alert(err.message || 'Failed to disconnect page');
+		}
+	};
 
 	return (
 		<div className="container-max py-6">
@@ -293,6 +346,101 @@ export function SettingsPage() {
 						</div>
 					)}
 
+					{activeTab === 'facebook' && (
+						<div className="space-y-6">
+							{/* Error Message */}
+							{(metaError || searchParams.get('error')) && (
+								<div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+									<p className="text-sm text-red-600">{metaError || searchParams.get('error')}</p>
+									<button
+										onClick={() => {
+											clearMetaError();
+											setSearchParams({});
+										}}
+										className="mt-2 text-sm text-red-700 underline"
+									>
+										Dismiss
+									</button>
+								</div>
+							)}
+
+							{/* Connect Facebook Section */}
+							<div className="card p-6">
+								<h3 className="text-lg font-semibold text-gray-900 mb-4">Connect Facebook</h3>
+								<p className="text-sm text-gray-600 mb-4">
+									Connect your Facebook Pages to post directly to Facebook and Instagram.
+								</p>
+								<button
+									onClick={handleConnectFacebook}
+									disabled={metaLoading}
+									className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+								>
+									<FacebookIcon />
+									{metaLoading ? 'Connecting...' : 'Connect Facebook Pages'}
+								</button>
+							</div>
+
+							{/* Connected Pages */}
+							<div className="card p-6">
+								<div className="flex items-center justify-between mb-4">
+									<h3 className="text-lg font-semibold text-gray-900">Connected Pages</h3>
+									<button
+										onClick={handleRefreshPages}
+										disabled={metaLoading}
+										className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+									>
+										Refresh
+									</button>
+								</div>
+
+								{metaLoading && pages.length === 0 ? (
+									<div className="flex justify-center py-8">
+										<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+									</div>
+								) : pages.length === 0 ? (
+									<div className="text-center py-8">
+										<p className="text-gray-600 mb-4">No Facebook Pages connected yet.</p>
+										<p className="text-sm text-gray-500">Click "Connect Facebook Pages" to get started.</p>
+									</div>
+								) : (
+									<div className="space-y-4">
+										{pages.map((page) => (
+											<div key={page.pageId} className="p-4 border border-gray-200 rounded-lg">
+												<div className="flex items-start justify-between">
+													<div className="flex-1">
+														<div className="flex items-center gap-3 mb-2">
+															<h4 className="font-medium text-gray-900">{page.pageName}</h4>
+															<span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+																Connected
+															</span>
+														</div>
+														<div className="space-y-1 text-sm text-gray-600">
+															<p>Page ID: <span className="font-mono">{page.pageId}</span></p>
+															<p>Category: {page.category}</p>
+															{page.hasInstagram && page.instagramUsername && (
+																<p className="text-primary">
+																	Instagram: @{page.instagramUsername}
+																</p>
+															)}
+															<p>Connected: {new Date(page.connectedAt).toLocaleDateString()}</p>
+														</div>
+													</div>
+													<button
+														onClick={() => handleDisconnectPage(page.pageId, page.pageName)}
+														disabled={metaLoading}
+														className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200 disabled:opacity-50 ml-4"
+													>
+														Disconnect
+													</button>
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+							</div>
+						</div>
+					)}
+
 					{activeTab === 'api' && (
 						<div className="card p-6">
 							<h3 className="text-lg font-semibold text-gray-900 mb-6">API Keys</h3>
@@ -311,12 +459,27 @@ export function SettingsPage() {
 								<div className="p-4 bg-gray-50 rounded-lg">
 									<div className="flex items-center justify-between mb-2">
 										<h4 className="font-medium text-gray-900">Facebook API</h4>
-										<span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Connected</span>
+										<span className={`px-2 py-1 rounded-full text-xs font-medium ${
+											pages.length > 0
+												? 'bg-green-100 text-green-800'
+												: 'bg-gray-100 text-gray-800'
+										}`}>
+											{pages.length > 0 ? `${pages.length} Page(s) Connected` : 'Not Connected'}
+										</span>
 									</div>
-									<p className="text-sm text-gray-600 mb-3">Connected to Facebook Page</p>
+									<p className="text-sm text-gray-600 mb-3">
+										{pages.length > 0 
+											? `Connected to ${pages.length} Facebook Page(s)`
+											: 'Connect your Facebook Pages to enable posting'
+										}
+									</p>
 									<div className="flex gap-2">
-										<button className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50">Regenerate</button>
-										<button className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm hover:bg-red-200">Disconnect</button>
+										<button
+											onClick={() => setActiveTab('facebook')}
+											className="px-3 py-1.5 bg-primary text-white rounded-lg text-sm hover:bg-primary/90"
+										>
+											{pages.length > 0 ? 'Manage Pages' : 'Connect Facebook'}
+										</button>
 									</div>
 								</div>
 								<div className="p-4 bg-gray-50 rounded-lg">

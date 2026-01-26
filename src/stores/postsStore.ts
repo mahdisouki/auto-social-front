@@ -28,7 +28,7 @@ interface PostsActions {
   updatePost: (id: string, data: any) => Promise<Post>;
   deletePost: (id: string) => Promise<void>;
   schedulePost: (id: string, scheduledAt: string) => Promise<Post>;
-  publishPost: (id: string) => Promise<Post>;
+  publishPost: (id: string, targetPageIds?: string[]) => Promise<Post>;
   
   // Messages
   fetchMessages: (params?: { page?: number; limit?: number }) => Promise<void>;
@@ -174,11 +174,11 @@ export const usePostsStore = create<PostsStore>((set, get) => ({
     }
   },
 
-  publishPost: async (id) => {
+  publishPost: async (id, targetPageIds) => {
     set({ isLoading: true, error: null });
     
     try {
-      const response = await postsApi.publishPost(id);
+      const response = await postsApi.publishPost(id, targetPageIds);
       const { data: postData } = response.data;
       
       set((state) => ({

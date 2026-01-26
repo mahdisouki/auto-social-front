@@ -8,3 +8,4 @@ export { PostDetailPage } from './PostDetailPage';
 export { ChatbotPage } from './ChatbotPage';
 export { AutomationsPage } from './AutomationsPage';
 export { SettingsPage } from './SettingsPage';
+export { FacebookCallbackPage } from './FacebookCallbackPage';

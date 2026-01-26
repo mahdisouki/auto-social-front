@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import type { ApiResponse } from '../types/api';
+import type { ApiResponse, FacebookPage } from '../types/api';
 
 // API Configuration
 // Use VITE_API_URL if set, otherwise default to the provided backend endpoint
@@ -41,6 +41,13 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
+      // Don't auto-redirect for Meta API calls - let them handle the error
+      const requestUrl = error.config?.url || '';
+      if (requestUrl.includes('/meta/')) {
+        // Just reject the error, don't redirect
+        return Promise.reject(error);
+      }
+      
       // Clear invalid token
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
@@ -109,8 +116,8 @@ export const postsApi = {
   schedulePost: (id: string, scheduledAt: string) =>
     api.post<ApiResponse>(`/posts/${id}/schedule`, { scheduledAt }),
   
-  publishPost: (id: string) =>
-    api.post<ApiResponse>(`/posts/${id}/publish`),
+  publishPost: (id: string, targetPageIds?: string[]) =>
+    api.post<ApiResponse>(`/posts/${id}/publish`, targetPageIds ? { targetPageIds } : {}),
   
   // AI Caption Generation
   generateCaption: (data: {
@@ -172,6 +179,21 @@ export const uploadApi = {
 export const healthApi = {
   check: () =>
     api.get<ApiResponse>('/health'),
+};
+
+// Meta/Facebook API
+export const metaApi = {
+  getFacebookAuthUrl: () =>
+    api.get<ApiResponse<{ authUrl: string; state: string }>>('/meta/auth/facebook'),
+  
+  getPages: () =>
+    api.get<ApiResponse<{ pages: FacebookPage[]; count: number }>>('/meta/pages'),
+  
+  refreshPages: () =>
+    api.get<ApiResponse<{ pages: FacebookPage[]; count: number }>>('/meta/pages/refresh'),
+  
+  disconnectPage: (pageId: string) =>
+    api.delete<ApiResponse>(`/meta/pages/${pageId}`),
 };
 
 export default api;
