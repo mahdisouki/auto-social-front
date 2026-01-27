@@ -103,6 +103,7 @@ export default function App() {
 				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
 				<Route path="/privacy" element={<PrivacyPolicyPage />} />
 				<Route path="/terms" element={<TermsPage />} />
+				<Route path="/*" element={<Shell />} />
 			</Routes>
 		</BrowserRouter>
 	);
