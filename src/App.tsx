@@ -15,7 +15,8 @@ import {
 	SettingsPage,
 	LandingPage,
 	FacebookCallbackPage,
-	PrivacyPolicyPage
+	PrivacyPolicyPage,
+	TermsPage
 } from './pages';
 import { initializeAuth } from './stores/authStore';
 
@@ -101,7 +102,7 @@ export default function App() {
 				<Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
 				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
 				<Route path="/privacy" element={<PrivacyPolicyPage />} />
-				
+				<Route path="/terms" element={<TermsPage />} />
 			</Routes>
 		</BrowserRouter>
 	);

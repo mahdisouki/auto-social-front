@@ -773,6 +773,7 @@ const LandingPage = () => {
               </div>
               <Link 
                 to="/privacy"
+                onClick={() => window.scrollTo(0, 0)}
                 className="text-white hover:text-purple-400 transition-colors"
                 style={{
                   fontFamily: 'Inter, sans-serif',
@@ -784,6 +785,21 @@ const LandingPage = () => {
                 }}
               >
                 Politiques et Conditions
+              </Link>
+              <Link 
+                to="/terms"
+                onClick={() => window.scrollTo(0, 0)}
+                className="text-white hover:text-purple-400 transition-colors"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '10px',
+                  fontWeight: 200,
+                  textDecoration: 'underline',
+                  textDecorationColor: '#000000',
+                  textAlign: 'center'
+                }}
+              >
+                Terms et conditions
               </Link>
             </div>
           </div>

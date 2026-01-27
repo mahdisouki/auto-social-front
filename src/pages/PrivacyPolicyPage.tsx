@@ -24,17 +24,7 @@ export function PrivacyPolicyPage() {
 					>
 						Politique de Confidentialité
 					</h1>
-					<p 
-						className="text-white"
-						style={{
-							fontFamily: 'Inter, sans-serif',
-							fontSize: '14px',
-							fontWeight: 400,
-							color: '#FFFFFFB2'
-						}}
-					>
-						Dernière mise à jour : {new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}
-					</p>
+					
 				</div>
 
 				{/* Content Card */}

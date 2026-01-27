@@ -10,4 +10,5 @@ export { AutomationsPage } from './AutomationsPage';
 export { SettingsPage } from './SettingsPage';
 export { FacebookCallbackPage } from './FacebookCallbackPage';
 export { PrivacyPolicyPage } from './PrivacyPolicyPage';
+export { TermsPage } from './TermsPage';
 export { default as LandingPage } from './LandingPage';
