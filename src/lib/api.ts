@@ -11,10 +11,14 @@ if (!import.meta.env.VITE_API_URL) {
   console.log('✅ API Base URL:', API_BASE_URL);
 }
 
+// Timeouts: default for most requests; longer for uploads and post creation
+const DEFAULT_TIMEOUT = 15000; // 15s for normal API calls
+const UPLOAD_AND_CREATE_TIMEOUT = 120000; // 2 min for uploads and create post (images, processing)
+
 // Create axios instance
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: DEFAULT_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -94,7 +98,7 @@ export const postsApi = {
     modelGender?: string;
     addText?: string;
   }) =>
-    api.post<ApiResponse>('/posts', data),
+    api.post<ApiResponse>('/posts', data, { timeout: UPLOAD_AND_CREATE_TIMEOUT }),
   
   getUserPosts: (params?: {
     page?: number;
@@ -166,6 +170,7 @@ export const chatApi = {
 export const uploadApi = {
   uploadImages: (formData: FormData) =>
     api.post<ApiResponse>('/upload/images', formData, {
+      timeout: UPLOAD_AND_CREATE_TIMEOUT,
       headers: {
         'Content-Type': 'multipart/form-data',
       },
