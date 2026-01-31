@@ -455,9 +455,7 @@ export function CreatePostPage() {
 	};
 
 	return (
-		<div className="container-max py-6">
-			
-
+		<div className="container-max py-6 min-h-[80vh] bg-gray-900/70 backdrop-blur-2xl rounded-2xl">
 			{/* Preview Modal */}
 			{showPreviewModal && (
 				<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPreviewModal(false)}>
@@ -558,27 +556,25 @@ export function CreatePostPage() {
 			
 			{/* Error Message */}
 			{error && (
-				<div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-					<p className="text-sm text-red-600">{error}</p>
+				<div className="mb-6 p-4 bg-red-500/20 border border-red-400/40 rounded-lg backdrop-blur-sm">
+					<p className="text-sm text-red-200">{error}</p>
 				</div>
 			)}
 			
 			<form onSubmit={handleSubmit}>
-				<div className="card p-6 max-w-4xl mx-auto">
-				
-
+				<div className="create-post-form p-6 max-w-4xl mx-auto bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
 					{/* Upload Section */}
 					<div>
-						<h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Content</h3>
+						<h3 className="text-lg font-semibold text-gray-100 mb-4">Upload Content</h3>
 						<div 
-							className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
+							className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
 							onDragOver={handleDragOver}
 							onDrop={handleDrop}
 							onClick={() => document.getElementById('file-upload')?.click()}
 						>
 							<UploadIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-							<p className="text-gray-600 mb-2">Drag and drop your images here</p>
-							<p className="text-sm text-gray-500">or click to browse</p>
+							<p className="text-gray-300 mb-2">Drag and drop your images here</p>
+							<p className="text-sm text-gray-400">or click to browse</p>
 							<button type="button" className="mt-4 btn-primary">Choose Files</button>
 							<input
 								id="file-upload"

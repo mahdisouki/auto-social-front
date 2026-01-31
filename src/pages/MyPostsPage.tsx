@@ -67,19 +67,19 @@ export function MyPostsPage() {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
 	};
 
-	// Get status badge color
+	// Get status badge color (dark theme)
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case 'posted':
-				return 'bg-green-100 text-green-800';
+				return 'bg-green-500/30 text-green-200';
 			case 'scheduled':
-				return 'bg-blue-100 text-blue-800';
+				return 'bg-blue-500/30 text-blue-200';
 			case 'draft':
-				return 'bg-gray-100 text-gray-800';
+				return 'bg-gray-500/30 text-gray-300';
 			case 'failed':
-				return 'bg-red-100 text-red-800';
+				return 'bg-red-500/30 text-red-200';
 			default:
-				return 'bg-gray-100 text-gray-800';
+				return 'bg-gray-500/30 text-gray-300';
 		}
 	};
 
@@ -98,16 +98,14 @@ export function MyPostsPage() {
 	};
 
 	return (
-		<div className="container-max py-6">
-			
-
+		<div className="container-max py-6 min-h-[80vh] bg-gray-900/70 backdrop-blur-2xl rounded-2xl">
 			{/* Error Message */}
 			{error && (
-				<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
-					<p>{error}</p>
+				<div className="mb-4 p-4 bg-red-500/20 border border-red-400/40 rounded-lg backdrop-blur-sm">
+					<p className="text-red-200">{error}</p>
 					<button
 						onClick={clearError}
-						className="mt-2 text-sm underline hover:no-underline"
+						className="mt-2 text-sm text-red-300 underline hover:no-underline"
 					>
 						Dismiss
 					</button>
@@ -123,115 +121,41 @@ export function MyPostsPage() {
 							placeholder="Search posts..." 
 							value={searchQuery}
 							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+							className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-100 placeholder-gray-400"
 						/>
 					</div>
 					<div className="flex gap-2 flex-wrap">
-						<button 
-							onClick={() => setSelectedPlatform('all')}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedPlatform === 'all'
-									? 'bg-primary text-white'
-									: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							All
-						</button>
-						<button 
-							onClick={() => setSelectedPlatform('instagram')}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedPlatform === 'instagram'
-									? 'bg-primary text-white'
-									: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							Instagram
-						</button>
-						<button 
-							onClick={() => setSelectedPlatform('facebook')}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedPlatform === 'facebook'
-									? 'bg-primary text-white'
-									: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							Facebook
-						</button>
-						<button 
-							onClick={() => setSelectedPlatform('twitter')}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedPlatform === 'twitter'
-									? 'bg-primary text-white'
-									: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							Twitter
-						</button>
-						<button 
-							onClick={() => setSelectedPlatform('tiktok')}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedPlatform === 'tiktok'
-									? 'bg-primary text-white'
-									: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-							}`}
-						>
-							TikTok
-						</button>
+						{(['all', 'instagram', 'facebook', 'twitter', 'tiktok'] as const).map((platform) => (
+							<button 
+								key={platform}
+								onClick={() => setSelectedPlatform(platform === 'all' ? 'all' : platform)}
+								className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+									selectedPlatform === platform
+										? 'bg-primary text-white'
+										: 'border border-white/20 text-gray-300 hover:bg-white/10'
+								}`}
+							>
+								{platform === 'all' ? 'All' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+							</button>
+						))}
 					</div>
 				</div>
 
 				{/* Status Filter */}
 				<div className="mt-4 flex gap-2 flex-wrap">
-					<button 
-						onClick={() => setSelectedStatus('all')}
-						className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-							selectedStatus === 'all'
-								? 'bg-primary text-white'
-								: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}
-					>
-						All Status
-					</button>
-					<button 
-						onClick={() => setSelectedStatus('draft')}
-						className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-							selectedStatus === 'draft'
-								? 'bg-primary text-white'
-								: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}
-					>
-						Draft
-					</button>
-					<button 
-						onClick={() => setSelectedStatus('scheduled')}
-						className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-							selectedStatus === 'scheduled'
-								? 'bg-primary text-white'
-								: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}
-					>
-						Scheduled
-					</button>
-					<button 
-						onClick={() => setSelectedStatus('posted')}
-						className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-							selectedStatus === 'posted'
-								? 'bg-primary text-white'
-								: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}
-					>
-						Posted
-					</button>
-					<button 
-						onClick={() => setSelectedStatus('failed')}
-						className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-							selectedStatus === 'failed'
-								? 'bg-primary text-white'
-								: 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-						}`}
-					>
-						Failed
-					</button>
+					{(['all', 'draft', 'scheduled', 'posted', 'failed'] as const).map((status) => (
+						<button 
+							key={status}
+							onClick={() => setSelectedStatus(status)}
+							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+								selectedStatus === status
+									? 'bg-primary text-white'
+									: 'border border-white/20 text-gray-300 hover:bg-white/10'
+							}`}
+						>
+							{status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
+						</button>
+					))}
 				</div>
 			</div>
 
@@ -245,8 +169,8 @@ export function MyPostsPage() {
 			{/* Posts Grid */}
 			{!isLoading && filteredPosts.length === 0 && (
 				<div className="text-center py-12">
-					<p className="text-gray-500 text-lg">No posts found</p>
-					<p className="text-gray-400 text-sm mt-2">
+					<p className="text-gray-400 text-lg">No posts found</p>
+					<p className="text-gray-500 text-sm mt-2">
 						{searchQuery || selectedPlatform !== 'all' || selectedStatus !== 'all'
 							? 'Try adjusting your filters'
 							: 'Create your first post to get started'}
@@ -261,7 +185,7 @@ export function MyPostsPage() {
 							<div 
 								key={post._id} 
 								onClick={() => navigate(`/posts/${post._id}`)}
-								className="card overflow-hidden hover:shadow-xl hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+								className="overflow-hidden rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 cursor-pointer"
 							>
 								<div className="relative">
 									<img 
@@ -276,7 +200,7 @@ export function MyPostsPage() {
 										{post.platform.map((platform) => (
 											<span 
 												key={platform}
-												className="px-2 py-1 bg-white/90 backdrop-blur-sm rounded-full text-xs font-medium text-gray-700"
+												className="px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-gray-200"
 											>
 												{getPlatformName(platform)}
 											</span>
@@ -289,11 +213,11 @@ export function MyPostsPage() {
 									</div>
 								</div>
 								<div className="p-4">
-									<h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+									<h3 className="font-semibold text-gray-100 mb-2 line-clamp-2">
 										{post.productName || post.caption?.substring(0, 50) || 'Untitled Post'}
 									</h3>
 									{post.caption && (
-										<p className="text-sm text-gray-600 mb-2 line-clamp-2">
+										<p className="text-sm text-gray-400 mb-2 line-clamp-2">
 											{post.caption}
 										</p>
 									)}
@@ -313,7 +237,7 @@ export function MyPostsPage() {
 										</a>
 									)}
 									{post.price && post.currency && (
-										<div className="text-sm font-semibold text-gray-900 mb-2">
+										<div className="text-sm font-semibold text-gray-200 mb-2">
 											{post.currency} {post.price}
 										</div>
 									)}
@@ -327,17 +251,17 @@ export function MyPostsPage() {
 						<button
 							onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
 							disabled={currentPage === 1 || isLoading}
-							className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Previous
 						</button>
-						<span className="px-4 py-2 text-sm text-gray-700">
+						<span className="px-4 py-2 text-sm text-gray-400">
 							Page {currentPage}
 						</span>
 						<button
 							onClick={() => setCurrentPage((prev) => prev + 1)}
 							disabled={filteredPosts.length < limit || isLoading}
-							className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
 						>
 							Next
 						</button>
