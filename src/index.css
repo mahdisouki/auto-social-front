@@ -108,6 +108,10 @@ body {
 	background: rgba(255 255 255 / 0.12);
 	border-color: rgba(108 92 231 / 0.6);
 }
+.create-post-form select option {
+	background: #1f2937;
+	color: rgb(243 244 246);
+}
 .create-post-form .bg-gray-50,
 .create-post-form .bg-blue-50,
 .create-post-form .bg-gradient-to-br {
