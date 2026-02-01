@@ -229,3 +229,12 @@ export const CaptionIcon = () => (
 		<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
 	</svg>
 );
+
+// Credits / premium icon (sparkle stars)
+export const SparkleIcon = ({ className = "w-4 h-4" }: { className?: string }) => (
+	<svg className={className} fill="currentColor" viewBox="0 0 24 24">
+		<path d="M12 2l1.545 4.635L18 8l-4.455 1.365L12 14l-1.545-4.635L6 8l4.455-1.365L12 2z" />
+		<path d="M5 16l1.09 2.18L8 19l-1.91.73L5 22l-1.09-2.18L2 19l1.91-.73L5 16z" />
+		<path d="M19 16l1.09 2.18L22 19l-1.91.73L19 22l-1.09-2.18L16 19l1.91-.73L19 16z" />
+	</svg>
+);

@@ -12,6 +12,7 @@ export interface User {
   email: string;
   role: 'admin' | 'user';
   plan: 'free' | 'pro';
+  credits?: number;
   connectedAccounts: {
     facebook?: string;
     instagram?: string;
