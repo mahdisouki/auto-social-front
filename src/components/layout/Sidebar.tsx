@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
 	GridIcon, 
 	PlusIcon, 
@@ -7,9 +7,13 @@ import {
 	ChatIcon, 
 	LightningIcon, 
 	SettingsIcon,
-	ShieldIcon
+	ShieldIcon,
+	SparkleIcon
 } from '../icons';
+import { useAuthStore } from '../../stores/authStore';
 import logoImage from '../../assets/postoruai.png';
+
+const CREDITS_MAX = 100; // max for progress bar display
 
 interface SidebarProps {
 	isOpen: boolean;
@@ -27,6 +31,10 @@ const nav = [
 ];
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
+	const user = useAuthStore((s) => s.user);
+	const credits = user?.credits ?? 0;
+	const creditsPercent = Math.min(100, (credits / CREDITS_MAX) * 100);
+
 	return (
 		<>
 			{/* Mobile overlay */}
@@ -57,6 +65,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 						/>
 					</div>
 				</div>
+				<nav className="px-4 space-y-1 flex-1">
 				<nav className="px-4 space-y-1 flex-1">
 					{nav.map((item, index) => (
 						<NavLink 

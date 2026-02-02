@@ -81,6 +81,66 @@ body {
 	border: 1px solid #f3f4f6;
 }
 
+/* Create Post page: dark glass form */
+.create-post-form h3,
+.create-post-form h4,
+.create-post-form h5 {
+	color: rgb(243 244 246);
+}
+.create-post-form label,
+.create-post-form .text-gray-700 {
+	color: rgb(209 213 219);
+}
+.create-post-form input,
+.create-post-form select,
+.create-post-form textarea {
+	background: rgba(255 255 255 / 0.08);
+	border-color: rgba(255 255 255 / 0.2);
+	color: rgb(243 244 246);
+}
+.create-post-form input::placeholder,
+.create-post-form textarea::placeholder {
+	color: rgb(156 163 175);
+}
+.create-post-form input:focus,
+.create-post-form select:focus,
+.create-post-form textarea:focus {
+	background: rgba(255 255 255 / 0.12);
+	border-color: rgba(108 92 231 / 0.6);
+}
+.create-post-form select option {
+	background: #1f2937;
+	color: rgb(243 244 246);
+}
+.create-post-form .bg-gray-50,
+.create-post-form .bg-blue-50,
+.create-post-form .bg-gradient-to-br {
+	background: rgba(255 255 255 / 0.06);
+	border-color: rgba(255 255 255 / 0.15);
+}
+.create-post-form .text-gray-500,
+.create-post-form .text-gray-600 {
+	color: rgb(156 163 175);
+}
+.create-post-form .border-gray-200 {
+	border-color: rgba(255 255 255 / 0.1);
+}
+.create-post-form .bg-gray-100 {
+	background: rgba(255 255 255 / 0.08);
+}
+.create-post-form .text-blue-900 { color: rgb(191 219 254); }
+.create-post-form .text-blue-800 { color: rgb(147 197 253); }
+.create-post-form .bg-blue-100 { background: rgba(59 130 246 / 0.2); }
+.create-post-form .border-blue-200,
+.create-post-form .border-blue-300 { border-color: rgba(96 165 250 / 0.4); }
+.create-post-form .text-green-800,
+.create-post-form .text-green-900 { color: rgb(187 247 208); }
+.create-post-form .from-green-50,
+.create-post-form .to-emerald-50 { background: rgba(34 197 94 / 0.15); }
+.create-post-form .border-green-200 { border-color: rgba(34 197 94 / 0.3); }
+.create-post-form .text-orange-600 { color: rgb(253 186 116); }
+.create-post-form .text-green-600 { color: rgb(134 239 172); }
+
 .btn-primary {
 	display: inline-flex;
 	align-items: center;

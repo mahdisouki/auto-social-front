@@ -13,6 +13,7 @@ export interface User {
   profileImage?: string;
   role: 'admin' | 'user';
   plan: 'free' | 'pro';
+  credits?: number;
   connectedAccounts: {
     facebook?: string;
     instagram?: string;
