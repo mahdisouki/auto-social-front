@@ -66,7 +66,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 					</div>
 				</div>
 				<nav className="px-4 space-y-1 flex-1">
-				<nav className="px-4 space-y-1 flex-1">
 					{nav.map((item, index) => (
 						<NavLink 
 							key={item.to} 
