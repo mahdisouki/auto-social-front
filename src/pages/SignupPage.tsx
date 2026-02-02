@@ -200,10 +200,9 @@ export function SignupPage() {
 											onChange={handleInputChange}
 											placeholder="azeem"
 											required
-											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 transition-all text-white placeholder:text-gray-500 text-sm border border-[#374151] focus:border-[#9747FF]"
 											style={{
-												background: '#000000',
-												border: '1px solid #9747FF'
+												background: '#000000'
 											}}
 										/>
 									</div>
@@ -225,10 +224,9 @@ export function SignupPage() {
 											onChange={handleInputChange}
 											placeholder="mhiri"
 											required
-											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 transition-all text-white placeholder:text-gray-500 text-sm border border-[#374151] focus:border-[#9747FF]"
 											style={{
-												background: '#000000',
-												border: '1px solid #9747FF'
+												background: '#000000'
 											}}
 										/>
 									</div>
@@ -251,10 +249,9 @@ export function SignupPage() {
 										onChange={handleInputChange}
 										placeholder="ademmhiri489@gmail.com"
 										required
-										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 transition-all text-white placeholder:text-gray-500 text-sm border border-[#374151] focus:border-[#9747FF]"
 										style={{
-											background: '#000000',
-											border: '1px solid #9747FF'
+											background: '#000000'
 										}}
 									/>
 								</div>
@@ -277,10 +274,9 @@ export function SignupPage() {
 										placeholder="••••••••••••"
 										required
 										minLength={6}
-										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 transition-all text-white placeholder:text-gray-500 text-sm border border-[#374151] focus:border-[#9747FF]"
 										style={{
-											background: '#000000',
-											border: '1px solid #9747FF'
+											background: '#000000'
 										}}
 									/>
 								</div>

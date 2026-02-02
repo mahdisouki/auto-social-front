@@ -49,8 +49,7 @@ export function SchedulerPage() {
 			const dateA = new Date(a.scheduledAt || 0);
 			const dateB = new Date(b.scheduledAt || 0);
 			return dateA.getTime() - dateB.getTime();
-		})
-		.slice(0, 10); // Show next 10 upcoming posts
+		});
 
 	// Navigate months
 	const goToPreviousMonth = () => {
@@ -108,105 +107,110 @@ export function SchedulerPage() {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
 	};
 
-	// Handle date click
+	// Handle date click - show posts for that day
 	const handleDateClick = (day: number) => {
 		const clickedDate = new Date(currentYear, currentMonth, day);
-		setSelectedDate(clickedDate);
-		// Navigate to create post page with pre-filled date
-		navigate('/create-post', {
-			state: { scheduledDate: clickedDate.toISOString() }
+		setSelectedDate(prev => {
+			// Toggle off if same date clicked again
+			if (prev && prev.getTime() === clickedDate.getTime()) return null;
+			return clickedDate;
 		});
 	};
 
-	return (
-		<div className="container-max py-6">
-			
+	// Posts for the selected date (when user clicks a calendar day)
+	const selectedDatePosts = selectedDate ? getPostsForDate(selectedDate) : [];
 
+	const formatSelectedDateLabel = (date: Date) => {
+		const today = new Date();
+		const tomorrow = new Date(today);
+		tomorrow.setDate(tomorrow.getDate() + 1);
+		if (date.toDateString() === today.toDateString()) return "Aujourd'hui";
+		if (date.toDateString() === tomorrow.toDateString()) return 'Demain';
+		return date.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+	};
+
+	return (
+		<div className="w-full min-h-screen overflow-y-auto py-6 px-4 md:px-6 lg:px-8" style={{ background: '#000000' }}>
 			{/* Error Message */}
 			{error && (
-				<div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+				<div className="mb-4 p-4 rounded-xl border border-red-500/30 text-red-400" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
 					<p>{error}</p>
-					<button
-						onClick={clearError}
-						className="mt-2 text-sm underline hover:no-underline"
-					>
-						Dismiss
+					<button onClick={clearError} className="mt-2 text-sm underline hover:no-underline text-red-300">
+						Fermer
 					</button>
 				</div>
 			)}
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
 				{/* Calendar */}
 				<div className="lg:col-span-2">
-					<div className="card p-6">
+					<div className="p-6 rounded-2xl overflow-hidden" style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}>
 						<div className="flex items-center justify-between mb-6">
-							<h3 className="text-lg font-semibold text-gray-900">{monthName}</h3>
+							<h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>{monthName}</h3>
 							<div className="flex items-center gap-2">
-								<button 
+								<button
 									onClick={goToPreviousMonth}
-									className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+									className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
 								>
 									<ChevronLeftIcon />
 								</button>
-								<button 
+								<button
 									onClick={() => setCurrentDate(new Date())}
-									className="px-3 py-1 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+									className="px-3 py-1 text-sm text-white rounded-lg hover:bg-white/10 transition-colors"
 								>
-									Today
+									Aujourd'hui
 								</button>
-								<button 
+								<button
 									onClick={goToNextMonth}
-									className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+									className="p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
 								>
 									<ChevronRightIcon />
 								</button>
 							</div>
 						</div>
-						
+
 						{/* Calendar Grid */}
 						<div className="grid grid-cols-7 gap-1">
-							{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-								<div key={day} className="p-2 text-center text-sm font-medium text-gray-500">
+							{['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'].map(day => (
+								<div key={day} className="p-2 text-center text-xs font-medium text-gray-400">
 									{day}
 								</div>
 							))}
-							
-							{/* Empty cells for days before month starts */}
 							{Array.from({ length: firstDayOfMonth }, (_, i) => (
-								<div key={`empty-${i}`} className="p-2"></div>
+								<div key={`empty-${i}`} className="p-2" />
 							))}
-							
-							{/* Calendar Days */}
 							{Array.from({ length: daysInMonth }, (_, i) => {
 								const day = i + 1;
 								const date = new Date(currentYear, currentMonth, day);
 								const dayPosts = getPostsForDate(date);
 								const hasPost = dayPosts.length > 0;
 								const isTodayDate = isToday(day);
-								
+								const isSelected = selectedDate && selectedDate.getDate() === day && selectedDate.getMonth() === currentMonth && selectedDate.getFullYear() === currentYear;
 								return (
-									<div 
-										key={day} 
+									<div
+										key={day}
 										onClick={() => handleDateClick(day)}
 										className={`
-											p-2 text-center text-sm cursor-pointer hover:bg-gray-100 rounded-lg relative min-h-[3rem] flex flex-col items-center justify-start
-											${isTodayDate ? 'bg-primary/10 text-primary font-semibold' : 'text-gray-900'}
+											p-2 text-center text-sm cursor-pointer rounded-lg relative min-h-[3rem] flex flex-col items-center justify-start transition-colors
+											${isTodayDate ? 'text-white font-semibold' : 'text-gray-300'}
+											hover:bg-white/10
+											${isSelected ? 'ring-2 ring-[#9747FF] ring-inset' : ''}
 										`}
+										style={isTodayDate ? { background: 'rgba(151, 71, 255, 0.2)' } : isSelected ? { background: 'rgba(151, 71, 255, 0.25)' } : undefined}
 									>
 										<span className={isTodayDate ? 'font-bold' : ''}>{day}</span>
 										{hasPost && (
 											<div className="mt-1 flex flex-wrap gap-0.5 justify-center">
-												{dayPosts.slice(0, 3).map((post, idx) => (
-													<div 
+												{dayPosts.slice(0, 3).map((post) => (
+													<div
 														key={post._id}
-														className={`w-1.5 h-1.5 rounded-full ${
-															isTodayDate ? 'bg-primary' : 'bg-primary'
-														}`}
-														title={post.caption || post.productName || 'Scheduled post'}
+														className="w-1.5 h-1.5 rounded-full"
+														style={{ background: '#9747FF' }}
+														title={post.caption || post.productName || 'Publication planifiée'}
 													/>
 												))}
 												{dayPosts.length > 3 && (
-													<span className="text-xs text-gray-500">+{dayPosts.length - 3}</span>
+													<span className="text-xs text-gray-400">+{dayPosts.length - 3}</span>
 												)}
 											</div>
 										)}
@@ -216,63 +220,129 @@ export function SchedulerPage() {
 						</div>
 
 						{/* Legend */}
-						<div className="mt-4 pt-4 border-t border-gray-200 flex items-center gap-4 text-xs text-gray-600">
+						<div className="mt-4 pt-4 border-t border-white/10 flex items-center gap-4 text-xs text-gray-400">
 							<div className="flex items-center gap-2">
-								<div className="w-2 h-2 bg-primary rounded-full"></div>
-								<span>Scheduled posts</span>
+								<div className="w-2 h-2 rounded-full" style={{ background: '#9747FF' }} />
+								<span>Publications planifiées</span>
 							</div>
 						</div>
 					</div>
 				</div>
 
-				{/* Upcoming Posts */}
-				<div>
-					<div className="card p-6">
-						<h3 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Posts</h3>
-						
-						{isLoading && (
-							<div className="flex justify-center items-center py-8">
-								<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-							</div>
-						)}
-
-						{!isLoading && upcomingPosts.length === 0 && (
-							<div className="text-center py-8">
-								<p className="text-gray-500 text-sm">No upcoming posts</p>
-								<button
-									onClick={() => navigate('/create-post')}
-									className="mt-4 text-primary hover:underline text-sm"
-								>
-									Schedule your first post
-								</button>
-							</div>
-						)}
-
-						{!isLoading && upcomingPosts.length > 0 && (
-							<div className="space-y-4">
-								{upcomingPosts.map((post) => (
-									<div 
-										key={post._id} 
-										onClick={() => navigate(`/posts/${post._id}`)}
-										className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+				{/* Right panel: selected day posts OR upcoming posts */}
+				<div className="flex flex-col min-h-0">
+					<div className="p-6 rounded-2xl overflow-hidden flex flex-col min-h-0" style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}>
+						{selectedDate ? (
+							<>
+								<div className="flex items-center justify-between gap-2 mb-4 shrink-0 flex-wrap">
+									<h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+										Publications du {formatSelectedDateLabel(selectedDate)}
+									</h3>
+									<button
+										onClick={() => setSelectedDate(null)}
+										className="text-xs text-gray-400 hover:text-white transition-colors"
 									>
-										<h4 className="font-medium text-gray-900 text-sm line-clamp-2">
-											{post.productName || post.caption?.substring(0, 50) || 'Untitled Post'}
-										</h4>
-										<p className="text-xs text-gray-500 mt-1">
-											{post.scheduledAt && formatDate(post.scheduledAt)}
-										</p>
-										<div className="flex items-center gap-2 mt-2 flex-wrap">
-											{post.platform.map((platform) => (
-												<div key={platform} className="flex items-center gap-1">
-													<div className="w-2 h-2 bg-primary rounded-full"></div>
-													<span className="text-xs text-gray-600">{getPlatformName(platform)}</span>
+										Voir toutes les publications
+									</button>
+								</div>
+								{selectedDatePosts.length === 0 ? (
+									<div className="text-center py-8">
+										<p className="text-gray-400 text-sm">Aucune publication ce jour-là</p>
+										<button
+											onClick={() => navigate('/create', { state: { scheduledDate: selectedDate.toISOString() } })}
+											className="mt-4 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+											style={{ background: '#9747FF' }}
+										>
+											Planifier pour ce jour
+										</button>
+									</div>
+								) : (
+									<>
+										<div className="space-y-3 overflow-y-auto flex-1 min-h-0 pr-1 mb-4" style={{ maxHeight: 'calc(100vh - 16rem)' }}>
+											{selectedDatePosts.map((post) => (
+												<div
+													key={post._id}
+													onClick={() => navigate(`/posts/${post._id}`)}
+													className="p-3 rounded-xl transition-colors cursor-pointer border hover:opacity-90"
+													style={{ background: 'rgba(151, 71, 255, 0.15)', borderColor: 'rgba(151, 71, 255, 0.4)' }}
+												>
+													<h4 className="font-medium text-white text-sm line-clamp-2">
+														{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
+													</h4>
+													<p className="text-xs text-gray-400 mt-1">
+														{post.scheduledAt && formatTime(post.scheduledAt)}
+													</p>
+													<div className="flex items-center gap-2 mt-2 flex-wrap">
+														{post.platform.map((platform) => (
+															<div key={platform} className="flex items-center gap-1">
+																<div className="w-2 h-2 rounded-full" style={{ background: '#9747FF' }} />
+																<span className="text-xs text-gray-400">{getPlatformName(platform)}</span>
+															</div>
+														))}
+													</div>
 												</div>
 											))}
 										</div>
+										<button
+											onClick={() => navigate('/create', { state: { scheduledDate: selectedDate.toISOString() } })}
+											className="w-full py-2.5 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90 shrink-0"
+											style={{ background: '#9747FF' }}
+										>
+											Planifier une autre publication ce jour
+										</button>
+									</>
+								)}
+							</>
+						) : (
+							<>
+								<h3 className="text-lg font-semibold text-white mb-4 shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
+									Publications à venir
+								</h3>
+								{isLoading && (
+									<div className="flex justify-center items-center py-8">
+										<div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: '#9747FF' }} />
 									</div>
-								))}
-							</div>
+								)}
+								{!isLoading && upcomingPosts.length === 0 && (
+									<div className="text-center py-8">
+										<p className="text-gray-400 text-sm">Aucune publication à venir</p>
+										<button
+											onClick={() => navigate('/create')}
+											className="mt-4 text-sm font-medium transition-opacity hover:opacity-90"
+											style={{ color: '#9747FF' }}
+										>
+											Planifier une publication
+										</button>
+									</div>
+								)}
+								{!isLoading && upcomingPosts.length > 0 && (
+									<div className="space-y-3 overflow-y-auto flex-1 min-h-0 pr-1" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
+										{upcomingPosts.map((post) => (
+											<div
+												key={post._id}
+												onClick={() => navigate(`/posts/${post._id}`)}
+												className="p-3 rounded-xl transition-colors cursor-pointer border hover:opacity-90"
+												style={{ background: 'rgba(151, 71, 255, 0.15)', borderColor: 'rgba(151, 71, 255, 0.4)' }}
+											>
+												<h4 className="font-medium text-white text-sm line-clamp-2">
+													{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
+												</h4>
+												<p className="text-xs text-gray-400 mt-1">
+													{post.scheduledAt && formatDate(post.scheduledAt)}
+												</p>
+												<div className="flex items-center gap-2 mt-2 flex-wrap">
+													{post.platform.map((platform) => (
+														<div key={platform} className="flex items-center gap-1">
+															<div className="w-2 h-2 rounded-full" style={{ background: '#9747FF' }} />
+															<span className="text-xs text-gray-400">{getPlatformName(platform)}</span>
+														</div>
+													))}
+												</div>
+											</div>
+										))}
+									</div>
+								)}
+							</>
 						)}
 					</div>
 				</div>

@@ -11,6 +11,7 @@ import card3 from '../assets/card3.png';
 import connLeft from '../assets/conn.png';
 import connRight from '../assets/conn2.png';
 import tsawerImage from '../assets/tsawer.png';
+import circle1 from '../assets/circle1.png';
 
 const LandingPage = () => {
   return (
@@ -132,54 +133,63 @@ const LandingPage = () => {
 
           {/* Main Content */}
           <div className="text-center max-w-4xl mx-auto relative z-10">
-            <h1 
-              className="mb-6"
-              style={{
-                fontFamily: 'Playfair Display, serif',
-                fontWeight: 400,
-                fontStyle: 'italic',
-                fontSize: '70px',
-                lineHeight: '125%',
-                letterSpacing: '4%',
-                textAlign: 'center',
-                textTransform: 'capitalize'
-              }}
-            >
-              <span className="bg-[#9333EA] bg-clip-text text-transparent">
-                Créez, Améliorez Et Publiez
-              </span>
-              <br />
-              <span className="text-white">
-                Vos Contenus Plus Facilement
-              </span>
-            </h1>
+            {/* Image layer under the texts */}
+            <img 
+              src={circle1} 
+              alt="" 
+              className="absolute left-1/2 -translate-x-1/2 top-0 w-full max-w-6xl min-h-[420px] h-auto object-contain pointer-events-none" 
+              style={{ zIndex: 0 }}
+            />
+            <div className="relative" style={{ zIndex: 1 }}>
+              <h1 
+                className="mb-6"
+                style={{
+                  fontFamily: 'Playfair Display, serif',
+                  fontWeight: 400,
+                  fontStyle: 'italic',
+                  fontSize: '70px',
+                  lineHeight: '125%',
+                  letterSpacing: '4%',
+                  textAlign: 'center',
+                  textTransform: 'capitalize'
+                }}
+              >
+                <span className="bg-[#9333EA] bg-clip-text text-transparent">
+                  Créez, Améliorez Et Publiez
+                </span>
+                <br />
+                <span className="text-white">
+                  Vos Contenus Plus Facilement
+                </span>
+              </h1>
 
-            <p 
-              className="mb-8 max-w-2xl mx-auto"
-              style={{
-                fontFamily: 'Inter, sans-serif',
-                fontWeight: 400,
-                fontStyle: 'normal',
-                fontSize: '20px',
-                lineHeight: '140%',
-                letterSpacing: '5%',
-                textAlign: 'center',
-                color: '#4B5563'
-              }}
-            >
-              Créez des visuels, écrivez des légendes et programmez vos publications
-              sur les réseaux sociaux grâce à l'IA, en quelques clics
-            </p>
+              <p 
+                className="mb-8 max-w-2xl mx-auto"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 400,
+                  fontStyle: 'normal',
+                  fontSize: '20px',
+                  lineHeight: '140%',
+                  letterSpacing: '5%',
+                  textAlign: 'center',
+                  color: '#4B5563'
+                }}
+              >
+                Créez des visuels, écrivez des légendes et programmez vos publications
+                sur les réseaux sociaux grâce à l'IA, en quelques clics
+              </p>
 
-            <Link 
-              to="/dashboard" 
-              className="inline-block bg-[#9333EA] text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
-              style={{
-                boxShadow: '0px 0px 27.1px 0px #9747FF8A'
-              }}
-            >
-              Créer Et Publier Maintenant
-            </Link>
+              <Link 
+                to="/dashboard" 
+                className="inline-block bg-[#9333EA] text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
+                style={{
+                  boxShadow: '0px 0px 27.1px 0px #9747FF8A'
+                }}
+              >
+                Créer Et Publier Maintenant
+              </Link>
+            </div>
 
             {/* Bottom Social Icons */}
            

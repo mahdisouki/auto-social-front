@@ -10,6 +10,7 @@ export interface User {
   _id: string;
   name: string;
   email: string;
+  profileImage?: string;
   role: 'admin' | 'user';
   plan: 'free' | 'pro';
   credits?: number;

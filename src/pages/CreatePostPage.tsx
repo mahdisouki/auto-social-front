@@ -4,11 +4,13 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
+import { useAuthStore } from '../stores/authStore';
 import { uploadApi } from '../lib/api';
 
 export function CreatePostPage() {
 	const navigate = useNavigate();
 	const { createPost, isLoading, error, clearError } = usePostsStore();
+	const { user } = useAuthStore();
 	
 	const [formData, setFormData] = useState({
 		productName: '',
@@ -38,10 +40,18 @@ export function CreatePostPage() {
 	const [showPreviewModal, setShowPreviewModal] = useState(false);
 	const [englishCaption, setEnglishCaption] = useState<string>('');
 	const [arabicCaption, setArabicCaption] = useState<string>('');
-	const [captionLanguage, setCaptionLanguage] = useState<'french' | 'arabic'>('french');
-	const [generateCaption, setGenerateCaption] = useState<boolean>(true);
+	const [captionLanguage, setCaptionLanguage] = useState<'french' | 'arabic' | null>(null);
+	const [generateCaption, setGenerateCaption] = useState<boolean>(false);
 	const [customModelImage, setCustomModelImage] = useState<File | null>(null);
 	const [customModelPreview, setCustomModelPreview] = useState<string | null>(null);
+	const [openSections, setOpenSections] = useState<number[]>([1]);
+	const [previewTab, setPreviewTab] = useState<'facebook' | 'instagram'>('facebook');
+
+	const toggleSection = (num: number) => {
+		setOpenSections(prev =>
+			prev.includes(num) ? prev.filter((n) => n !== num) : [...prev, num]
+		);
+	};
 	
 	// Cleanup object URLs when component unmounts
 	useEffect(() => {
@@ -56,6 +66,8 @@ export function CreatePostPage() {
 			}
 		};
 	}, [imagePreviews, enhancedImagePreview]);
+
+
 	
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
 		const { name, value } = e.target;
@@ -66,14 +78,7 @@ export function CreatePostPage() {
 		if (error) clearError();
 	};
 	
-	const handlePlatformChange = (platform: string) => {
-		setFormData(prev => ({
-			...prev,
-			platform: prev.platform.includes(platform)
-				? prev.platform.filter(p => p !== platform)
-				: [...prev.platform, platform],
-		}));
-	};
+	
 
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);
@@ -265,7 +270,7 @@ export function CreatePostPage() {
 			
 			formDataAI.append('add_text', formData.addText);
 			formDataAI.append('generate_caption', generateCaption ? 'yes' : 'no');
-			formDataAI.append('caption_language', captionLanguage);
+			formDataAI.append('caption_language', captionLanguage || 'french');
 			formDataAI.append('post_type', formData.postType || 'other');
 			
 			// Log all FormData entries
@@ -313,24 +318,24 @@ export function CreatePostPage() {
 			// Set caption in state
 			const generatedCaption = responseData.caption || '';
 			
-			// Store in appropriate state based on language
-			if (captionLanguage === 'french') {
-				setEnglishCaption(generatedCaption);
-				// Keep Arabic empty if not generated
-				if (!arabicCaption) setArabicCaption('');
-			} else {
-				setArabicCaption(generatedCaption);
-				// Keep English empty if not generated
-				if (!englishCaption) setEnglishCaption('');
+			// Store in appropriate state based on language (only when AI caption was requested)
+			if (generateCaption && captionLanguage) {
+				if (captionLanguage === 'french') {
+					setEnglishCaption(generatedCaption);
+					if (!arabicCaption) setArabicCaption('');
+				} else {
+					setArabicCaption(generatedCaption);
+					if (!englishCaption) setEnglishCaption('');
+				}
 			}
 			
-			// Set caption in form
+			// Set caption in form (use generated if we requested it, else keep existing manual caption)
 			setFormData(prev => ({
 				...prev,
-				caption: generatedCaption,
+				caption: generateCaption ? generatedCaption : prev.caption,
 			}));
 			
-			console.log(`📝 Generated ${captionLanguage} caption:`, generatedCaption);
+			if (generateCaption) console.log(`📝 Generated ${captionLanguage} caption:`, generatedCaption);
 
 		} catch (aiError) {
 			console.error('Failed to enhance image:', aiError);
@@ -455,7 +460,7 @@ export function CreatePostPage() {
 	};
 
 	return (
-		<div className="container-max py-6 min-h-[80vh] bg-gray-900/70 backdrop-blur-2xl rounded-2xl">
+		<div className="w-full py-6 px-4 md:px-6 lg:px-8 min-h-screen flex" style={{ background: '#000000' }}>
 			{/* Preview Modal */}
 			{showPreviewModal && (
 				<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPreviewModal(false)}>
@@ -556,506 +561,540 @@ export function CreatePostPage() {
 			
 			{/* Error Message */}
 			{error && (
-				<div className="mb-6 p-4 bg-red-500/20 border border-red-400/40 rounded-lg backdrop-blur-sm">
-					<p className="text-sm text-red-200">{error}</p>
+				<div className="mb-4 p-4 rounded-lg" style={{ background: '#1A1A22', border: '1px solid rgba(255,255,255,0.1)' }}>
+					<p className="text-sm text-red-400">{error}</p>
 				</div>
 			)}
-			
-			<form onSubmit={handleSubmit}>
-				<div className="create-post-form p-6 max-w-4xl mx-auto bg-white/5 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
-					{/* Upload Section */}
-					<div>
-						<h3 className="text-lg font-semibold text-gray-100 mb-4">Upload Content</h3>
-						<div 
-							className="border-2 border-dashed border-white/20 rounded-lg p-8 text-center hover:border-primary transition-colors cursor-pointer"
+
+			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+				<input
+					id="file-upload"
+					type="file"
+					accept="image/*"
+					onChange={handleFileUpload}
+					className="hidden"
+				/>
+
+				{/* Left/Center: Feed preview card */}
+				<div className="flex-1 flex flex-col items-center min-w-0">
+					<div className="flex flex-wrap items-center gap-3 mb-4">
+						<h2 className="text-white text-sm font-semibold uppercase tracking-wider shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
+							Aperçu du fil
+						</h2>
+						<div className="flex gap-0 rounded-lg overflow-hidden shrink-0" style={{ border: '1px solid #FFFFFF1A' }}>
+							<button
+								type="button"
+								onClick={() => {
+									setPreviewTab('facebook');
+									setFormData(prev => ({
+										...prev,
+										platform: prev.platform.includes('facebook')
+											? prev.platform.filter(p => p !== 'facebook')
+											: [...prev.platform, 'facebook'],
+									}));
+								}}
+								className="px-6 py-2 text-sm font-medium transition-colors"
+								style={{
+									background: formData.platform.includes('facebook') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
+									color: '#FFFFFF',
+									fontFamily: 'Inter, sans-serif',
+								}}
+							>
+								Facebook
+							</button>
+							<button
+								type="button"
+								onClick={() => {
+									setPreviewTab('instagram');
+									setFormData(prev => ({
+										...prev,
+										platform: prev.platform.includes('instagram')
+											? prev.platform.filter(p => p !== 'instagram')
+											: [...prev.platform, 'instagram'],
+									}));
+								}}
+								className="px-6 py-2 text-sm font-medium transition-colors"
+								style={{
+									background: formData.platform.includes('instagram') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
+									color: '#FFFFFF',
+									fontFamily: 'Inter, sans-serif',
+								}}
+							>
+								Instagram
+							</button>
+						</div>
+					</div>
+					<div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md">
+						<div className="p-4 border-b border-gray-100">
+							<div className="flex items-center gap-3">
+								{user?.profileImage ? (
+									<img
+										src={user.profileImage}
+										alt={user?.name || 'User'}
+										className="w-10 h-10 rounded-full object-cover shrink-0"
+									/>
+								) : (
+									<div className="w-10 h-10 rounded-full bg-gray-200 shrink-0 flex items-center justify-center">
+										<span className="text-sm font-semibold text-gray-600">
+											{user?.name?.charAt(0).toUpperCase() || '?'}
+										</span>
+									</div>
+								)}
+								<span className="font-semibold text-gray-900">{user?.name || 'Votre page'}</span>
+							</div>
+							<p className="text-gray-400 text-sm mt-1">
+								{formData.caption || 'Votre légende apparaîtra ici...'}
+							</p>
+						</div>
+						<div
+							className="relative min-h-[320px] flex items-center justify-center bg-gray-50 border-b border-gray-100 cursor-pointer"
 							onDragOver={handleDragOver}
 							onDrop={handleDrop}
 							onClick={() => document.getElementById('file-upload')?.click()}
 						>
-							<UploadIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-							<p className="text-gray-300 mb-2">Drag and drop your images here</p>
-							<p className="text-sm text-gray-400">or click to browse</p>
-							<button type="button" className="mt-4 btn-primary">Choose Files</button>
-							<input
-								id="file-upload"
-								type="file"
-								accept="image/*"
-								onChange={handleFileUpload}
-								className="hidden"
-							/>
+							{enhancedImagePreview ? (
+								<img src={enhancedImagePreview} alt="" className="w-full h-full min-h-[320px] object-contain" />
+							) : imagePreviews[0] ? (
+								<>
+									<img src={imagePreviews[0]} alt="" className="w-full h-full min-h-[320px] object-contain" />
+									<button
+										type="button"
+										onClick={(e) => { e.stopPropagation(); removeImage(0); }}
+										className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
+									>
+										×
+									</button>
+								</>
+							) : (
+								<div className="flex flex-col items-center justify-center p-8 text-center">
+									<UploadIcon className="w-16 h-16 text-gray-300 mx-auto mb-2" />
+									<p className="text-gray-400 text-sm">Uploadez votre photo produit ici</p>
+									<p className="text-gray-300 text-xs mt-1">ou glissez-déposez</p>
+								</div>
+							)}
 						</div>
-						
-						{/* Image Previews */}
-						{(imagePreviews.length > 0 || isProcessingImages) && (
-							<div className="mt-4">
-								<h4 className="font-medium text-gray-900 mb-3">
-									Uploaded Image ({imagePreviews.length}/1)
-									{isProcessingImages && <span className="text-sm text-blue-600 ml-2">Processing...</span>}
-								</h4>
-								<div className="mt-2">
-									{imagePreviews.map((preview, index) => (
-										<div key={index} className="relative max-w-md mx-auto">
-											<img
-												src={preview}
-												alt={`Preview ${index + 1}`}
-												className="w-full h-auto rounded-lg shadow-md"
-												onLoad={(e) => {
-													console.log('✅ Image loaded successfully');
-													console.log('Natural dimensions:', e.currentTarget.naturalWidth, 'x', e.currentTarget.naturalHeight);
-												}}
-												onError={() => {
-													console.error('❌ Image failed to load');
-												}}
-											/>
-											
-											{/* Remove button */}
-											<button
-												type="button"
-												onClick={(e) => {
-													e.stopPropagation();
-													removeImage(index);
-												}}
-												className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
-											>
-												×
-											</button>
+						<div className="flex justify-center gap-8 py-3 text-gray-500 text-sm">
+							<span>J'aime</span>
+							<span>Commenter</span>
+							<span>Partager</span>
+						</div>
+					</div>
+				</div>
+
+				{/* Right: Sidebar with accordion */}
+				<aside
+					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col max-h-[calc(100vh-8rem)]"
+					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
+				>
+					<div className="p-4 overflow-y-auto flex-1 space-y-1">
+						{/* 1. PHOTO DU PRODUIT */}
+						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
+							<button
+								type="button"
+								onClick={() => toggleSection(1)}
+								className="w-full flex items-center justify-between px-4 py-3 text-left"
+							>
+								<span
+									style={{
+										fontFamily: 'Inter, sans-serif',
+										fontWeight: 900,
+										fontSize: '12px',
+										lineHeight: '15px',
+										letterSpacing: '2px',
+										verticalAlign: 'middle',
+										textTransform: 'uppercase',
+										color: '#9747FF'
+									}}
+								>
+									1. PHOTO DU PRODUIT
+								</span>
+								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(1) ? '▲' : '▼'}</span>
+							</button>
+							{openSections.includes(1) && (
+								<div
+									className="p-4 flex flex-col items-center justify-center cursor-pointer border-t border-white/10 min-h-[140px]"
+									style={{ background: '#0E0E13' }}
+									onClick={() => document.getElementById('file-upload')?.click()}
+									onDragOver={handleDragOver}
+									onDrop={handleDrop}
+								>
+									{imagePreviews[0] ? (
+										<div className="w-full rounded-lg overflow-hidden border border-white/10">
+											<img src={imagePreviews[0]} alt="Produit uploadé" className="w-full h-auto max-h-40 object-contain" />
 										</div>
-									))}
-									{/* Loading placeholder for processing images */}
-									{isProcessingImages && uploadedImages.length > imagePreviews.length && (
-										<div className="relative">
-											<div className="w-full h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
-												<div className="text-center">
-													<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
-													<p className="text-sm text-gray-600">Processing...</p>
-												</div>
-											</div>
-										</div>
+									) : (
+										<>
+											<UploadIcon className="w-10 h-10 text-gray-400 mb-2" />
+											<p className="text-white text-sm font-medium">UPLOADER PHOTO PRODUIT</p>
+										</>
 									)}
 								</div>
-							</div>
-						)}
-						
-						{/* Product Details */}
-						<div className="mt-6">
-							<h4 className="font-medium text-gray-900 mb-3">Product Details</h4>
-							<div className="space-y-4">
-								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-1">Post Type</label>
-									<select
-										name="postType"
-										value={formData.postType}
-										onChange={handleInputChange}
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-									>
-										<option value="">Select post type</option>
-										<option value="accessories">Accessories</option>
-										<option value="clothing">Clothing (Vêtements)</option>
-										<option value="electronics">Electronics (Électronique)</option>
-										<option value="furniture">Furniture (Meubles)</option>
-										<option value="beauty">Beauty & Cosmetics</option>
-										<option value="food">Food & Beverages</option>
-										<option value="sports">Sports & Fitness</option>
-										<option value="books">Books & Media</option>
-										<option value="toys">Toys & Games</option>
-										<option value="home">Home & Garden</option>
-									</select>
-								</div>
-								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
-									<input 
-										type="text" 
-										name="productName"
-										value={formData.productName}
-										onChange={handleInputChange}
-										placeholder="Enter product name" 
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-									<textarea 
-										rows={3} 
-										name="description"
-										value={formData.description}
-										onChange={handleInputChange}
-										placeholder="Describe your product" 
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-									></textarea>
-								</div>
-								<div className="grid grid-cols-2 gap-3">
+							)}
+						</div>
+
+						{/* 2. INFORMATIONS PRODUIT */}
+						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
+							<button
+								type="button"
+								onClick={() => toggleSection(2)}
+								className="w-full flex items-center justify-between px-4 py-3 text-left"
+							>
+								<span
+									style={{
+										fontFamily: 'Inter, sans-serif',
+										fontWeight: 900,
+										fontSize: '12px',
+										lineHeight: '15px',
+										letterSpacing: '2px',
+										verticalAlign: 'middle',
+										textTransform: 'uppercase',
+										color: '#9747FF'
+									}}
+								>
+									2. INFORMATIONS PRODUIT
+								</span>
+								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(2) ? '▲' : '▼'}</span>
+							</button>
+							{openSections.includes(2) && (
+								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">Price</label>
-										<input 
-											type="text" 
-											name="price"
-											value={formData.price}
+										<label className="block text-xs font-medium text-gray-300 mb-1">Type de post</label>
+										<select
+											name="postType"
+											value={formData.postType}
 											onChange={handleInputChange}
-											placeholder="0.00" 
-											className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" 
+											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black"
+										>
+											<option value="">Sélectionner</option>
+											<option value="accessories">Accessories</option>
+											<option value="clothing">Vêtements</option>
+											<option value="electronics">Électronique</option>
+											<option value="furniture">Meubles</option>
+											<option value="beauty">Beauté</option>
+											<option value="food">Alimentation</option>
+											<option value="sports">Sports</option>
+											<option value="books">Livres</option>
+											<option value="toys">Jouets</option>
+											<option value="home">Maison</option>
+										</select>
+									</div>
+									<div>
+										<label className="block text-xs font-medium text-gray-300 mb-1">Nom du produit</label>
+										<input
+											type="text"
+											name="productName"
+											value={formData.productName}
+											onChange={handleInputChange}
+											placeholder="Nom du produit"
+											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30 placeholder-gray-500"
 										/>
 									</div>
 									<div>
-										<label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-										<select
-											name="currency"
-											value={formData.currency}
+										<label className="block text-xs font-medium text-gray-300 mb-1">Description</label>
+										<textarea
+											rows={2}
+											name="description"
+											value={formData.description}
 											onChange={handleInputChange}
-											className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+											placeholder="Décrivez votre produit"
+											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30 placeholder-gray-500"
+										/>
+									</div>
+									<div>
+										<label
+											className="block mb-1.5 uppercase font-semibold text-sm tracking-wide"
+											style={{ fontFamily: 'Inter, sans-serif', color: '#CCCCCC' }}
 										>
-											<option value="TND">TND - Tunisian Dinar</option>
-											<option value="USD">USD - US Dollar</option>
-											<option value="EUR">EUR - Euro</option>
-										</select>
+											Prix
+										</label>
+										<div
+											className="flex rounded-lg overflow-hidden border border-white/10"
+											style={{ background: '#0E0E13' }}
+										>
+											<input
+												type="text"
+												name="price"
+												value={formData.price}
+												onChange={handleInputChange}
+												placeholder="0.00"
+												className="flex-1 min-w-0 px-4 py-2.5 text-sm border-0 border-r border-white/10 focus:ring-0 focus:outline-none placeholder-gray-500"
+												style={{ background: '#0E0E13', color: '#E0E0E0' }}
+											/>
+											<select
+												name="currency"
+												value={formData.currency}
+												onChange={handleInputChange}
+												className="px-4 py-2.5 text-sm font-semibold uppercase border-0 border-l border-white/10 focus:ring-0 focus:outline-none cursor-pointer rounded-r-lg"
+												style={{ background: '#0E0E13', color: '#E0E0E0' }}
+											>
+												<option value="TND">DT</option>
+												<option value="USD">USD</option>
+												<option value="EUR">EUR</option>
+											</select>
+										</div>
+									</div>
+									
+									<div>
+										<label className="block text-xs font-medium text-gray-300 mb-1">Planification</label>
+										<DatePicker
+											selected={selectedDate}
+											onChange={handleDateChange}
+											showTimeSelect
+											timeFormat="HH:mm"
+											timeIntervals={15}
+											dateFormat="d MMM yyyy HH:mm"
+											minDate={new Date()}
+											placeholderText="Date et heure"
+											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
+											wrapperClassName="w-full"
+										/>
 									</div>
 								</div>
-								
-								{/* AI Image Enhancement Options */}
-								<div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-									<h5 className="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
-										<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-										</svg>
-										AI Image Enhancement
-									</h5>
-									
+							)}
+						</div>
+
+						{/* 3. BACKGROUND & SCÈNE */}
+						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
+							<button
+								type="button"
+								onClick={() => toggleSection(3)}
+								className="w-full flex items-center justify-between px-4 py-3 text-left"
+							>
+								<span
+									style={{
+										fontFamily: 'Inter, sans-serif',
+										fontWeight: 900,
+										fontSize: '12px',
+										lineHeight: '15px',
+										letterSpacing: '2px',
+										verticalAlign: 'middle',
+										textTransform: 'uppercase',
+										color: '#9747FF'
+									}}
+								>
+									3. BACKGROUND & SCÈNE
+								</span>
+								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(3) ? '▲' : '▼'}</span>
+							</button>
+							{openSections.includes(3) && (
+								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
 									<div className="space-y-3">
-										{/* Background Type */}
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">Background Type</label>
+											<label className="block text-xs font-medium text-gray-300 mb-1">Type de fond</label>
 											<select
 												name="backgroundType"
 												value={formData.backgroundType}
 												onChange={handleInputChange}
-												className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+												className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
 											>
-												<option value="white">White Background</option>
-												<option value="color">Custom Color Background</option>
+												<option value="white">Fond blanc</option>
+												<option value="color">Couleur personnalisée</option>
 											</select>
 										</div>
-										
-										{/* Background Color Picker (shown when color is selected) */}
 										{formData.backgroundType === 'color' && (
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
-												<div className="flex gap-2">
-													<input 
-														type="color" 
-														name="backgroundColor"
-														value={formData.backgroundColor}
-														onChange={handleInputChange}
-														className="h-10 w-20 border border-gray-300 rounded-lg cursor-pointer"
-													/>
-													<input 
-														type="text" 
-														name="backgroundColor"
-														value={formData.backgroundColor}
-														onChange={handleInputChange}
-														placeholder="#ffffff"
-														className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-													/>
-												</div>
+											<div className="flex gap-2">
+												<input type="color" name="backgroundColor" value={formData.backgroundColor} onChange={handleInputChange} className="h-9 w-14 rounded cursor-pointer border border-white/20" />
+												<input type="text" name="backgroundColor" value={formData.backgroundColor} onChange={handleInputChange} placeholder="#ffffff" className="flex-1 px-3 py-2 rounded-lg text-white text-sm border border-white/20 bg-black/30 placeholder-gray-500" />
 											</div>
 										)}
-										
-										{/* Model Selection */}
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">Add Human Model</label>
-											<select
-												name="useModel"
-												value={formData.useModel}
-												onChange={handleInputChange}
-												className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-											>
-												<option value="no">No Model</option>
-												<option value="yes">Yes, Add Model</option>
+											<label className="block text-xs font-medium text-gray-300 mb-1">Modèle humain</label>
+											<select name="useModel" value={formData.useModel} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+												<option value="no">Non</option>
+												<option value="yes">Oui</option>
 											</select>
 										</div>
-										
-										{/* Model Type (shown when model is selected) */}
 										{formData.useModel === 'yes' && (
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Model Type</label>
-												<select
-													name="modelType"
-													value={formData.modelType}
-													onChange={handleInputChange}
-													className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-												>
-													<option value="ai">AI Generated Model</option>
-													<option value="custom">Custom Model Image</option>
-												</select>
-											</div>
-										)}
-
-										{/* Custom Model Upload (shown when custom is selected) */}
-										{formData.useModel === 'yes' && formData.modelType === 'custom' && (
-											<div>
-												<label className="block text-sm font-medium text-gray-700 mb-1">Upload Model Image</label>
-												<input
-													type="file"
-													accept="image/*"
-													onChange={handleCustomModelUpload}
-													className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-												/>
-												{customModelPreview && (
-													<div className="mt-2 relative max-w-xs">
-														<img src={customModelPreview} alt="Custom model" className="w-full h-auto rounded-lg border-2 border-blue-300" />
-														<button
-															type="button"
-															onClick={removeCustomModel}
-															className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-														>
-															×
-														</button>
+											<>
+												<div>
+													<label className="block text-xs font-medium text-gray-300 mb-1">Type de modèle</label>
+													<select name="modelType" value={formData.modelType} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+														<option value="ai">IA</option>
+														<option value="custom">Image personnalisée</option>
+													</select>
+												</div>
+												{formData.modelType === 'custom' && (
+													<div>
+														<input type="file" accept="image/*" onChange={handleCustomModelUpload} className="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-purple-500/20 file:text-purple-300" />
+														{customModelPreview && (
+															<div className="mt-2 relative max-w-full">
+																<img src={customModelPreview} alt="Modèle" className="w-full h-auto rounded-lg border border-white/20 max-h-24 object-cover" />
+																<button type="button" onClick={removeCustomModel} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+															</div>
+														)}
 													</div>
 												)}
-												<p className="text-xs text-gray-500 mt-1">Upload an image of the person you want to use as a model</p>
-											</div>
+												{formData.modelType === 'ai' && (
+													<>
+														<div>
+															<label className="block text-xs font-medium text-gray-300 mb-1">Ethnicité</label>
+															<select name="modelEthnicity" value={formData.modelEthnicity} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+																<option value="european">Européen</option>
+																<option value="american">Américain</option>
+																<option value="arab">Arabe</option>
+																<option value="asian">Asiatique</option>
+															</select>
+														</div>
+														<div>
+															<label className="block text-xs font-medium text-gray-300 mb-1">Genre</label>
+															<select name="modelGender" value={formData.modelGender} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+																<option value="female">Femme</option>
+																<option value="male">Homme</option>
+															</select>
+														</div>
+													</>
+												)}
+											</>
 										)}
-										
-										{/* Model Ethnicity (shown when AI model is selected) */}
-										{formData.useModel === 'yes' && formData.modelType === 'ai' && (
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">Model Ethnicity</label>
-								<select
-									name="modelEthnicity"
-									value={formData.modelEthnicity}
-									onChange={handleInputChange}
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-								>
-									<option value="european">European</option>
-									<option value="american">American</option>
-									<option value="arab">Arab</option>
-									<option value="asian">Asian</option>
-								</select>
-							</div>
-						)}
-						
-						{/* Model Gender (shown when AI model is selected) */}
-						{formData.useModel === 'yes' && formData.modelType === 'ai' && (
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">Model Gender</label>
-								<select
-									name="modelGender"
-									value={formData.modelGender}
-									onChange={handleInputChange}
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
-								>
-									<option value="female">Female Model</option>
-									<option value="male">Male Model</option>
-								</select>
-							</div>
-						)}										{/* Caption Language Selection */}
 										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">Caption Language</label>
-											<select
-												value={captionLanguage}
-												onChange={(e) => {
-													const newLang = e.target.value as 'french' | 'arabic';
-													setCaptionLanguage(newLang);
-													// Update caption when language changes
-													if (englishCaption || arabicCaption) {
-														setFormData(prev => ({
-															...prev,
-															caption: newLang === 'french' ? englishCaption : arabicCaption,
-														}));
+											<label className="block text-xs font-medium text-gray-300 mb-1">Texte sur l’image</label>
+											<select name="addText" value={formData.addText} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+												<option value="no">Non</option>
+												<option value="yes">Oui</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							)}
+						</div>
+
+						{/* 4. LÉGENDE */}
+						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
+							<button
+								type="button"
+								onClick={() => toggleSection(4)}
+								className="w-full flex items-center justify-between px-4 py-3 text-left"
+							>
+								<span
+									style={{
+										fontFamily: 'Inter, sans-serif',
+										fontWeight: 900,
+										fontSize: '12px',
+										lineHeight: '15px',
+										letterSpacing: '2px',
+										verticalAlign: 'middle',
+										textTransform: 'uppercase',
+										color: '#9747FF'
+									}}
+								>
+									4. LÉGENDE
+								</span>
+								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(4) ? '▲' : '▼'}</span>
+							</button>
+							{openSections.includes(4) && (
+								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
+									<div>
+										<div className="flex gap-2">
+											<button
+												type="button"
+												onClick={() => {
+													if (captionLanguage === 'french') {
+														setCaptionLanguage(null);
+														setGenerateCaption(false);
+													} else {
+														setCaptionLanguage('french');
+														setGenerateCaption(true);
+														if (englishCaption || arabicCaption) {
+															setFormData(prev => ({ ...prev, caption: englishCaption }));
+														}
 													}
 												}}
-												className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+												className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border"
+												style={{
+													background: captionLanguage === 'french' ? '#9747FF' : '#111118',
+													color: '#FFFFFF',
+													borderColor: captionLanguage === 'french' ? '#9747FF' : '#111118'
+												}}
 											>
-												<option value="french">Français (French)</option>
-												<option value="arabic">العربية (Arabic)</option>
-											</select>
-										</div>
-										
-										{/* Generate Caption Toggle */}
-										<div>
-											<label className="flex items-center space-x-2 cursor-pointer">
-												<input
-													type="checkbox"
-													checked={generateCaption}
-													onChange={(e) => setGenerateCaption(e.target.checked)}
-													className="rounded border-gray-300 text-primary focus:ring-primary"
-												/>
-												<span className="text-sm font-medium text-gray-700">Generate AI Caption</span>
-											</label>
-											<p className="text-xs text-gray-500 mt-1 ml-6">
-												{generateCaption 
-													? 'AI will generate a caption for your post' 
-													: 'You can write your own caption manually'}
-											</p>
-										</div>
-										
-										{/* Add Text Overlay */}
-										<div>
-											<label className="block text-sm font-medium text-gray-700 mb-1">Add Text Overlay</label>
-											<select
-												name="addText"
-												value={formData.addText}
-												onChange={handleInputChange}
-												className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent bg-white"
+												Français
+											</button>
+											<button
+												type="button"
+												onClick={() => {
+													if (captionLanguage === 'arabic') {
+														setCaptionLanguage(null);
+														setGenerateCaption(false);
+													} else {
+														setCaptionLanguage('arabic');
+														setGenerateCaption(true);
+														if (englishCaption || arabicCaption) {
+															setFormData(prev => ({ ...prev, caption: arabicCaption }));
+														}
+													}
+												}}
+												className="flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors border"
+												style={{
+													background: captionLanguage === 'arabic' ? '#9747FF' : '#111118',
+													color: '#FFFFFF',
+													borderColor: captionLanguage === 'arabic' ? '#9747FF' : '#111118'
+												}}
 											>
-												<option value="no">No Text in Image</option>
-												<option value="yes">Yes, Add Descriptive Text</option>
-											</select>
-											{formData.addText === 'yes' && (
-												<p className="mt-1 text-xs text-blue-600">
-													AI will add elegant product description text to the image
-												</p>
-											)}
+												العربية
+											</button>
 										</div>
+										<p className="text-xs text-gray-400 mt-1">
+											{captionLanguage ? 'La légende sera générée automatiquement par l’IA.' : 'Écrivez votre légende manuellement ci-dessous.'}
+										</p>
 									</div>
-								</div>
-							</div>
-						</div>
-						
-						{/* Platform Selection */}
-						<div className="mt-6">
-							<h4 className="font-medium text-gray-900 mb-3">Select Platforms</h4>
-							<div className="grid grid-cols-2 gap-3">
-								{['facebook', 'instagram', 'tiktok', 'twitter'].map((platform) => (
-									<label key={platform} className="flex items-center space-x-2 cursor-pointer">
-										<input
-											type="checkbox"
-											checked={formData.platform.includes(platform)}
-											onChange={() => handlePlatformChange(platform)}
-											className="rounded border-gray-300 text-primary focus:ring-primary"
-										/>
-										<span className="text-sm font-medium text-gray-700 capitalize">{platform}</span>
-									</label>
-								))}
-							</div>
-						</div>
-						
-						{/* Scheduling */}
-						<div className="mt-6">
-							<h4 className="font-medium text-gray-900 mb-3">Schedule (Optional)</h4>
-							<div>
-								<label className="block text-sm font-medium text-gray-700 mb-1">
-									Publish Date & Time (Tunisia Time - GMT+1)
-								</label>
-								<DatePicker
-									selected={selectedDate}
-									onChange={handleDateChange}
-									showTimeSelect
-									timeFormat="HH:mm"
-									timeIntervals={15}
-									dateFormat="MMMM d, yyyy h:mm aa"
-									minDate={new Date()}
-									placeholderText="Select date and time"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
-									wrapperClassName="w-full"
-								/>
-								{selectedDate && (
-									<p className="mt-2 text-xs text-gray-500">
-										Scheduled for: {selectedDate.toLocaleString('en-US', { 
-											timeZone: 'Africa/Tunis',
-											dateStyle: 'full',
-											timeStyle: 'short'
-										})} (Tunisia Time)
-									</p>
-								)}
-							</div>
-						</div>
-
-						{/* Enhanced Image Preview */}
-						{enhancedImagePreview && (
-							<div className="mt-6">
-								<h4 className="font-medium text-gray-900 mb-3">AI Enhanced Image</h4>
-								<div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-lg">
-									<div className="flex items-center gap-2 mb-3">
-										<svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-										</svg>
-										<h4 className="font-semibold text-blue-900">Enhanced Preview</h4>
-										<span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Ready</span>
-									</div>
-									<div className="relative rounded-lg overflow-hidden border-2 border-blue-200 max-w-md mx-auto">
-										<img
-											src={enhancedImagePreview}
-											alt="Enhanced preview"
-											className="w-full h-auto"
+									<div>
+										<label className="block text-xs font-medium text-gray-300 mb-1">Légende</label>
+										<textarea
+											rows={3}
+											name="caption"
+											value={formData.caption}
+											onChange={handleInputChange}
+											placeholder="Votre légende ou laissez l’IA la générer..."
+											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30 placeholder-gray-500"
 										/>
 									</div>
-									<div className="mt-4 grid grid-cols-2 gap-3">
-										<button 
-											type="button"
-											onClick={handleRegenerateImage}
-											disabled={isUploading}
-											className="bg-orange-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-										>
-											<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-											</svg>
-											Regenerate
-										</button>
-										<button 
-											type="button"
-											onClick={handleSaveAndCreatePost}
-											disabled={isUploading}
-											className="bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-										>
-											{isUploading ? (
-												<>
-													<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-														<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-														<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-													</svg>
-													Saving...
-												</>
-											) : (
-												<>
-													<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-													</svg>
-													Save & Post
-												</>
-											)}
-										</button>
-									</div>
 								</div>
-							</div>
-						)}
-
-						{/* Enhance Image Button */}
-						{!enhancedImagePreview && (
-							<div className="mt-4">
-								<button 
-									type="submit"
-									disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
-									className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-								>
-									{isLoading || isUploading ? (
-										<span className="flex items-center justify-center gap-2">
-											<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-												<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-												<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-											</svg>
-											Enhancing Image with AI...
-										</span>
-									) : (
-										<span className="flex items-center justify-center gap-2">
-											<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-											</svg>
-											Enhance Image with AI
-										</span>
-									)}
-								</button>
-								{uploadedImages.length > 0 ? (
-									<p className="mt-2 text-xs text-center text-blue-600">
-										✨ Preview your enhanced image before posting
-									</p>
-								) : (
-									<p className="mt-2 text-xs text-center text-gray-500">
-										📸 Please upload at least one image to continue
-									</p>
-								)}
-							</div>
-						)}
+							)}
+						</div>
+						
 					</div>
-				</div>
+
+					{/* Sidebar footer: enhanced actions + Generate button */}
+					<div className="p-4 border-t border-white/10 space-y-3" style={{ background: '#0E0E13' }}>
+						{enhancedImagePreview && (
+							<div className="flex gap-2">
+								<button
+									type="button"
+									onClick={handleRegenerateImage}
+									disabled={isUploading}
+									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors"
+								>
+									Régénérer
+								</button>
+								<button
+									type="button"
+									onClick={handleSaveAndCreatePost}
+									disabled={isUploading}
+									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
+								>
+									{isUploading ? 'Enregistrement...' : 'Sauvegarder'}
+								</button>
+							</div>
+						)}
+						<button
+							type="submit"
+							disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
+							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							style={{ background: '#9747FF' }}
+						>
+							{isLoading || isUploading ? (
+								<span className="flex items-center justify-center gap-2">
+									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+									</svg>
+									Génération...
+								</span>
+							) : (
+								'GENERE LE POST (1 Token)'
+							)}
+						</button>
+					</div>
+				</aside>
 			</form>
 		</div>
 				

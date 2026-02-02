@@ -282,3 +282,20 @@ body {
 	transform: translateY(-5px);
 	box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
+
+/* CreatePostPage: inputs/selects background #0E0E13 and autofill fix */
+.create-post-form input,
+.create-post-form select,
+.create-post-form textarea {
+	background-color: #0E0E13 !important;
+}
+
+.create-post-form input:-webkit-autofill,
+.create-post-form input:-webkit-autofill:hover,
+.create-post-form input:-webkit-autofill:focus,
+.create-post-form input:-webkit-autofill:active {
+	-webkit-box-shadow: 0 0 0 30px #0E0E13 inset !important;
+	box-shadow: 0 0 0 30px #0E0E13 inset !important;
+	-webkit-text-fill-color: #E0E0E0 !important;
+	transition: background-color 5000s ease-in-out 0s;
+}
