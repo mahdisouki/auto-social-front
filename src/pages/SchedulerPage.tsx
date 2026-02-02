@@ -1,45 +1,57 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeftIcon, ChevronRightIcon, ListIcon } from '../components/icons';
+import { ChevronLeftIcon, ChevronRightIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
 
 export function SchedulerPage() {
 	const navigate = useNavigate();
-	const { posts, isLoading, error, fetchPosts, schedulePost, clearError } = usePostsStore();
+	const { posts, isLoading, error, fetchPosts, clearError } = usePostsStore();
 	
 	// Calendar state
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-	const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
-	// Fetch scheduled posts
+	const DISPLAY_TZ = 'UTC'; // same as DB: 14 in DB → 14 in UI
+
+	// Fetch all posts (we filter for scheduledAt client-side so we don't miss posts with any status)
 	useEffect(() => {
-		fetchPosts({ 
-			status: 'scheduled',
-			limit: 1000 // Get all scheduled posts for the calendar
-		}).catch((err) => {
-			console.error('Failed to fetch scheduled posts:', err);
+		fetchPosts({ limit: 1000 }).catch((err) => {
+			console.error('Failed to fetch posts:', err);
 		});
 	}, [fetchPosts]);
 
 	// Get current month/year
 	const currentMonth = currentDate.getMonth();
 	const currentYear = currentDate.getFullYear();
-	const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+	const monthName = currentDate.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric', timeZone: DISPLAY_TZ });
 
 	// Get first day of month and number of days
 	const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
 	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-	// Get scheduled posts for a specific date
+	// Get local date string (YYYY-MM-DD) to avoid timezone mismatches
+	const toLocalDateString = (d: Date) => {
+		const y = d.getFullYear();
+		const m = String(d.getMonth() + 1).padStart(2, '0');
+		const day = String(d.getDate()).padStart(2, '0');
+		return `${y}-${m}-${day}`;
+	};
+
+	// Get scheduled posts for a specific date (all posts on that day, using local date)
 	const getPostsForDate = (date: Date): Post[] => {
-		const dateStr = date.toISOString().split('T')[0];
+		const dateStr = toLocalDateString(date);
 		return posts.filter(post => {
 			if (!post.scheduledAt) return false;
-			const postDate = new Date(post.scheduledAt).toISOString().split('T')[0];
-			return postDate === dateStr;
+			const postDateStr = toLocalDateString(new Date(post.scheduledAt));
+			return postDateStr === dateStr;
 		});
+	};
+
+	// Get upcoming scheduled posts for a date (only posts whose scheduled time hasn't passed yet)
+	const getUpcomingPostsForDate = (date: Date): Post[] => {
+		const now = new Date();
+		return getPostsForDate(date).filter(post => post.scheduledAt && new Date(post.scheduledAt) > now);
 	};
 
 	// Get all scheduled posts (upcoming)
@@ -70,41 +82,73 @@ export function SchedulerPage() {
 		);
 	};
 
-	// Format time helper
+	// Format time in UTC like MongoDB: "15:00:00"
 	const formatTime = (dateString: string) => {
 		const date = new Date(dateString);
-		return date.toLocaleTimeString('en-US', { 
-			hour: 'numeric', 
-			minute: '2-digit',
-			hour12: true 
-		});
+		const h = date.getUTCHours();
+		const m = date.getUTCMinutes();
+		const s = date.getUTCSeconds();
+		return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 	};
 
-	// Format date helper
+	// Format date in UTC, French locale; time like MongoDB "15:00:00"
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
 		const today = new Date();
 		const tomorrow = new Date(today);
 		tomorrow.setDate(tomorrow.getDate() + 1);
+		const timePart = formatTime(dateString);
 
-		if (date.toDateString() === today.toDateString()) {
-			return `Today, ${formatTime(dateString)}`;
-		} else if (date.toDateString() === tomorrow.toDateString()) {
-			return `Tomorrow, ${formatTime(dateString)}`;
-		} else {
-			return date.toLocaleDateString('en-US', {
-				month: 'short',
-				day: 'numeric',
-				hour: 'numeric',
-				minute: '2-digit',
-				hour12: true
-			});
-		}
+		const dateStrUtc = date.toLocaleDateString('en-CA', { timeZone: DISPLAY_TZ });
+		const todayStrUtc = today.toLocaleDateString('en-CA', { timeZone: DISPLAY_TZ });
+		const tomorrowStrUtc = tomorrow.toLocaleDateString('en-CA', { timeZone: DISPLAY_TZ });
+
+		if (dateStrUtc === todayStrUtc) return `Aujourd'hui, ${timePart}`;
+		if (dateStrUtc === tomorrowStrUtc) return `Demain, ${timePart}`;
+		const datePart = date.toLocaleDateString('fr-FR', {
+			timeZone: DISPLAY_TZ,
+			day: 'numeric',
+			month: 'short'
+		});
+		return `${datePart}, ${timePart}`;
 	};
 
 	// Get platform display name
 	const getPlatformName = (platform: string) => {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
+	};
+
+	// Price with currency (e.g. "29.99 DT" or "19.99 USD")
+	const getPriceWithCurrency = (post: Post) => {
+		if (post.price == null || post.price === '') return null;
+		const currencyLabel = post.currency === 'TND' ? 'DT' : post.currency || '';
+		return `${post.price} ${currencyLabel}`.trim();
+	};
+
+	// Status badge style (dark theme)
+	const getStatusStyle = (status: string) => {
+		switch (status) {
+			case 'posted':
+				return { background: 'rgba(34, 197, 94, 0.25)', color: '#4ADE80' };
+			case 'scheduled':
+				return { background: 'rgba(59, 130, 246, 0.25)', color: '#60A5FA' };
+			case 'draft':
+				return { background: 'rgba(255, 255, 255, 0.08)', color: '#D1D5DB' };
+			case 'failed':
+				return { background: 'rgba(239, 68, 68, 0.25)', color: '#F87171' };
+			default:
+				return { background: 'rgba(255, 255, 255, 0.08)', color: '#D1D5DB' };
+		}
+	};
+
+	const getStatusLabel = (status: string) => {
+		const labels: Record<string, string> = {
+			posted: 'Publié',
+			scheduled: 'Planifié',
+			draft: 'Brouillon',
+			failed: 'Échoué',
+		};
+		return labels[status] ?? status;
 	};
 
 	// Handle date click - show posts for that day
@@ -130,7 +174,7 @@ export function SchedulerPage() {
 	};
 
 	return (
-		<div className="w-full min-h-screen overflow-y-auto py-6 px-4 md:px-6 lg:px-8" style={{ background: '#000000' }}>
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-y-auto py-6 px-4 md:px-6 lg:px-8" style={{ background: '#000000' }}>
 			{/* Error Message */}
 			{error && (
 				<div className="mb-4 p-4 rounded-xl border border-red-500/30 text-red-400" style={{ background: 'rgba(239, 68, 68, 0.1)' }}>
@@ -141,9 +185,9 @@ export function SchedulerPage() {
 				</div>
 			)}
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-				{/* Calendar */}
-				<div className="lg:col-span-2">
+			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full">
+				{/* Calendar - full width of its column */}
+				<div className="lg:col-span-2 w-full min-w-0">
 					<div className="p-6 rounded-2xl overflow-hidden" style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}>
 						<div className="flex items-center justify-between mb-6">
 							<h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>{monthName}</h3>
@@ -200,17 +244,17 @@ export function SchedulerPage() {
 									>
 										<span className={isTodayDate ? 'font-bold' : ''}>{day}</span>
 										{hasPost && (
-											<div className="mt-1 flex flex-wrap gap-0.5 justify-center">
-												{dayPosts.slice(0, 3).map((post) => (
+											<div className="mt-1 flex flex-wrap gap-0.5 justify-center" title={`${dayPosts.length} publication(s)`}>
+												{dayPosts.slice(0, 5).map((post) => (
 													<div
 														key={post._id}
-														className="w-1.5 h-1.5 rounded-full"
+														className="w-2 h-2 rounded-full shrink-0"
 														style={{ background: '#9747FF' }}
 														title={post.caption || post.productName || 'Publication planifiée'}
 													/>
 												))}
-												{dayPosts.length > 3 && (
-													<span className="text-xs text-gray-400">+{dayPosts.length - 3}</span>
+												{dayPosts.length > 5 && (
+													<span className="text-xs text-gray-400">+{dayPosts.length - 5}</span>
 												)}
 											</div>
 										)}
@@ -230,8 +274,8 @@ export function SchedulerPage() {
 				</div>
 
 				{/* Right panel: selected day posts OR upcoming posts */}
-				<div className="flex flex-col min-h-0">
-					<div className="p-6 rounded-2xl overflow-hidden flex flex-col min-h-0" style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}>
+				<div className="flex flex-col min-h-0 w-full min-w-0 lg:min-w-[280px]">
+					<div className="p-6 rounded-2xl overflow-hidden flex flex-col min-h-0 w-full" style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}>
 						{selectedDate ? (
 							<>
 								<div className="flex items-center justify-between gap-2 mb-4 shrink-0 flex-wrap">
@@ -266,12 +310,27 @@ export function SchedulerPage() {
 													className="p-3 rounded-xl transition-colors cursor-pointer border hover:opacity-90"
 													style={{ background: 'rgba(151, 71, 255, 0.15)', borderColor: 'rgba(151, 71, 255, 0.4)' }}
 												>
-													<h4 className="font-medium text-white text-sm line-clamp-2">
-														{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
-													</h4>
+													<div className="flex items-start justify-between gap-2">
+														<h4 className="font-medium text-white text-sm line-clamp-2 flex-1 min-w-0">
+															{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
+														</h4>
+														<span
+															className="shrink-0 px-2 py-0.5 rounded-md text-xs font-medium capitalize"
+															style={getStatusStyle(post.status)}
+														>
+															{getStatusLabel(post.status)}
+														</span>
+													</div>
 													<p className="text-xs text-gray-400 mt-1">
 														{post.scheduledAt && formatTime(post.scheduledAt)}
 													</p>
+													{(post.postType || getPriceWithCurrency(post)) && (
+														<p className="text-xs text-gray-400 mt-0.5">
+															{post.postType && <span>{post.postType}</span>}
+															{post.postType && getPriceWithCurrency(post) && <span> · </span>}
+															{getPriceWithCurrency(post) && <span>{getPriceWithCurrency(post)}</span>}
+														</p>
+													)}
 													<div className="flex items-center gap-2 mt-2 flex-wrap">
 														{post.platform.map((platform) => (
 															<div key={platform} className="flex items-center gap-1">
@@ -304,12 +363,13 @@ export function SchedulerPage() {
 									</div>
 								)}
 								{!isLoading && upcomingPosts.length === 0 && (
-									<div className="text-center py-8">
+									<div className="text-center py-8 px-2">
 										<p className="text-gray-400 text-sm">Aucune publication à venir</p>
+										<p className="text-gray-500 text-xs mt-1">Les posts planifiés apparaîtront ici et les points sur le calendrier.</p>
 										<button
 											onClick={() => navigate('/create')}
-											className="mt-4 text-sm font-medium transition-opacity hover:opacity-90"
-											style={{ color: '#9747FF' }}
+											className="mt-4 px-4 py-2 rounded-xl text-sm font-medium text-white transition-opacity hover:opacity-90"
+											style={{ background: '#9747FF' }}
 										>
 											Planifier une publication
 										</button>
@@ -324,12 +384,27 @@ export function SchedulerPage() {
 												className="p-3 rounded-xl transition-colors cursor-pointer border hover:opacity-90"
 												style={{ background: 'rgba(151, 71, 255, 0.15)', borderColor: 'rgba(151, 71, 255, 0.4)' }}
 											>
-												<h4 className="font-medium text-white text-sm line-clamp-2">
-													{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
-												</h4>
+												<div className="flex items-start justify-between gap-2">
+													<h4 className="font-medium text-white text-sm line-clamp-2 flex-1 min-w-0">
+														{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
+													</h4>
+													<span
+														className="shrink-0 px-2 py-0.5 rounded-md text-xs font-medium capitalize"
+														style={getStatusStyle(post.status)}
+													>
+														{getStatusLabel(post.status)}
+													</span>
+												</div>
 												<p className="text-xs text-gray-400 mt-1">
 													{post.scheduledAt && formatDate(post.scheduledAt)}
 												</p>
+												{(post.postType || getPriceWithCurrency(post)) && (
+													<p className="text-xs text-gray-400 mt-0.5">
+														{post.postType && <span>{post.postType}</span>}
+														{post.postType && getPriceWithCurrency(post) && <span> · </span>}
+														{getPriceWithCurrency(post) && <span>{getPriceWithCurrency(post)}</span>}
+													</p>
+												)}
 												<div className="flex items-center gap-2 mt-2 flex-wrap">
 													{post.platform.map((platform) => (
 														<div key={platform} className="flex items-center gap-1">

@@ -3,7 +3,7 @@ import { PaperAirplaneIcon, CheckIcon, InstagramIcon, FacebookIcon, TwitterIcon 
 
 export function ChatbotPage() {
 	return (
-		<div className="container-max py-6">
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 container-max overflow-y-auto">
 			
 			
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">

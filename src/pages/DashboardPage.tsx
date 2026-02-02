@@ -31,9 +31,9 @@ export function DashboardPage() {
 	}, []);
 
 	// Show loading state
-	if (isLoading && !stats) {
+		if (isLoading && !stats) {
 		return (
-			<div className="w-full py-6 px-4 md:px-6 lg:px-8 relative overflow-hidden" style={{ background: '#000000', minHeight: '100vh', width: '100%' }}>
+			<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 relative overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
 				<div className="flex items-center justify-center h-64">
 					<div 
 						className="animate-spin rounded-full h-12 w-12 border-b-2"
@@ -47,7 +47,7 @@ export function DashboardPage() {
 	// Show error state
 	if (error) {
 		return (
-			<div className="w-full py-6 px-4 md:px-6 lg:px-8 relative overflow-hidden" style={{ background: '#000000', minHeight: '100vh', width: '100%' }}>
+			<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 relative overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
 				<div 
 					className="rounded-lg p-4"
 					style={{
@@ -74,35 +74,32 @@ export function DashboardPage() {
 	}
 
 	return (
-		<div className="w-full py-6 px-4 md:px-6 lg:px-8 relative overflow-hidden" style={{ background: '#000000', minHeight: '100vh', width: '100%' }}>
-			
-
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 relative overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
 			{/* Left side decorative image */}
 			<img 
 				src={dash2Image} 
 				alt="" 
-				className="absolute pointer-events-none object-cover object-left"
+				className="absolute pointer-events-none object-contain object-left rounded-2xl"
 				style={{
-					left: '-20%',
+					left: '-5%',
 					top: '10%',
-					width: '800px',
-					maxHeight: '1000px',
-					height: '100vh',
-					zIndex: 0,
-					borderRadius: '24px'
+					width: 'min(420px, 45vw)',
+					height: 'auto',
+					maxHeight: '70vh',
+					zIndex: 0
 				}}
 			/>
-			{/* Right side decorative image (replaces blur) */}
+			{/* Right side decorative image */}
 			<img 
 				src={dash1Image} 
 				alt="" 
-				className="absolute pointer-events-none object-cover object-right"
+				className="absolute pointer-events-none object-contain object-right rounded-2xl"
 				style={{
-					right: '-10%',
+					right: '-5%',
 					top: '20%',
-					width: '700px',
-					maxHeight: '1000px',
-					height: '80vh',
+					width: 'min(380px, 42vw)',
+					height: 'auto',
+					maxHeight: '65vh',
 					zIndex: 0
 				}}
 			/>

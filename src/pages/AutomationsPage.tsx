@@ -3,7 +3,7 @@ import { LightningIcon, CheckIcon, TrendingUpIcon } from '../components/icons';
 
 export function AutomationsPage() {
 	return (
-		<div className="container-max py-6">
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 container-max overflow-y-auto">
 			
 			
 			{/* Automation Cards */}

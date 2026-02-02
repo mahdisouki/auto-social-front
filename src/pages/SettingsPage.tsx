@@ -153,7 +153,7 @@ export function SettingsPage() {
 	};
 
 	return (
-		<div className="container-max py-6 min-h-[80vh] bg-gray-900/70 backdrop-blur-2xl rounded-2xl settings-page">
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 container-max bg-gray-900/70 backdrop-blur-2xl rounded-2xl settings-page overflow-y-auto">
 			<div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
 				{/* Settings Navigation */}
 				<div className="lg:col-span-1">

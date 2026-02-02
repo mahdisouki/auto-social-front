@@ -66,34 +66,10 @@ export function Topbar({ onMenuToggle, isMenuOpen }: TopbarProps) {
 						className="flex items-center gap-3 px-4 py-2 rounded-lg mt-6"
 						style={{ background: '#0E0E13', border: '1px solid #FFFFFF1A' }}
 					>
-						{/* Social Media Icons */}
-						<div className="flex items-center gap-3">
-							{/* Facebook Icon */}
-							<button className="relative p-2 hover:opacity-80 transition-opacity">
-								<img src={fbIcon} alt="Facebook" className="w-5 h-5" />
-								<div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#9747FF] rounded-full"></div>
-							</button>
-							
-							{/* Instagram Icon */}
-							<button className="p-2 hover:opacity-80 transition-opacity">
-								<img src={instaIcon} alt="Instagram" className="w-5 h-5" />
-							</button>
-							
-							{/* TikTok Icon */}
-							<button className="p-2 hover:opacity-80 transition-opacity">
-								<img src={tikIcon} alt="TikTok" className="w-5 h-5" />
-							</button>
-						</div>
 						
-						{/* Vertical Separator */}
-						<div className="w-px h-6 bg-white opacity-20"></div>
+
 						
-						{/* Notification Icon */}
-						<div className="relative">
-							<button className="p-2 hover:opacity-80 transition-opacity">
-								<img src={bell} alt="Notifications" className="w-4 h-4" />
-							</button>
-						</div>
+						
 						
 						{/* User Profile Image */}
 						<div className="relative" ref={userMenuRef}>

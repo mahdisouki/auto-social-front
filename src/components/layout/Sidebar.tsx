@@ -1,39 +1,60 @@
-import { NavLink, Link } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { 
 	GridIcon, 
 	PlusIcon, 
 	CalendarIcon, 
 	ImageIcon, 
-	ChatIcon, 
-	LightningIcon, 
 	SettingsIcon,
-	ShieldIcon,
-	SparkleIcon
+	CloseIcon,
+	LogoutIcon
 } from '../icons';
 import { useAuthStore } from '../../stores/authStore';
 import logoImage from '../../assets/postoruai.png';
+import creditstarImage from '../../assets/creditstar.png';
 
 const CREDITS_MAX = 100; // max for progress bar display
 
 interface SidebarProps {
 	isOpen: boolean;
 	onClose: () => void;
+	onMenuToggle?: () => void;
 }
 
 const nav = [
-	{ to: '/dashboard', label: 'Tableau de bord', icon: GridIcon },
-	{ to: '/create', label: 'Creation de post', icon: PlusIcon },
+	{ to: '/dashboard', label: 'Dashboard', icon: GridIcon },
+	{ to: '/create', label: 'Créer un Post', icon: PlusIcon },
 	{ to: '/scheduler', label: 'Scheduler', icon: CalendarIcon },
-	{ to: '/posts', label: 'Mes posts', icon: ImageIcon },
-	{ to: '/chatbot', label: 'Chatbot', icon: ChatIcon },
-	{ to: '/automations', label: 'Automations', icon: LightningIcon },
+	{ to: '/posts', label: 'Mes Posts', icon: ImageIcon },
+	// { to: '/chatbot', label: 'Chatbot', icon: ChatIcon },
+	// { to: '/automations', label: 'Automations', icon: LightningIcon },
 	{ to: '/settings', label: 'Paramètres', icon: SettingsIcon },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
-	const user = useAuthStore((s) => s.user);
+export function Sidebar({ isOpen, onClose, onMenuToggle }: SidebarProps) {
+	const navigate = useNavigate();
+	const { user, logout } = useAuthStore();
 	const credits = user?.credits ?? 0;
 	const creditsPercent = Math.min(100, (credits / CREDITS_MAX) * 100);
+	const [userMenuOpen, setUserMenuOpen] = useState(false);
+	const userMenuRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+				setUserMenuOpen(false);
+			}
+		};
+		document.addEventListener('mousedown', handleClickOutside);
+		return () => document.removeEventListener('mousedown', handleClickOutside);
+	}, []);
+
+	const handleLogout = () => {
+		setUserMenuOpen(false);
+		logout();
+		navigate('/login');
+		onClose();
+	};
 
 	return (
 		<>
@@ -48,7 +69,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 			{/* Sidebar */}
 			<aside 
 				className={`
-					fixed inset-y-0 left-0 z-50 w-60 transform transition-transform duration-300 ease-in-out flex flex-col
+					fixed inset-y-0 left-0 z-50 w-60 flex flex-col transform transition-transform duration-300 ease-in-out
 					${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
 				`}
 				style={{
@@ -56,14 +77,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 					borderRight: '1px solid #FFFFFF1A'
 				}}
 			>
-				<div className="px-6 py-6">
-					<div className="flex items-center justify-center">
+				<div className="px-6 py-6 flex items-center justify-between gap-2">
+					<div className="flex-1 flex justify-center min-w-0">
 						<img 
 							src={logoImage} 
 							alt="POSTORY AI" 
 							className="h-auto w-full max-w-[180px] object-contain"
 						/>
 					</div>
+					{onMenuToggle && (
+						<button
+							type="button"
+							onClick={onMenuToggle}
+							className="md:hidden p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 shrink-0"
+							aria-label="Close menu"
+						>
+							<CloseIcon />
+						</button>
+					)}
 				</div>
 				<nav className="px-4 space-y-1 flex-1">
 					{nav.map((item, index) => (
@@ -90,31 +121,89 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 					))}
 				</nav>
 
-				{/* Credit Disponible card - bottom of sidebar */}
-				<div 
-					className="mx-4 mb-6 p-4 rounded-xl"
-					style={{ background: '#0E0E13', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid #FFFFFF1A' }}
-				>
-					<div className="flex items-center justify-between mb-3">
-						<span className="text-gray-300 text-xs font-medium uppercase tracking-wider">Credit Disponible</span>
-						<svg className="w-4 h-4 text-[#9747FF]" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-							<path d="M12 2l1.5 4.5L18 8l-4.5 1.5L12 14l-1.5-4.5L6 8l4.5-1.5L12 2zm0 10l1.5 4.5L18 16l-4.5 1.5L12 22l-1.5-4.5L6 16l4.5-1.5L12 12z" />
-						</svg>
-					</div>
-					<div className="flex items-baseline gap-2 mb-3">
-						<span className="text-white text-2xl font-bold">75</span>
-						<span className="text-white text-sm font-normal">TOKENS</span>
-					</div>
-					<div className="h-2 rounded-full mb-4 overflow-hidden" style={{ background: '#2A2A2A' }}>
-						<div className="h-full rounded-full transition-all" style={{ width: '15%', background: '#9747FF' }} />
-					</div>
-					<button
-						type="button"
-						className="w-full py-2.5 rounded-lg text-white text-sm font-semibold transition-all hover:opacity-90"
-						style={{ background: '#9747FF' }}
+				{/* Credits card */}
+				<div className="p-4 mt-auto space-y-3">
+					<div 
+						className="rounded-xl p-4 border border-white/10"
+						style={{ background: 'rgba(255,255,255,0.05)' }}
 					>
-						Acheter Credit
-					</button>
+						<div className="flex items-center justify-between mb-2">
+							<span className="text-xs font-medium text-gray-400">Credit Disponible</span>
+							<img src={creditstarImage} alt="" className="w-6 h-6 object-contain" />
+						</div>
+						<div className="flex items-baseline gap-1.5 mb-3">
+							<span className="text-2xl font-bold text-white">{credits}</span>
+							<span className="text-sm text-gray-400">TOKENS</span>
+						</div>
+						<div className="h-2 rounded-full bg-gray-700 overflow-hidden mb-4">
+							<div 
+								className="h-full rounded-full transition-all duration-300"
+								style={{ 
+									width: `${creditsPercent}%`, 
+									background: 'linear-gradient(90deg, #6C5CE7, #9747FF)' 
+								}}
+							/>
+						</div>
+						<Link
+							to="/settings?tab=billing"
+							onClick={onClose}
+							className="block w-full py-2.5 rounded-lg text-sm font-medium text-white text-center transition-opacity hover:opacity-90"
+							style={{ backgroundColor: '#6C5CE7' }}
+						>
+							Buy Credit
+						</Link>
+					</div>
+
+					{/* User and Déconnexion */}
+					<div className="relative" ref={userMenuRef}>
+						<button
+							type="button"
+							onClick={() => setUserMenuOpen((prev) => !prev)}
+							className="flex items-center gap-3 w-full rounded-lg p-2 transition-colors hover:bg-white/5"
+						>
+							<div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-white font-semibold text-lg" style={{ background: 'linear-gradient(135deg, #6C5CE7, #9747FF)' }}>
+								{user?.name?.charAt(0).toUpperCase() || '?'}
+							</div>
+							<span className="text-sm font-medium text-white truncate text-left flex-1 min-w-0">{user?.name || 'User'}</span>
+						</button>
+						{userMenuOpen && (
+							<div
+								className="absolute bottom-full left-0 right-0 mb-1 py-3 rounded-xl min-w-[200px] z-50"
+								style={{ background: 'rgba(15, 15, 19, 0.98)', border: '1px solid rgba(255,255,255,0.1)' }}
+							>
+								{/* Header: icon + username + email */}
+								<div className="flex items-center gap-3 px-4 pb-3 mb-3 border-b border-white/10">
+									<div className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-white font-semibold text-lg" style={{ background: 'linear-gradient(135deg, #6C5CE7, #9747FF)' }}>
+										{user?.name?.charAt(0).toUpperCase() || '?'}
+									</div>
+									<div className="min-w-0 flex-1">
+										<p className="text-sm font-semibold text-white truncate">{user?.name || 'User'}</p>
+										<p className="text-xs text-gray-400 truncate">{user?.email || ''}</p>
+									</div>
+								</div>
+								{/* Paramètres */}
+								<Link
+									to="/settings"
+									onClick={() => { setUserMenuOpen(false); onClose(); }}
+									className="flex items-center gap-3 w-full px-4 py-2.5 text-sm font-medium text-gray-200 hover:bg-white/5 hover:text-white transition-colors"
+								>
+									<SettingsIcon />
+									<span>Paramètres</span>
+								</Link>
+								{/* Separator */}
+								<div className="border-t border-white/10 my-1" />
+								{/* Se déconnecter */}
+								<button
+									type="button"
+									onClick={handleLogout}
+									className="flex items-center gap-3 w-full px-4 py-2.5 text-left text-sm font-medium text-red-300 hover:text-red-200 hover:bg-red-500/10 transition-colors"
+								>
+									<LogoutIcon />
+									<span>Se déconnecter</span>
+								</button>
+							</div>
+						)}
+					</div>
 				</div>
 			</aside>
 		</>

@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SearchIcon, EyeIcon } from '../components/icons';
+import { SearchIcon, EyeIcon, TrashIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
 
 export function MyPostsPage() {
 	const navigate = useNavigate();
-	const { posts, isLoading, error, fetchPosts, clearError } = usePostsStore();
+	const { posts, isLoading, error, fetchPosts, deletePost, clearError } = usePostsStore();
 	
 	// Filter and pagination state
 	const [searchQuery, setSearchQuery] = useState('');
@@ -14,6 +14,8 @@ export function MyPostsPage() {
 	const [selectedStatus, setSelectedStatus] = useState<string>('all');
 	const [currentPage, setCurrentPage] = useState(1);
 	const [limit] = useState(10);
+	// Delete confirmation toast: post id when waiting for confirm, null otherwise
+	const [deleteConfirmPostId, setDeleteConfirmPostId] = useState<string | null>(null);
 
 	// Fetch posts on mount and when filters change
 	useEffect(() => {
@@ -67,13 +69,13 @@ export function MyPostsPage() {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
 	};
 
-	// Get status badge color (dark theme)
+	// Get status badge color (dark theme); scheduled = green
 	const getStatusColor = (status: string) => {
 		switch (status) {
 			case 'posted':
-				return 'bg-green-500/30 text-green-200';
+				return 'bg-emerald-500/30 text-emerald-200';
 			case 'scheduled':
-				return 'bg-blue-500/30 text-blue-200';
+				return 'bg-green-500/30 text-green-200';
 			case 'draft':
 				return 'bg-gray-500/30 text-gray-300';
 			case 'failed':
@@ -81,6 +83,28 @@ export function MyPostsPage() {
 			default:
 				return 'bg-gray-500/30 text-gray-300';
 		}
+	};
+
+	const handleDeleteClick = (e: React.MouseEvent, postId: string) => {
+		e.stopPropagation();
+		setDeleteConfirmPostId(postId);
+	};
+
+	const handleDeleteConfirm = async () => {
+		if (!deleteConfirmPostId) return;
+		try {
+			await deletePost(deleteConfirmPostId);
+			setDeleteConfirmPostId(null);
+		} catch (err) {
+			console.error('Failed to delete post:', err);
+		} finally {
+			setDeleteConfirmPostId(null);
+		}
+	};
+
+	const handleDeleteCancel = (e?: React.MouseEvent) => {
+		e?.stopPropagation();
+		setDeleteConfirmPostId(null);
 	};
 
 	// Get first image from post
@@ -98,7 +122,9 @@ export function MyPostsPage() {
 	};
 
 	return (
-		<div className="container-max py-6 min-h-[80vh] bg-gray-900/70 backdrop-blur-2xl rounded-2xl">
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 container-max bg-gray-900/70 backdrop-blur-2xl rounded-2xl overflow-hidden">
+			{/* Scrollable content */}
+			<div className="flex-1 min-h-0 overflow-y-auto">
 			{/* Error Message */}
 			{error && (
 				<div className="mb-4 p-4 bg-red-500/20 border border-red-400/40 rounded-lg backdrop-blur-sm">
@@ -179,13 +205,16 @@ export function MyPostsPage() {
 			)}
 
 			{!isLoading && filteredPosts.length > 0 && (
-				<>
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
 						{filteredPosts.map((post) => (
 							<div 
 								key={post._id} 
 								onClick={() => navigate(`/posts/${post._id}`)}
-								className="overflow-hidden rounded-xl bg-white/5 backdrop-blur-xl border border-white/10 hover:border-white/20 hover:scale-[1.02] transition-all duration-300 cursor-pointer"
+								className={`overflow-hidden rounded-xl backdrop-blur-xl border transition-all duration-300 cursor-pointer hover:scale-[1.02] ${
+									post.status === 'scheduled'
+										? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
+										: 'bg-white/5 border-white/10 hover:border-white/20'
+								}`}
 							>
 								<div className="relative">
 									<img 
@@ -206,22 +235,30 @@ export function MyPostsPage() {
 											</span>
 										))}
 									</div>
-									<div className="absolute top-3 right-3">
+									<div className="absolute top-3 right-3 flex items-center gap-2">
 										<span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
 											{post.status}
 										</span>
+										<button
+											type="button"
+											onClick={(e) => handleDeleteClick(e, post._id)}
+											className="p-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+											title="Supprimer"
+										>
+											<TrashIcon className="w-4 h-4" />
+										</button>
 									</div>
 								</div>
 								<div className="p-4">
-									<h3 className="font-semibold text-gray-100 mb-2 line-clamp-2">
+									<h3 className={`font-semibold mb-2 line-clamp-2 ${post.status === 'scheduled' ? 'text-green-100' : 'text-gray-100'}`}>
 										{post.productName || post.caption?.substring(0, 50) || 'Untitled Post'}
 									</h3>
 									{post.caption && (
-										<p className="text-sm text-gray-400 mb-2 line-clamp-2">
+										<p className={`text-sm mb-2 line-clamp-2 ${post.status === 'scheduled' ? 'text-green-200/90' : 'text-gray-400'}`}>
 											{post.caption}
 										</p>
 									)}
-									<p className="text-sm text-gray-500 mb-3">
+									<p className={`text-sm mb-3 ${post.status === 'scheduled' ? 'text-green-300/80' : 'text-gray-500'}`}>
 										{formatDate(post.publishedAt || post.scheduledAt || post.createdAt)}
 									</p>
 									{post.publishedUrl && (
@@ -237,7 +274,7 @@ export function MyPostsPage() {
 										</a>
 									)}
 									{post.price && post.currency && (
-										<div className="text-sm font-semibold text-gray-200 mb-2">
+										<div className={`text-sm font-semibold mb-2 ${post.status === 'scheduled' ? 'text-green-200' : 'text-gray-200'}`}>
 											{post.currency} {post.price}
 										</div>
 									)}
@@ -245,28 +282,86 @@ export function MyPostsPage() {
 							</div>
 						))}
 					</div>
+			)}
+			</div>
 
-					{/* Pagination */}
-					<div className="mt-6 flex justify-center items-center gap-2">
-						<button
-							onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-							disabled={currentPage === 1 || isLoading}
-							className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Previous
-						</button>
-						<span className="px-4 py-2 text-sm text-gray-400">
-							Page {currentPage}
-						</span>
-						<button
-							onClick={() => setCurrentPage((prev) => prev + 1)}
-							disabled={filteredPosts.length < limit || isLoading}
-							className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-						>
-							Next
-						</button>
+			{/* Pagination - fixed at bottom */}
+			{!isLoading && filteredPosts.length > 0 && (
+				<div className="shrink-0 pt-4 mt-4 border-t border-white/10 flex justify-center items-center gap-2">
+					<button
+						onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+						disabled={currentPage === 1 || isLoading}
+						className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Previous
+					</button>
+					<span className="px-4 py-2 text-sm text-gray-400">
+						Page {currentPage}
+					</span>
+					<button
+						onClick={() => setCurrentPage((prev) => prev + 1)}
+						disabled={filteredPosts.length < limit || isLoading}
+						className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						Next
+					</button>
+				</div>
+			)}
+
+			{/* Delete confirmation toast */}
+			{deleteConfirmPostId && (
+				<div
+					className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0"
+					onClick={handleDeleteCancel}
+					role="presentation"
+				>
+					<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden />
+					<div
+						className="relative w-full max-w-sm rounded-2xl shadow-2xl transition-all duration-200"
+						onClick={(e) => e.stopPropagation()}
+						style={{
+							background: 'linear-gradient(180deg, #1a1a1f 0%, #0e0e13 100%)',
+							border: '1px solid rgba(255,255,255,0.08)',
+							boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.15)',
+						}}
+					>
+						<div className="p-6">
+							<div className="flex items-center gap-4">
+								<div
+									className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+									style={{ background: 'rgba(239, 68, 68, 0.15)' }}
+								>
+									<TrashIcon className="w-6 h-6 text-red-400" />
+								</div>
+								<div>
+									<h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+										Supprimer cette publication ?
+									</h3>
+									<p className="mt-0.5 text-sm text-gray-400">
+										Cette action est irréversible.
+									</p>
+								</div>
+							</div>
+							<div className="mt-6 flex gap-3">
+								<button
+									type="button"
+									onClick={handleDeleteCancel}
+									className="flex-1 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-gray-200 transition-colors hover:bg-white/10"
+								>
+									Annuler
+								</button>
+								<button
+									type="button"
+									onClick={handleDeleteConfirm}
+									className="flex-1 rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+									style={{ background: '#EF4444' }}
+								>
+									Supprimer
+								</button>
+							</div>
+						</div>
 					</div>
-				</>
+				</div>
 			)}
 		</div>
 	);

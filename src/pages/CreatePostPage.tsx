@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import DatePicker from 'react-datepicker';
+import { useNavigate, useLocation } from 'react-router-dom';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import { fr } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
+
+registerLocale('fr', fr);
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import { useAuthStore } from '../stores/authStore';
@@ -9,6 +12,7 @@ import { uploadApi } from '../lib/api';
 
 export function CreatePostPage() {
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { createPost, isLoading, error, clearError } = usePostsStore();
 	const { user } = useAuthStore();
 	
@@ -53,6 +57,18 @@ export function CreatePostPage() {
 		);
 	};
 	
+	// Pre-fill schedule when navigating from Scheduler with scheduledDate (UTC ISO string)
+	useEffect(() => {
+		const scheduledDate = (location.state as { scheduledDate?: string } | null)?.scheduledDate;
+		if (scheduledDate) {
+			const d = new Date(scheduledDate);
+			if (!isNaN(d.getTime())) {
+				setSelectedDate(d);
+				setFormData(prev => ({ ...prev, scheduledAt: scheduledDate }));
+			}
+		}
+	}, [location.state]);
+
 	// Cleanup object URLs when component unmounts
 	useEffect(() => {
 		return () => {
@@ -83,10 +99,16 @@ export function CreatePostPage() {
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);
 		if (date) {
-			// Store the date directly - it's already in Tunisia time from the DatePicker
+			// Save the exact time the user chose (e.g. 13:30) as UTC, so it doesn't shift by timezone
+			const y = date.getFullYear();
+			const m = date.getMonth();
+			const d = date.getDate();
+			const h = date.getHours();
+			const min = date.getMinutes();
+			const utcDate = new Date(Date.UTC(y, m, d, h, min, 0, 0));
 			setFormData(prev => ({
 				...prev,
-				scheduledAt: date.toISOString(),
+				scheduledAt: utcDate.toISOString(),
 			}));
 		} else {
 			setFormData(prev => ({
@@ -460,7 +482,7 @@ export function CreatePostPage() {
 	};
 
 	return (
-		<div className="w-full py-6 px-4 md:px-6 lg:px-8 min-h-screen flex" style={{ background: '#000000' }}>
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-hidden" style={{ background: '#000000' }}>
 			{/* Preview Modal */}
 			{showPreviewModal && (
 				<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPreviewModal(false)}>
@@ -561,12 +583,14 @@ export function CreatePostPage() {
 			
 			{/* Error Message */}
 			{error && (
-				<div className="mb-4 p-4 rounded-lg" style={{ background: '#1A1A22', border: '1px solid rgba(255,255,255,0.1)' }}>
-					<p className="text-sm text-red-400">{error}</p>
+				<div className="shrink-0 w-full">
+					<div className="p-4 rounded-lg mx-4 md:mx-6 lg:mx-8 mt-6" style={{ background: '#1A1A22', border: '1px solid rgba(255,255,255,0.1)' }}>
+						<p className="text-sm text-red-400">{error}</p>
+					</div>
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row lg:items-stretch w-full h-full min-h-0 min-w-0 overflow-hidden">
 				<input
 					id="file-upload"
 					type="file"
@@ -576,7 +600,7 @@ export function CreatePostPage() {
 				/>
 
 				{/* Left/Center: Feed preview card */}
-				<div className="flex-1 flex flex-col items-center min-w-0">
+				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 py-6">
 					<div className="flex flex-wrap items-center gap-3 mb-4">
 						<h2 className="text-white text-sm font-semibold uppercase tracking-wider shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
 							Aperçu du fil
@@ -624,7 +648,7 @@ export function CreatePostPage() {
 							</button>
 						</div>
 					</div>
-					<div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-md">
+					<div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-xl min-h-[580px]">
 						<div className="p-4 border-b border-gray-100">
 							<div className="flex items-center gap-3">
 								{user?.profileImage ? (
@@ -666,24 +690,20 @@ export function CreatePostPage() {
 									</button>
 								</>
 							) : (
-								<div className="flex flex-col items-center justify-center p-8 text-center">
+								<div className="w-full flex flex-col items-center justify-center p-8 text-center min-h-[320px]">
 									<UploadIcon className="w-16 h-16 text-gray-300 mx-auto mb-2" />
 									<p className="text-gray-400 text-sm">Uploadez votre photo produit ici</p>
 									<p className="text-gray-300 text-xs mt-1">ou glissez-déposez</p>
 								</div>
 							)}
 						</div>
-						<div className="flex justify-center gap-8 py-3 text-gray-500 text-sm">
-							<span>J'aime</span>
-							<span>Commenter</span>
-							<span>Partager</span>
-						</div>
+						
 					</div>
 				</div>
 
 				{/* Right: Sidebar with accordion */}
 				<aside
-					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col max-h-[calc(100vh-8rem)]"
+					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col lg:h-full min-h-0"
 					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
 				>
 					<div className="p-4 overflow-y-auto flex-1 space-y-1">
@@ -703,17 +723,20 @@ export function CreatePostPage() {
 										letterSpacing: '2px',
 										verticalAlign: 'middle',
 										textTransform: 'uppercase',
-										color: '#9747FF'
+										color: openSections.includes(1) ? '#9747FF' : '#FFFFFF4D'
 									}}
 								>
 									1. PHOTO DU PRODUIT
 								</span>
-								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(1) ? '▲' : '▼'}</span>
+								<span className="text-xs" style={{ color: openSections.includes(1) ? '#9747FF' : '#FFFFFF4D' }}>{openSections.includes(1) ? '▲' : '▼'}</span>
 							</button>
 							{openSections.includes(1) && (
 								<div
-									className="p-4 flex flex-col items-center justify-center cursor-pointer border-t border-white/10 min-h-[140px]"
-									style={{ background: '#0E0E13' }}
+									className="p-4 flex flex-col items-center justify-center cursor-pointer min-h-[140px] rounded-xl mx-3 mb-3"
+									style={{
+										background: '#0E0E13',
+										border: '1px dotted rgba(255,255,255,0.35)'
+									}}
 									onClick={() => document.getElementById('file-upload')?.click()}
 									onDragOver={handleDragOver}
 									onDrop={handleDrop}
@@ -724,8 +747,10 @@ export function CreatePostPage() {
 										</div>
 									) : (
 										<>
-											<UploadIcon className="w-10 h-10 text-gray-400 mb-2" />
-											<p className="text-white text-sm font-medium">UPLOADER PHOTO PRODUIT</p>
+											<div className="w-14 h-14 rounded-full flex items-center justify-center mb-2 text-gray-400" style={{ background: 'rgba(255,255,255,0.08)' }}>
+												<UploadIcon className="w-7 h-7" />
+											</div>
+											<p className="text-sm font-medium uppercase" style={{ color: '#9CA3AF' }}>UPLOADER PHOTO PRODUIT</p>
 										</>
 									)}
 								</div>
@@ -748,12 +773,12 @@ export function CreatePostPage() {
 										letterSpacing: '2px',
 										verticalAlign: 'middle',
 										textTransform: 'uppercase',
-										color: '#9747FF'
+										color: openSections.includes(2) ? '#9747FF' : '#FFFFFF4D'
 									}}
 								>
 									2. INFORMATIONS PRODUIT
 								</span>
-								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(2) ? '▲' : '▼'}</span>
+								<span className="text-xs" style={{ color: openSections.includes(2) ? '#9747FF' : '#FFFFFF4D' }}>{openSections.includes(2) ? '▲' : '▼'}</span>
 							</button>
 							{openSections.includes(2) && (
 								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
@@ -763,7 +788,8 @@ export function CreatePostPage() {
 											name="postType"
 											value={formData.postType}
 											onChange={handleInputChange}
-											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black"
+											className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
+											style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}
 										>
 											<option value="">Sélectionner</option>
 											<option value="accessories">Accessories</option>
@@ -824,8 +850,8 @@ export function CreatePostPage() {
 												name="currency"
 												value={formData.currency}
 												onChange={handleInputChange}
-												className="px-4 py-2.5 text-sm font-semibold uppercase border-0 border-l border-white/10 focus:ring-0 focus:outline-none cursor-pointer rounded-r-lg"
-												style={{ background: '#0E0E13', color: '#E0E0E0' }}
+												className="px-4 py-2.5 text-sm font-semibold uppercase border-0 border-l focus:ring-0 focus:outline-none cursor-pointer rounded-r-lg"
+												style={{ background: '#0E0E13', color: '#E0E0E0', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
 											>
 												<option value="TND">DT</option>
 												<option value="USD">USD</option>
@@ -837,12 +863,21 @@ export function CreatePostPage() {
 									<div>
 										<label className="block text-xs font-medium text-gray-300 mb-1">Planification</label>
 										<DatePicker
-											selected={selectedDate}
+											selected={
+												formData.scheduledAt
+													? (() => {
+															const d = new Date(formData.scheduledAt);
+															return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
+														})()
+													: selectedDate
+											}
 											onChange={handleDateChange}
 											showTimeSelect
 											timeFormat="HH:mm"
 											timeIntervals={15}
 											dateFormat="d MMM yyyy HH:mm"
+											locale="fr"
+											timeZone="UTC"
 											minDate={new Date()}
 											placeholderText="Date et heure"
 											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
@@ -869,12 +904,12 @@ export function CreatePostPage() {
 										letterSpacing: '2px',
 										verticalAlign: 'middle',
 										textTransform: 'uppercase',
-										color: '#9747FF'
+										color: openSections.includes(3) ? '#9747FF' : '#FFFFFF4D'
 									}}
 								>
 									3. BACKGROUND & SCÈNE
 								</span>
-								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(3) ? '▲' : '▼'}</span>
+								<span className="text-xs" style={{ color: openSections.includes(3) ? '#9747FF' : '#FFFFFF4D' }}>{openSections.includes(3) ? '▲' : '▼'}</span>
 							</button>
 							{openSections.includes(3) && (
 								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
@@ -885,7 +920,8 @@ export function CreatePostPage() {
 												name="backgroundType"
 												value={formData.backgroundType}
 												onChange={handleInputChange}
-												className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
+												className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
+												style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}
 											>
 												<option value="white">Fond blanc</option>
 												<option value="color">Couleur personnalisée</option>
@@ -899,7 +935,7 @@ export function CreatePostPage() {
 										)}
 										<div>
 											<label className="block text-xs font-medium text-gray-300 mb-1">Modèle humain</label>
-											<select name="useModel" value={formData.useModel} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+											<select name="useModel" value={formData.useModel} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 												<option value="no">Non</option>
 												<option value="yes">Oui</option>
 											</select>
@@ -908,7 +944,7 @@ export function CreatePostPage() {
 											<>
 												<div>
 													<label className="block text-xs font-medium text-gray-300 mb-1">Type de modèle</label>
-													<select name="modelType" value={formData.modelType} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+													<select name="modelType" value={formData.modelType} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 														<option value="ai">IA</option>
 														<option value="custom">Image personnalisée</option>
 													</select>
@@ -928,7 +964,7 @@ export function CreatePostPage() {
 													<>
 														<div>
 															<label className="block text-xs font-medium text-gray-300 mb-1">Ethnicité</label>
-															<select name="modelEthnicity" value={formData.modelEthnicity} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+															<select name="modelEthnicity" value={formData.modelEthnicity} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 																<option value="european">Européen</option>
 																<option value="american">Américain</option>
 																<option value="arab">Arabe</option>
@@ -937,7 +973,7 @@ export function CreatePostPage() {
 														</div>
 														<div>
 															<label className="block text-xs font-medium text-gray-300 mb-1">Genre</label>
-															<select name="modelGender" value={formData.modelGender} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+															<select name="modelGender" value={formData.modelGender} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 																<option value="female">Femme</option>
 																<option value="male">Homme</option>
 															</select>
@@ -948,7 +984,7 @@ export function CreatePostPage() {
 										)}
 										<div>
 											<label className="block text-xs font-medium text-gray-300 mb-1">Texte sur l’image</label>
-											<select name="addText" value={formData.addText} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30">
+											<select name="addText" value={formData.addText} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 												<option value="no">Non</option>
 												<option value="yes">Oui</option>
 											</select>
@@ -974,12 +1010,12 @@ export function CreatePostPage() {
 										letterSpacing: '2px',
 										verticalAlign: 'middle',
 										textTransform: 'uppercase',
-										color: '#9747FF'
+										color: openSections.includes(4) ? '#9747FF' : '#FFFFFF4D'
 									}}
 								>
 									4. LÉGENDE
 								</span>
-								<span className="text-xs" style={{ color: '#9747FF' }}>{openSections.includes(4) ? '▲' : '▼'}</span>
+								<span className="text-xs" style={{ color: openSections.includes(4) ? '#9747FF' : '#FFFFFF4D' }}>{openSections.includes(4) ? '▲' : '▼'}</span>
 							</button>
 							{openSections.includes(4) && (
 								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
