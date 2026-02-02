@@ -66,6 +66,19 @@ export function LoginPage() {
 
 	return (
 		<div className="h-screen flex relative overflow-hidden" style={{ background: '#000000' }}>
+			{/* Keep same colors after autofill: black background, white text */}
+			<style>{`
+				.login-form-input:-webkit-autofill,
+				.login-form-input:-webkit-autofill:hover,
+				.login-form-input:-webkit-autofill:focus,
+				.login-form-input:-webkit-autofill:active {
+					-webkit-box-shadow: 0 0 0 1000px #000000 inset !important;
+					box-shadow: 0 0 0 1000px #000000 inset !important;
+					-webkit-text-fill-color: #ffffff !important;
+					transition: background-color 5000s ease-in-out 0s;
+					border: 1px solid #9747FF !important;
+				}
+			`}</style>
 			{/* Blur Circle - Top Left (Behind both columns) */}
 			<div 
 				className="absolute pointer-events-none"
@@ -210,7 +223,7 @@ export function LoginPage() {
 											onChange={handleInputChange}
 											placeholder="ademmhiri489@gmail.com"
 											required
-											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											className="login-form-input w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 text-white placeholder:text-gray-500 text-sm"
 											style={{
 												background: '#000000',
 												border: '1px solid #9747FF'
@@ -235,7 +248,7 @@ export function LoginPage() {
 											onChange={handleInputChange}
 											placeholder="••••••••••••"
 											required
-											className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none transition-all text-white placeholder:text-gray-500 text-sm"
+											className="login-form-input w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 text-white placeholder:text-gray-500 text-sm"
 											style={{
 												background: '#000000',
 												border: '1px solid #9747FF'

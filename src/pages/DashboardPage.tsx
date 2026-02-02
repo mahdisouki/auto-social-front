@@ -1,16 +1,14 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-	ImageIcon, 
-	ChatIcon, 
 
-} from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import sahmIcon from '../assets/sahm.png';
 import calendarImage from '../assets/Group 37391.png';
 import card3Image from '../assets/card3.png';
 import rectangleImage from '../assets/Rectangle 9873.png';
 import card1Image from '../assets/card1.png';
+import dash1Image from '../assets/dash1.png';
+import dash2Image from '../assets/dash2.png';
 
 export function DashboardPage() {
 	const navigate = useNavigate();
@@ -79,25 +77,35 @@ export function DashboardPage() {
 		<div className="w-full py-6 px-4 md:px-6 lg:px-8 relative overflow-hidden" style={{ background: '#000000', minHeight: '100vh', width: '100%' }}>
 			
 
-			{/* Blur Circle - Right Side */}
-			<div 
-				className="absolute pointer-events-none"
+			{/* Left side decorative image */}
+			<img 
+				src={dash2Image} 
+				alt="" 
+				className="absolute pointer-events-none object-cover object-left"
+				style={{
+					left: '-20%',
+					top: '10%',
+					width: '800px',
+					maxHeight: '1000px',
+					height: '100vh',
+					zIndex: 0,
+					borderRadius: '24px'
+				}}
+			/>
+			{/* Right side decorative image (replaces blur) */}
+			<img 
+				src={dash1Image} 
+				alt="" 
+				className="absolute pointer-events-none object-cover object-right"
 				style={{
 					right: '-10%',
 					top: '20%',
 					width: '700px',
-					height: '1000px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 0,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
+					maxHeight: '1000px',
+					height: '80vh',
+					zIndex: 0
 				}}
-			></div>
+			/>
 
 			<div className="relative z-10">
 			{/* Create Post Card */}

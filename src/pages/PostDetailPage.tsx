@@ -53,19 +53,19 @@ export function PostDetailPage() {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
 	};
 
-	// Get status badge color
-	const getStatusColor = (status: string) => {
+	// Get status badge color (dark theme)
+	const getStatusStyle = (status: string) => {
 		switch (status) {
 			case 'posted':
-				return 'bg-green-100 text-green-800';
+				return { background: 'rgba(34, 197, 94, 0.2)', color: '#4ADE80' };
 			case 'scheduled':
-				return 'bg-blue-100 text-blue-800';
+				return { background: 'rgba(59, 130, 246, 0.2)', color: '#60A5FA' };
 			case 'draft':
-				return 'bg-gray-100 text-gray-800';
+				return { background: 'rgba(255, 255, 255, 0.08)', color: '#D1D5DB' };
 			case 'failed':
-				return 'bg-red-100 text-red-800';
+				return { background: 'rgba(239, 68, 68, 0.2)', color: '#F87171' };
 			default:
-				return 'bg-gray-100 text-gray-800';
+				return { background: 'rgba(255, 255, 255, 0.08)', color: '#D1D5DB' };
 		}
 	};
 
@@ -85,23 +85,23 @@ export function PostDetailPage() {
 
 	if (isLoading) {
 		return (
-			<div className="container-max py-6">
-				<div className="flex justify-center items-center py-12">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-				</div>
+			<div className="w-full py-6 px-4 md:px-6 lg:px-8 min-h-screen flex items-center justify-center" style={{ background: '#000000' }}>
+				<div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#9747FF' }} />
 			</div>
 		);
 	}
 
 	if (error || !post) {
 		return (
-			<div className="container-max py-6">
-				<div className="mt-6 text-center">
+			<div className="w-full py-6 px-4 md:px-6 lg:px-8 min-h-screen flex items-center justify-center" style={{ background: '#000000' }}>
+				<div className="text-center">
+					<p className="text-gray-400 mb-4">{error || 'Post not found'}</p>
 					<button
 						onClick={() => navigate('/posts')}
-						className="btn-primary"
+						className="px-6 py-2.5 rounded-xl text-white font-medium transition-colors"
+						style={{ background: '#9747FF' }}
 					>
-						Back to Posts
+						Retour aux posts
 					</button>
 				</div>
 			</div>
@@ -110,20 +110,22 @@ export function PostDetailPage() {
 
 	const images = getPostImages();
 
-	return (
-		<div className="container-max py-6">
-			
+	const cardStyle = { background: '#0E0E13', border: '1px solid #FFFFFF1A', borderRadius: '1rem' };
 
-			<div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+	return (
+		<div className="w-full py-6 px-4 md:px-6 lg:px-8 min-h-screen" style={{ background: '#000000' }}>
+			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
 				{/* Main Content */}
 				<div className="lg:col-span-2 space-y-6">
 					{/* Images */}
 					{images.length > 0 && (
-						<div className="card p-6">
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">Media</h3>
+						<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
+							<h3 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+								Média
+							</h3>
 							<div className={`grid gap-4 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
 								{images.map((image, index) => (
-									<div key={index} className="relative aspect-square rounded-lg overflow-hidden">
+									<div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-white/10">
 										<img
 											src={image}
 											alt={`Post image ${index + 1}`}
@@ -140,33 +142,37 @@ export function PostDetailPage() {
 
 					{/* Caption */}
 					{post.caption && (
-						<div className="card p-6">
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">Caption</h3>
-							<p className="text-gray-700 whitespace-pre-wrap">{post.caption}</p>
+						<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
+							<h3 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+								Légende
+							</h3>
+							<p className="text-gray-300 whitespace-pre-wrap leading-relaxed">{post.caption}</p>
 						</div>
 					)}
 
 					{/* Product Information */}
 					{(post.productName || post.description || post.price) && (
-						<div className="card p-6">
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">Product Information</h3>
-							<div className="space-y-3">
+						<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
+							<h3 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+								Informations produit
+							</h3>
+							<div className="space-y-4">
 								{post.productName && (
 									<div>
-										<label className="text-sm font-medium text-gray-500">Product Name</label>
-										<p className="text-gray-900 mt-1">{post.productName}</p>
+										<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Nom du produit</label>
+										<p className="text-white mt-1">{post.productName}</p>
 									</div>
 								)}
 								{post.description && (
 									<div>
-										<label className="text-sm font-medium text-gray-500">Description</label>
-										<p className="text-gray-700 mt-1 whitespace-pre-wrap">{post.description}</p>
+										<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Description</label>
+										<p className="text-gray-300 mt-1 whitespace-pre-wrap">{post.description}</p>
 									</div>
 								)}
 								{post.price && post.currency && (
 									<div>
-										<label className="text-sm font-medium text-gray-500">Price</label>
-										<p className="text-gray-900 mt-1 font-semibold text-lg">
+										<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Prix</label>
+										<p className="text-white mt-1 font-semibold text-lg">
 											{post.currency} {post.price}
 										</p>
 									</div>
@@ -179,47 +185,55 @@ export function PostDetailPage() {
 				{/* Sidebar */}
 				<div className="space-y-6">
 					{/* Status & Actions */}
-					<div className="card p-6">
+					<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
 						<div className="flex items-center justify-between mb-4">
-							<h3 className="text-lg font-semibold text-gray-900">Status</h3>
-							<span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(post.status)}`}>
+							<h3 className="text-lg font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+								Statut
+							</h3>
+							<span
+								className="px-3 py-1 rounded-lg text-sm font-medium capitalize"
+								style={getStatusStyle(post.status)}
+							>
 								{post.status}
 							</span>
 						</div>
 
-						<div className="space-y-4">
+						<div className="space-y-3">
 							{post.publishedUrl && (
 								<a
 									href={post.publishedUrl}
 									target="_blank"
 									rel="noopener noreferrer"
-									className="block w-full btn-primary text-center"
+									className="block w-full py-2.5 rounded-xl text-white text-center font-medium transition-opacity hover:opacity-90"
+									style={{ background: '#9747FF' }}
 								>
-									View on Platform
+									Voir sur la plateforme
 								</a>
 							)}
 
 							<button
 								onClick={() => navigate('/posts')}
-								className="w-full px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+								className="w-full px-4 py-2.5 rounded-xl text-white border border-white/20 hover:bg-white/5 transition-colors font-medium"
 							>
-								Back to Posts
+								Retour aux posts
 							</button>
 						</div>
 					</div>
 
 					{/* Post Details */}
-					<div className="card p-6">
-						<h3 className="text-lg font-semibold text-gray-900 mb-4">Details</h3>
+					<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
+						<h3 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+							Détails
+						</h3>
 						<div className="space-y-4">
-							{/* Platforms */}
 							<div>
-								<label className="text-sm font-medium text-gray-500">Platforms</label>
+								<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Plateformes</label>
 								<div className="flex flex-wrap gap-2 mt-2">
 									{post.platform.map((platform) => (
 										<span
 											key={platform}
-											className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium"
+											className="px-3 py-1 rounded-lg text-sm font-medium"
+											style={{ background: 'rgba(151, 71, 255, 0.2)', color: '#9747FF' }}
 										>
 											{getPlatformName(platform)}
 										</span>
@@ -227,49 +241,46 @@ export function PostDetailPage() {
 								</div>
 							</div>
 
-							{/* Post Type */}
 							{post.postType && (
 								<div>
-									<label className="text-sm font-medium text-gray-500">Post Type</label>
-									<p className="text-gray-900 mt-1 capitalize">{post.postType}</p>
+									<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Type de post</label>
+									<p className="text-white mt-1 capitalize">{post.postType}</p>
 								</div>
 							)}
 
-							{/* Scheduled Date */}
 							{post.scheduledAt && (
 								<div>
-									<label className="text-sm font-medium text-gray-500">Scheduled For</label>
-									<p className="text-gray-900 mt-1">{formatDate(post.scheduledAt)}</p>
+									<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Planifié pour</label>
+									<p className="text-gray-300 mt-1">{formatDate(post.scheduledAt)}</p>
 								</div>
 							)}
 
-							{/* Published Date */}
 							{post.publishedAt && (
 								<div>
-									<label className="text-sm font-medium text-gray-500">Published At</label>
-									<p className="text-gray-900 mt-1">{formatDate(post.publishedAt)}</p>
+									<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Publié le</label>
+									<p className="text-gray-300 mt-1">{formatDate(post.publishedAt)}</p>
 								</div>
 							)}
 
-							{/* Created Date */}
 							<div>
-								<label className="text-sm font-medium text-gray-500">Created</label>
-								<p className="text-gray-900 mt-1">{formatDate(post.createdAt)}</p>
+								<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Créé le</label>
+								<p className="text-gray-300 mt-1">{formatDate(post.createdAt)}</p>
 							</div>
 
-							{/* Last Updated */}
 							<div>
-								<label className="text-sm font-medium text-gray-500">Last Updated</label>
-								<p className="text-gray-900 mt-1">{formatDate(post.updatedAt)}</p>
+								<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Dernière mise à jour</label>
+								<p className="text-gray-300 mt-1">{formatDate(post.updatedAt)}</p>
 							</div>
 						</div>
 					</div>
 
 					{/* AI Prompt (if available) */}
 					{post.aiPrompt && (
-						<div className="card p-6">
-							<h3 className="text-lg font-semibold text-gray-900 mb-4">AI Prompt</h3>
-							<p className="text-gray-700 text-sm whitespace-pre-wrap">{post.aiPrompt}</p>
+						<div className="p-6 rounded-2xl overflow-hidden" style={cardStyle}>
+							<h3 className="text-lg font-semibold text-white mb-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+								Prompt IA
+							</h3>
+							<p className="text-gray-300 text-sm whitespace-pre-wrap">{post.aiPrompt}</p>
 						</div>
 					)}
 				</div>
