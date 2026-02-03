@@ -321,7 +321,7 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const pythonApiUrl = 'http://localhost:8000';
+			const pythonApiUrl = 'http://ai.postoryai.com';
 			
 			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
 				method: 'POST',
