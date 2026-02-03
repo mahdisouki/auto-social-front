@@ -32,6 +32,7 @@ export function CreatePostPage() {
 		modelEthnicity: 'european',
 		modelGender: 'female',
 		addText: 'no',
+		addPrice: 'no',
 	});
 	
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -50,6 +51,7 @@ export function CreatePostPage() {
 	const [customModelPreview, setCustomModelPreview] = useState<string | null>(null);
 	const [openSections, setOpenSections] = useState<number[]>([1]);
 	const [previewTab, setPreviewTab] = useState<'facebook' | 'instagram'>('facebook');
+	const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
 
 	const toggleSection = (num: number) => {
 		setOpenSections(prev =>
@@ -216,6 +218,16 @@ export function CreatePostPage() {
 		setImagePreviews(prev => prev.filter((_, i) => i !== index));
 	};
 
+	const handleRemoveCurrentImage = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (enhancedImagePreview) {
+			URL.revokeObjectURL(enhancedImagePreview);
+			setEnhancedImageBlob(null);
+			setEnhancedImagePreview(null);
+		}
+		removeImage(0);
+	};
+
 	const handleCustomModelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (!file) return;
@@ -291,6 +303,9 @@ export function CreatePostPage() {
 			}
 			
 			formDataAI.append('add_text', formData.addText);
+			formDataAI.append('add_price', formData.addPrice || 'no');
+			formDataAI.append('price', formData.addPrice === 'yes' ? (formData.price || '') : '');
+			formDataAI.append('currency', formData.addPrice === 'yes' ? (formData.currency || 'TND') : '');
 			formDataAI.append('generate_caption', generateCaption ? 'yes' : 'no');
 			formDataAI.append('caption_language', captionLanguage || 'french');
 			formDataAI.append('post_type', formData.postType || 'other');
@@ -306,7 +321,7 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const pythonApiUrl = 'https://ai.postoryai.com';
+			const pythonApiUrl = 'http://localhost:8000';
 			
 			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
 				method: 'POST',
@@ -332,10 +347,13 @@ export function CreatePostPage() {
 			const enhancedBlob = new Blob([imageArray], { type: 'image/png' });
 			console.log('✅ Image enhanced successfully, size:', enhancedBlob.size);
 
-			// Create preview URL
+			// Create preview URL (revoke previous one when regenerating to avoid leak)
 			const previewUrl = URL.createObjectURL(enhancedBlob);
 			setEnhancedImageBlob(enhancedBlob);
-			setEnhancedImagePreview(previewUrl);
+			setEnhancedImagePreview(prev => {
+				if (prev) URL.revokeObjectURL(prev);
+				return previewUrl;
+			});
 			
 			// Set caption in state
 			const generatedCaption = responseData.caption || '';
@@ -364,18 +382,13 @@ export function CreatePostPage() {
 			alert('Failed to enhance image. Please try again or adjust settings.');
 		} finally {
 			setIsUploading(false);
+			setIsRegeneratingImage(false);
 		}
 	};
 
 	const handleRegenerateImage = () => {
-		// Clean up previous preview
-		if (enhancedImagePreview) {
-			URL.revokeObjectURL(enhancedImagePreview);
-		}
-		setEnhancedImageBlob(null);
-		setEnhancedImagePreview(null);
-		
-		// Trigger new enhancement
+		// Keep current preview visible so container height doesn't collapse; show loading overlay
+		setIsRegeneratingImage(true);
 		handleEnhanceImage();
 	};
 
@@ -648,8 +661,8 @@ export function CreatePostPage() {
 							</button>
 						</div>
 					</div>
-					<div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-xl min-h-[580px]">
-						<div className="p-4 border-b border-gray-100">
+					<div className="bg-white rounded-2xl shadow-xl w-full max-w-xl min-h-[580px] overflow-visible">
+						<div className="p-4 border-b border-gray-100 rounded-t-2xl">
 							<div className="flex items-center gap-3">
 								{user?.profileImage ? (
 									<img
@@ -671,20 +684,48 @@ export function CreatePostPage() {
 							</p>
 						</div>
 						<div
-							className="relative min-h-[320px] flex items-center justify-center bg-gray-50 border-b border-gray-100 cursor-pointer"
+							className="relative min-h-[320px] bg-gray-50 border-b border-gray-100 cursor-pointer rounded-b-2xl flex flex-col items-stretch"
 							onDragOver={handleDragOver}
 							onDrop={handleDrop}
 							onClick={() => document.getElementById('file-upload')?.click()}
 						>
 							{enhancedImagePreview ? (
-								<img src={enhancedImagePreview} alt="" className="w-full h-full min-h-[320px] object-contain" />
-							) : imagePreviews[0] ? (
 								<>
-									<img src={imagePreviews[0]} alt="" className="w-full h-full min-h-[320px] object-contain" />
+									<div className="w-full flex justify-center bg-gray-100 min-h-0">
+										<div className="relative inline-block max-w-full">
+											<img src={enhancedImagePreview} alt="" className="max-w-full h-auto block" />
+											{isRegeneratingImage && (
+												<div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+													<span className="flex items-center gap-2 text-white font-medium">
+														<svg className="animate-spin h-8 w-8" fill="none" viewBox="0 0 24 24">
+															<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+															<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+														</svg>
+														Régénération...
+													</span>
+												</div>
+											)}
+										</div>
+									</div>
 									<button
 										type="button"
-										onClick={(e) => { e.stopPropagation(); removeImage(0); }}
-										className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
+										onClick={handleRemoveCurrentImage}
+										className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 z-10"
+									>
+										×
+									</button>
+								</>
+							) : imagePreviews[0] ? (
+								<>
+									<div className="w-full flex justify-center bg-gray-100 min-h-0">
+										<div className="relative inline-block max-w-full">
+											<img src={imagePreviews[0]} alt="" className="max-w-full h-auto block" />
+										</div>
+									</div>
+									<button
+										type="button"
+										onClick={handleRemoveCurrentImage}
+										className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 z-10"
 									>
 										×
 									</button>
@@ -989,6 +1030,13 @@ export function CreatePostPage() {
 												<option value="yes">Oui</option>
 											</select>
 										</div>
+										<div>
+											<label className="block text-xs font-medium text-gray-300 mb-1">Prix sur l'image</label>
+											<select name="addPrice" value={formData.addPrice} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
+												<option value="no">Non</option>
+												<option value="yes">Oui</option>
+											</select>
+										</div>
 									</div>
 								</div>
 							)}
@@ -1096,10 +1144,20 @@ export function CreatePostPage() {
 								<button
 									type="button"
 									onClick={handleRegenerateImage}
-									disabled={isUploading}
-									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors"
+									disabled={isUploading || isRegeneratingImage}
+									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
 								>
-									Régénérer
+									{isRegeneratingImage ? (
+										<>
+											<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+												<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+												<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+											</svg>
+											Régénération...
+										</>
+									) : (
+										'Régénérer'
+									)}
 								</button>
 								<button
 									type="button"
@@ -1111,24 +1169,26 @@ export function CreatePostPage() {
 								</button>
 							</div>
 						)}
-						<button
-							type="submit"
-							disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
-							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							style={{ background: '#9747FF' }}
-						>
-							{isLoading || isUploading ? (
-								<span className="flex items-center justify-center gap-2">
-									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-									</svg>
-									Génération...
-								</span>
-							) : (
-								'GENERE LE POST (1 Token)'
-							)}
-						</button>
+						{!enhancedImagePreview && (
+							<button
+								type="submit"
+								disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
+								className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								style={{ background: '#9747FF' }}
+							>
+								{isLoading || isUploading ? (
+									<span className="flex items-center justify-center gap-2">
+										<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+										</svg>
+										Génération...
+									</span>
+								) : (
+									'GENERE LE POST (1 Token)'
+								)}
+							</button>
+						)}
 					</div>
 				</aside>
 			</form>
