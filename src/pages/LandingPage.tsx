@@ -12,6 +12,8 @@ import connLeft from '../assets/conn.png';
 import connRight from '../assets/conn2.png';
 import tsawerImage from '../assets/tsawer.png';
 import circle1 from '../assets/circle1.png';
+import landingr from '../assets/landingr.png';
+import landL from '../assets/landL.png';
 
 const LandingPage = () => {
   return (
@@ -223,13 +225,25 @@ const LandingPage = () => {
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize',
-                textAlign: 'center'
+                textAlign: 'center',
+                color: '#3C2C4D'
               }}
             >
-              POURQUOI <span className="text-[#9333EA]">POSTORA AI</span> ?
+              POURQUOI <span 
+                className="text-[#3C2C4D]"
+                style={{
+                  fontFamily: 'Playfair Display, serif',
+                  fontWeight: 400,
+                  fontStyle: 'italic',
+                  fontSize: '64px',
+                  lineHeight: '110%',
+                  letterSpacing: '-1%',
+                  textTransform: 'capitalize'
+                }}
+              >POSTORA AI ?</span>
             </h2>
             <p 
-              className="max-w-3xl mx-auto"
+              className="max-w-6xl mx-auto"
               style={{
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 400,
@@ -238,7 +252,7 @@ const LandingPage = () => {
                 lineHeight: '100%',
                 letterSpacing: '5%',
                 textAlign: 'center',
-                color: '#4B5563'
+                color: '#000000'
               }}
             >
               Postora AI vous aide à gérer, améliorer et programmer vos contenus pour les réseaux sociaux et le web sans perte de temps
@@ -267,7 +281,8 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: "#000000"
                     }}
                   >
                     Générer Du Contenu
@@ -297,7 +312,8 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: "#000000"
                     }}
                   >
                     Multi-Réseaux
@@ -327,7 +343,8 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: "#000000"
                     }}
                   >
                     Optimiser & Analyser
@@ -344,25 +361,20 @@ const LandingPage = () => {
 
       {/* Testimonials Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
-        {/* Right Gradient Background - Circular */}
-        <div 
+        {/* Right Background Image */}
+        <img 
+          src={landingr} 
+          alt="" 
           className="absolute pointer-events-none"
           style={{
             right: '-20%',
-            top: '10%',
-            width: '800px',
-            height: '700px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-            backdropFilter: 'blur(800px)',
-            WebkitBackdropFilter: 'blur(800px)',
-            zIndex: 0,
-            maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            filter: 'blur(60px)',
-            WebkitFilter: 'blur(60px)'
+            top: '5%',
+            width: '1200px',
+            height: '1000px',
+            objectFit: 'contain',
+            zIndex: 0
           }}
-        ></div>
+        />
         <div className="max-w-7xl mx-auto relative" style={{ zIndex: 10 }}>
           {/* Section Header */}
           <div className="text-center mb-16">
@@ -372,7 +384,7 @@ const LandingPage = () => {
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '42px',
+                fontSize: '48px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize'
@@ -380,7 +392,7 @@ const LandingPage = () => {
             >
               ILS NOUS FONT CONFIANCE
             </h2>
-            <p className="text-white text-md">
+            <p className="text-[#D3D3D3] text-md">
               Postora AI vous aide à générer, améliorer et programmer vos contenus pour les réseaux sociaux et le web, sans perdre de temps.
             </p>
           </div>
@@ -673,25 +685,20 @@ const LandingPage = () => {
 
       {/* FAQ and Footer Container */}
       <div className="relative" style={{ background: '#000000' }}>
-        {/* Left Gradient Background - Circular */}
-        <div 
+        {/* Left Background Image */}
+        <img 
+          src={landL} 
+          alt="" 
           className="absolute pointer-events-none"
           style={{
             left: '-10%',
-            top: '20%',
-            width: '500px',
-            height: '800px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-            backdropFilter: 'blur(800px)',
-            WebkitBackdropFilter: 'blur(800px)',
-            zIndex: 0,
-            maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            filter: 'blur(60px)',
-            WebkitFilter: 'blur(60px)'
+            top: '5%',
+            width: '900px',
+            height: '900px',
+            objectFit: 'contain',
+            zIndex: 0
           }}
-        ></div>
+        />
 
       {/* FAQ Section */}
       <section 

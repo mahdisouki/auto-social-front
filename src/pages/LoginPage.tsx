@@ -4,6 +4,8 @@ import { GoogleIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
 import sunglassesImage from '../assets/Rectangle 9873.png';
 import bannerImage from '../assets/Frame 2147227131.png';
+import LoginR from '../assets/LoginR.png';
+import LoginL from '../assets/LoginL.png';
 
 export function LoginPage() {
 	const navigate = useNavigate();
@@ -79,45 +81,36 @@ export function LoginPage() {
 					border: 1px solid #9747FF !important;
 				}
 			`}</style>
-			{/* Blur Circle - Top Left (Behind both columns) */}
-			<div 
+			{/* Background Image - Top Left */}
+			<img 
+				src={LoginL} 
+				alt="" 
 				className="absolute pointer-events-none"
 				style={{
-					left: '20%',
-					top: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
+					left: '15%',
+					top: '-20%',
+					width: '1500px',
+					height: '700px',
+					objectFit: 'contain',
+					zIndex: 0,
+					transform: 'rotate(270deg)'
 				}}
-			></div>
+			/>
 
-			{/* Blur Circle - Bottom Right (Behind both columns) */}
-			<div 
+			{/* Background Image - Bottom Right */}
+			<img 
+				src={LoginR} 
+				alt="" 
 				className="absolute pointer-events-none"
 				style={{
 					right: '-10%',
 					bottom: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
+					width: '800px',
+					height: '700px',
+					objectFit: 'contain',
+					zIndex: 10
 				}}
-			></div>
+			/>
 
 			{/* Left Column - Product Image Only */}
 			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
@@ -287,12 +280,7 @@ export function LoginPage() {
 				</div>
 			</div>
 
-			{/* Help Icon */}
-			<div className="fixed bottom-6 right-6">
-				<button className="w-12 h-12 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
-					<span className="text-gray-600 font-bold">?</span>
-				</button>
-			</div>
+			
 		</div>
 	);
 }
