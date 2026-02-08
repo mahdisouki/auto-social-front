@@ -7,6 +7,31 @@ import 'react-datepicker/dist/react-datepicker.css';
 registerLocale('fr', fr);
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
+import accScene1 from '../assets/accessoires/1.jpg';
+import accScene2 from '../assets/accessoires/2.jpg';
+import accScene3 from '../assets/accessoires/3.jpg';
+import accScene4 from '../assets/accessoires/4.jpg';
+import clothScene1 from '../assets/cloths/1.jpg';
+import clothScene2 from '../assets/cloths/2.jpg';
+import clothScene3 from '../assets/cloths/3.jpg';
+import beauteScene1 from '../assets/beauté/1.jpg';
+import beauteScene2 from '../assets/beauté/2.jpg';
+import beauteScene3 from '../assets/beauté/3.jpg';
+import beauteScene4 from '../assets/beauté/4.jpg';
+import elecScene1 from '../assets/electronics/1.jpg';
+import elecScene2 from '../assets/electronics/2.jpg';
+import elecScene3 from '../assets/electronics/3.jpg';
+import elecScene4 from '../assets/electronics/4.jpg';
+import elecScene5 from '../assets/electronics/5.jpg';
+import fournScene1 from '../assets/fourniture/1.jpg';
+import fournScene2 from '../assets/fourniture/2.png';
+import fournScene3 from '../assets/fourniture/3.jpg';
+import sportScene1 from '../assets/sports/1.jpg';
+import sportScene2 from '../assets/sports/2.jpg';
+import sportScene3 from '../assets/sports/3.jpg';
+import sportScene4 from '../assets/sports/4.jpg';
+import sportScene5 from '../assets/sports/5.jpg';
+import sportScene6 from '../assets/sports/6.jpg';
 import { useAuthStore } from '../stores/authStore';
 import { uploadApi } from '../lib/api';
 
@@ -21,12 +46,13 @@ export function CreatePostPage() {
 		description: '',
 		price: '',
 		postType: '',
-		currency: 'TND',
+		currency: 'DT',
 		caption: '',
 		platform: [] as string[],
 		scheduledAt: '',
-		backgroundType: 'white',
+		backgroundType: 'color',
 		backgroundColor: '#ffffff',
+		sceneId: '',
 		useModel: 'no',
 		modelType: 'ai',
 		modelEthnicity: 'european',
@@ -52,6 +78,7 @@ export function CreatePostPage() {
 	const [openSections, setOpenSections] = useState<number[]>([1]);
 	const [previewTab, setPreviewTab] = useState<'facebook' | 'instagram'>('facebook');
 	const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
+	const [backgroundTab, setBackgroundTab] = useState<'color' | 'scene' | 'personnaliser'>('color');
 
 	const toggleSection = (num: number) => {
 		setOpenSections(prev =>
@@ -282,6 +309,45 @@ export function CreatePostPage() {
 			formDataAI.append('file', file);
 			formDataAI.append('background_type', formData.backgroundType);
 			formDataAI.append('background_color', formData.backgroundColor);
+			formDataAI.append('scene_id', formData.sceneId || '');
+			// Scene reference: use images directly from asset folders (same as displayed in UI)
+			if (formData.backgroundType === 'scene' && formData.sceneId) {
+				const sceneMap: Record<string, { url: string; ext: string; mime: string }> = {
+					acc_1: { url: accScene1, ext: 'jpg', mime: 'image/jpeg' },
+					acc_2: { url: accScene2, ext: 'jpg', mime: 'image/jpeg' },
+					acc_3: { url: accScene3, ext: 'jpg', mime: 'image/jpeg' },
+					acc_4: { url: accScene4, ext: 'jpg', mime: 'image/jpeg' },
+					cloth_1: { url: clothScene1, ext: 'jpg', mime: 'image/jpeg' },
+					cloth_2: { url: clothScene2, ext: 'jpg', mime: 'image/jpeg' },
+					cloth_3: { url: clothScene3, ext: 'jpg', mime: 'image/jpeg' },
+					beauty_1: { url: beauteScene1, ext: 'jpg', mime: 'image/jpeg' },
+					beauty_2: { url: beauteScene2, ext: 'jpg', mime: 'image/jpeg' },
+					beauty_3: { url: beauteScene3, ext: 'jpg', mime: 'image/jpeg' },
+					beauty_4: { url: beauteScene4, ext: 'jpg', mime: 'image/jpeg' },
+					elec_1: { url: elecScene1, ext: 'jpg', mime: 'image/jpeg' },
+					elec_2: { url: elecScene2, ext: 'jpg', mime: 'image/jpeg' },
+					elec_3: { url: elecScene3, ext: 'jpg', mime: 'image/jpeg' },
+					elec_4: { url: elecScene4, ext: 'jpg', mime: 'image/jpeg' },
+					elec_5: { url: elecScene5, ext: 'jpg', mime: 'image/jpeg' },
+					fourn_1: { url: fournScene1, ext: 'jpg', mime: 'image/jpeg' },
+					fourn_2: { url: fournScene2, ext: 'png', mime: 'image/png' },
+					fourn_3: { url: fournScene3, ext: 'jpg', mime: 'image/jpeg' },
+					sport_1: { url: sportScene1, ext: 'jpg', mime: 'image/jpeg' },
+					sport_2: { url: sportScene2, ext: 'jpg', mime: 'image/jpeg' },
+					sport_3: { url: sportScene3, ext: 'jpg', mime: 'image/jpeg' },
+					sport_4: { url: sportScene4, ext: 'jpg', mime: 'image/jpeg' },
+					sport_5: { url: sportScene5, ext: 'jpg', mime: 'image/jpeg' },
+					sport_6: { url: sportScene6, ext: 'jpg', mime: 'image/jpeg' },
+				};
+				const scene = sceneMap[formData.sceneId];
+				if (scene) {
+					const sceneRes = await fetch(scene.url);
+					const sceneBlob = await sceneRes.blob();
+					const sceneFile = new File([sceneBlob], `scene-ref-${formData.sceneId}.${scene.ext}`, { type: sceneBlob.type || scene.mime });
+					formDataAI.append('scene_reference', sceneFile);
+					console.log(`   ✅ Sending scene reference: ${formData.sceneId}.${scene.ext}`);
+				}
+			}
 			formDataAI.append('use_model', formData.useModel);
 			formDataAI.append('model_type', formData.modelType);
 			
@@ -305,7 +371,7 @@ export function CreatePostPage() {
 			formDataAI.append('add_text', formData.addText);
 			formDataAI.append('add_price', formData.addPrice || 'no');
 			formDataAI.append('price', formData.addPrice === 'yes' ? (formData.price || '') : '');
-			formDataAI.append('currency', formData.addPrice === 'yes' ? (formData.currency || 'TND') : '');
+			formDataAI.append('currency', formData.addPrice === 'yes' ? (formData.currency || 'DT') : '');
 			formDataAI.append('generate_caption', generateCaption ? 'yes' : 'no');
 			formDataAI.append('caption_language', captionLanguage || 'french');
 			formDataAI.append('post_type', formData.postType || 'other');
@@ -321,7 +387,7 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const pythonApiUrl = 'https://ai.postoryai.com';
+			const pythonApiUrl = 'http://localhost:8000';
 			
 			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
 				method: 'POST',
@@ -744,10 +810,10 @@ export function CreatePostPage() {
 
 				{/* Right: Sidebar with accordion */}
 				<aside
-					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col lg:h-full min-h-0"
+					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-none lg:h-full"
 					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
 				>
-					<div className="p-4 overflow-y-auto flex-1 space-y-1">
+					<div className="p-4 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-1">
 						{/* 1. PHOTO DU PRODUIT */}
 						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
 							<button
@@ -828,7 +894,10 @@ export function CreatePostPage() {
 										<select
 											name="postType"
 											value={formData.postType}
-											onChange={handleInputChange}
+											onChange={(e) => {
+												const value = e.target.value;
+												setFormData(prev => ({ ...prev, postType: value, sceneId: prev.postType !== value ? '' : prev.sceneId }));
+											}}
 											className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
 											style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}
 										>
@@ -894,9 +963,9 @@ export function CreatePostPage() {
 												className="px-4 py-2.5 text-sm font-semibold uppercase border-0 border-l focus:ring-0 focus:outline-none cursor-pointer rounded-r-lg"
 												style={{ background: '#0E0E13', color: '#E0E0E0', borderLeft: '1px solid rgba(255,255,255,0.1)' }}
 											>
-												<option value="TND">DT</option>
-												<option value="USD">USD</option>
-												<option value="EUR">EUR</option>
+												<option value="DT">DT</option>
+												<option value="$">USD</option>
+												<option value="€">EUR</option>
 											</select>
 										</div>
 									</div>
@@ -955,53 +1024,280 @@ export function CreatePostPage() {
 							{openSections.includes(3) && (
 								<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
 									<div className="space-y-3">
-										<div>
-											<label className="block text-xs font-medium text-gray-300 mb-1">Type de fond</label>
-											<select
-												name="backgroundType"
-												value={formData.backgroundType}
-												onChange={handleInputChange}
-												className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
-												style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}
+										<label className="block text-xs font-medium text-gray-300 mb-1 uppercase tracking-wider">Type de fond</label>
+										{/* Segmented control: COULEURS (default) / SCÈNES / PERSONNALISER */}
+										<div
+											className="flex items-center gap-0 p-1 rounded-xl w-full flex-wrap"
+											style={{ background: '#1A1A1A' }}
+										>
+											<button
+												type="button"
+												onClick={() => { setBackgroundTab('color'); setFormData(prev => ({ ...prev, backgroundType: 'color' })); }}
+												className="flex-1 min-w-0 py-2 px-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all"
+												style={{
+													fontFamily: 'Inter, sans-serif',
+													background: backgroundTab === 'color' ? '#9747FF' : 'transparent',
+													color: backgroundTab === 'color' ? '#FFFFFF' : '#A0A0A0',
+													boxShadow: backgroundTab === 'color' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+												}}
 											>
-												<option value="white">Fond blanc</option>
-												<option value="color">Couleur personnalisée</option>
-											</select>
+												Couleurs
+											</button>
+											<button
+												type="button"
+												onClick={() => { setBackgroundTab('scene'); setFormData(prev => ({ ...prev, backgroundType: 'scene' })); }}
+												className="flex-1 min-w-0 py-2 px-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all"
+												style={{
+													fontFamily: 'Inter, sans-serif',
+													background: backgroundTab === 'scene' ? '#9747FF' : 'transparent',
+													color: backgroundTab === 'scene' ? '#FFFFFF' : '#A0A0A0',
+													boxShadow: backgroundTab === 'scene' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+												}}
+											>
+												Scènes
+											</button>
+											<button
+												type="button"
+												onClick={() => setBackgroundTab('personnaliser')}
+												className="flex-1 min-w-0 py-2 px-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all"
+												style={{
+													fontFamily: 'Inter, sans-serif',
+													background: backgroundTab === 'personnaliser' ? '#9747FF' : 'transparent',
+													color: backgroundTab === 'personnaliser' ? '#FFFFFF' : '#A0A0A0',
+													boxShadow: backgroundTab === 'personnaliser' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+												}}
+											>
+												Personnaliser
+											</button>
 										</div>
-										{formData.backgroundType === 'color' && (
+										{backgroundTab === 'scene' && (
+											<div className="space-y-4">
+												<p className="text-xs text-gray-400 mb-2">Choisissez une scène</p>
+												{formData.postType === 'clothing' && (
+													<div>
+														<div className="grid grid-cols-3 gap-3">
+															<button
+																type="button"
+																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_1' }))}
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
+																	borderColor: formData.sceneId === 'cloth_1' ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																	boxShadow: formData.sceneId === 'cloth_1' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																}}
+															>
+																<img src={clothScene1} alt="Vêtements 1" className="w-full aspect-square object-cover" />
+																{formData.sceneId === 'cloth_1' && (
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
+															<button
+																type="button"
+																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_2' }))}
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
+																	borderColor: formData.sceneId === 'cloth_2' ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																	boxShadow: formData.sceneId === 'cloth_2' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																}}
+															>
+																<img src={clothScene2} alt="Vêtements 2" className="w-full aspect-square object-cover" />
+																{formData.sceneId === 'cloth_2' && (
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
+															<button
+																type="button"
+																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_3' }))}
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
+																	borderColor: formData.sceneId === 'cloth_3' ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																	boxShadow: formData.sceneId === 'cloth_3' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																}}
+															>
+																<img src={clothScene3} alt="Vêtements 3" className="w-full aspect-square object-cover" />
+																{formData.sceneId === 'cloth_3' && (
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
+														</div>
+													</div>
+												)}
+												{formData.postType === 'accessories' && (
+													<div>
+														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Accessoires</p>
+														<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+															{[{ id: 'acc_1', src: accScene1, alt: 'Accessoires 1' }, { id: 'acc_2', src: accScene2, alt: 'Accessoires 2' }, { id: 'acc_3', src: accScene3, alt: 'Accessoires 3' }, { id: 'acc_4', src: accScene4, alt: 'Accessoires 4' }].map(({ id, src, alt }) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType === 'beauty' && (
+													<div>
+														<div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+															{[{ id: 'beauty_1', src: beauteScene1, alt: 'Beauté 1' }, { id: 'beauty_2', src: beauteScene2, alt: 'Beauté 2' }, { id: 'beauty_3', src: beauteScene3, alt: 'Beauté 3' }, { id: 'beauty_4', src: beauteScene4, alt: 'Beauté 4' }].map(({ id, src, alt }) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType === 'electronics' && (
+													<div>
+														<div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+															{[{ id: 'elec_1', src: elecScene1, alt: 'Électronique 1' }, { id: 'elec_2', src: elecScene2, alt: 'Électronique 2' }, { id: 'elec_3', src: elecScene3, alt: 'Électronique 3' }, { id: 'elec_4', src: elecScene4, alt: 'Électronique 4' }, { id: 'elec_5', src: elecScene5, alt: 'Électronique 5' }].map(({ id, src, alt }) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType === 'furniture' && (
+													<div>
+														<div className="grid grid-cols-3 gap-3">
+															{[{ id: 'fourn_1', src: fournScene1, alt: 'Meubles 1' }, { id: 'fourn_2', src: fournScene2, alt: 'Meubles 2' }, { id: 'fourn_3', src: fournScene3, alt: 'Meubles 3' }].map(({ id, src, alt }) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType === 'sports' && (
+													<div>
+														<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+															{[{ id: 'sport_1', src: sportScene1, alt: 'Sports 1' }, { id: 'sport_2', src: sportScene2, alt: 'Sports 2' }, { id: 'sport_3', src: sportScene3, alt: 'Sports 3' }, { id: 'sport_4', src: sportScene4, alt: 'Sports 4' }, { id: 'sport_5', src: sportScene5, alt: 'Sports 5' }, { id: 'sport_6', src: sportScene6, alt: 'Sports 6' }].map(({ id, src, alt }) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType && formData.postType !== 'clothing' && formData.postType !== 'accessories' && formData.postType !== 'beauty' && formData.postType !== 'electronics' && formData.postType !== 'furniture' && formData.postType !== 'sports' && (
+													<p className="text-xs text-gray-500">Les scènes sont disponibles pour les types « Vêtements », « Accessoires », « Beauté », « Électronique », « Meubles » et « Sports ».</p>
+												)}
+												{!formData.postType && (
+													<p className="text-xs text-gray-500">Sélectionnez un type de post pour afficher les scènes (Vêtements, Accessoires, Beauté, Électronique, Meubles, Sports).</p>
+												)}
+											</div>
+										)}
+										{backgroundTab === 'color' && (
 											<div className="flex gap-2">
 												<input type="color" name="backgroundColor" value={formData.backgroundColor} onChange={handleInputChange} className="h-9 w-14 rounded cursor-pointer border border-white/20" />
 												<input type="text" name="backgroundColor" value={formData.backgroundColor} onChange={handleInputChange} placeholder="#ffffff" className="flex-1 px-3 py-2 rounded-lg text-white text-sm border border-white/20 bg-black/30 placeholder-gray-500" />
 											</div>
 										)}
-										<div>
-											<label className="block text-xs font-medium text-gray-300 mb-1">Modèle humain</label>
-											<select name="useModel" value={formData.useModel} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
-												<option value="no">Non</option>
-												<option value="yes">Oui</option>
-											</select>
-										</div>
-										{formData.useModel === 'yes' && (
-											<>
+										{backgroundTab === 'personnaliser' && (
+											<div className="space-y-3 pt-1">
+												<p className="text-xs text-gray-400 uppercase tracking-wider">Configuration IA / modèle</p>
 												<div>
-													<label className="block text-xs font-medium text-gray-300 mb-1">Type de modèle</label>
-													<select name="modelType" value={formData.modelType} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
-														<option value="ai">IA</option>
-														<option value="custom">Image personnalisée</option>
+													<label className="block text-xs font-medium text-gray-300 mb-1">Modèle humain</label>
+													<select name="useModel" value={formData.useModel} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
+														<option value="no">Non</option>
+														<option value="yes">Oui</option>
 													</select>
 												</div>
-												{formData.modelType === 'custom' && (
-													<div>
-														<input type="file" accept="image/*" onChange={handleCustomModelUpload} className="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-purple-500/20 file:text-purple-300" />
-														{customModelPreview && (
-															<div className="mt-2 relative max-w-full">
-																<img src={customModelPreview} alt="Modèle" className="w-full h-auto rounded-lg border border-white/20 max-h-24 object-cover" />
-																<button type="button" onClick={removeCustomModel} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+												{formData.useModel === 'yes' && (
+													<>
+														<div>
+															<label className="block text-xs font-medium text-gray-300 mb-1">Type de modèle</label>
+															<select name="modelType" value={formData.modelType} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
+																<option value="ai">IA</option>
+																<option value="custom">Image personnalisée</option>
+															</select>
+														</div>
+														{formData.modelType === 'custom' && (
+															<div>
+																<input type="file" accept="image/*" onChange={handleCustomModelUpload} className="w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:bg-purple-500/20 file:text-purple-300" />
+																{customModelPreview && (
+																	<div className="mt-2 relative max-w-full">
+																		<img src={customModelPreview} alt="Modèle" className="w-full h-auto rounded-lg border border-white/20 max-h-24 object-cover" />
+																		<button type="button" onClick={removeCustomModel} className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">×</button>
+																	</div>
+																)}
 															</div>
 														)}
-													</div>
-												)}
-												{formData.modelType === 'ai' && (
+														{formData.modelType === 'ai' && (
 													<>
 														<div>
 															<label className="block text-xs font-medium text-gray-300 mb-1">Ethnicité</label>
@@ -1023,19 +1319,24 @@ export function CreatePostPage() {
 												)}
 											</>
 										)}
-										<div>
-											<label className="block text-xs font-medium text-gray-300 mb-1">Texte sur l’image</label>
+											</div>
+										)}
+										{/* Texte / Prix sur l'image — visibles pour tous les types de fond */}
+										<div className="grid grid-cols-2 gap-3 pt-1">
+											<div>
+												<label className="block text-xs font-medium text-gray-300 mb-1">Texte sur l’image</label>
 											<select name="addText" value={formData.addText} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
 												<option value="no">Non</option>
 												<option value="yes">Oui</option>
 											</select>
 										</div>
-										<div>
-											<label className="block text-xs font-medium text-gray-300 mb-1">Prix sur l'image</label>
-											<select name="addPrice" value={formData.addPrice} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
-												<option value="no">Non</option>
-												<option value="yes">Oui</option>
-											</select>
+											<div>
+												<label className="block text-xs font-medium text-gray-300 mb-1">Prix sur l'image</label>
+												<select name="addPrice" value={formData.addPrice} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
+													<option value="no">Non</option>
+													<option value="yes">Oui</option>
+												</select>
+											</div>
 										</div>
 									</div>
 								</div>

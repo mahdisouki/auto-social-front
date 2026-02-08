@@ -73,9 +73,9 @@ export function SignupPage() {
 				alt="" 
 				className="absolute pointer-events-none"
 				style={{
-					left: '15%',
-					top: '-20%',
-					width: '1500px',
+					left: '10%',
+					top: '-40%',
+					width: '1400px',
 					height: '700px',
 					objectFit: 'contain',
 					zIndex: 0,
