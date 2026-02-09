@@ -67,36 +67,54 @@ export function SignupPage() {
 
 	return (
 		<div className="h-screen flex relative overflow-hidden" style={{ background: '#000000' }}>
+			<style>{`
+				/* Signup background images: mobile - one top-left, one bottom-right */
+				.signup-bg-left {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+					left: 0;
+					top: 0;
+					width: 300px;
+					height: 300px;
+					transform: rotate(270deg);
+					opacity: 0.6;
+				}
+				.signup-bg-right {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+					right: 0;
+					bottom: 0;
+					width: 300px;
+					height: 300px;
+					opacity: 0.6;
+				}
+
+				/* Signup background images: desktop (md and up) */
+				@media (min-width: 768px) {
+					.signup-bg-left {
+						left: 10%;
+						top: -40%;
+						width: 1400px;
+						height: 700px;
+						opacity: 1;
+					}
+					.signup-bg-right {
+						right: -10%;
+						bottom: 0%;
+						width: 800px;
+						height: 700px;
+						z-index: 10;
+						opacity: 1;
+					}
+				}
+			`}</style>
 			{/* Background Image - Top Left */}
-			<img 
-				src={LoginL} 
-				alt="" 
-				className="absolute pointer-events-none"
-				style={{
-					left: '10%',
-					top: '-40%',
-					width: '1400px',
-					height: '700px',
-					objectFit: 'contain',
-					zIndex: 0,
-					transform: 'rotate(270deg)'
-				}}
-			/>
+			<img src={LoginL} alt="" className="signup-bg-left" />
 
 			{/* Background Image - Bottom Right */}
-			<img 
-				src={LoginR} 
-				alt="" 
-				className="absolute pointer-events-none"
-				style={{
-					right: '-10%',
-					bottom: '0%',
-					width: '800px',
-					height: '700px',
-					objectFit: 'contain',
-					zIndex: 10
-				}}
-			/>
+			<img src={LoginR} alt="" className="signup-bg-right" />
 
 			{/* Left Column - Image */}
 			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">

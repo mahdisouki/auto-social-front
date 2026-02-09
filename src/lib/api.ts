@@ -45,14 +45,16 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Don't auto-redirect for Meta API calls - let them handle the error
       const requestUrl = error.config?.url || '';
-      if (requestUrl.includes('/meta/')) {
-        // Just reject the error, don't redirect
+      // Don't redirect when 401 is from login/register - let the page show the error
+      if (requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register')) {
         return Promise.reject(error);
       }
-      
-      // Clear invalid token
+      // Don't auto-redirect for Meta API calls - let them handle the error
+      if (requestUrl.includes('/meta/')) {
+        return Promise.reject(error);
+      }
+      // Clear invalid token and redirect for other 401s (e.g. expired token)
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       window.location.href = '/login';

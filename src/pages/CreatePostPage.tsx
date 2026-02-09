@@ -387,7 +387,7 @@ export function CreatePostPage() {
 			}
 
 			// Call genai.py API
-			const pythonApiUrl = 'http://ai.postoryai.com';
+			const pythonApiUrl = 'https://ai.postoryai.com';
 			
 			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
 				method: 'POST',
@@ -495,6 +495,7 @@ export function CreatePostPage() {
 			images: uploadedImageUrls,
 			scheduledAt: formData.scheduledAt,
 			postType: formData.postType,
+			sceneId: formData.sceneId,
 			currency: formData.currency,
 			price: formData.price,
 			productName: formData.productName,
@@ -514,6 +515,7 @@ export function CreatePostPage() {
 			scheduledAt: formData.scheduledAt || undefined,
 			images: uploadedImageUrls,
 			postType: formData.postType || undefined,
+			sceneId: formData.sceneId || undefined,
 			currency: formData.currency || undefined,
 			price: formData.price || undefined,
 			productName: formData.productName || undefined,
@@ -525,7 +527,8 @@ export function CreatePostPage() {
 			modelEthnicity: formData.modelEthnicity,
 			modelGender: formData.modelGender,
 			addText: formData.addText,
-		});		navigate('/posts');
+		});
+		navigate('/posts');
 		} catch (err: any) {
 			console.error('Failed to create post:', err);
 			console.error('Error response:', err.response?.data);
@@ -1058,7 +1061,7 @@ export function CreatePostPage() {
 											</button>
 											<button
 												type="button"
-												onClick={() => setBackgroundTab('personnaliser')}
+												onClick={() => { setBackgroundTab('personnaliser'); setFormData(prev => ({ ...prev, backgroundType: 'color' })); }}
 												className="flex-1 min-w-0 py-2 px-1.5 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-all"
 												style={{
 													fontFamily: 'Inter, sans-serif',
@@ -1070,6 +1073,7 @@ export function CreatePostPage() {
 												Personnaliser
 											</button>
 										</div>
+										
 										{backgroundTab === 'scene' && (
 											<div className="space-y-4">
 												<p className="text-xs text-gray-400 mb-2">Choisissez une scène</p>
@@ -1078,7 +1082,7 @@ export function CreatePostPage() {
 														<div className="grid grid-cols-3 gap-3">
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_1' }))}
+																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_1' }))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_1' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1094,7 +1098,7 @@ export function CreatePostPage() {
 															</button>
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_2' }))}
+																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_2' }))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_2' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1110,7 +1114,7 @@ export function CreatePostPage() {
 															</button>
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, sceneId: 'cloth_3' }))}
+																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_3' }))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_3' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1135,7 +1139,7 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1160,7 +1164,7 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1185,7 +1189,7 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1210,7 +1214,7 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1235,7 +1239,7 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, sceneId: id }))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
