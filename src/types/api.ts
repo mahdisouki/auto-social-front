@@ -35,7 +35,7 @@ export interface Post {
   platform: string[];
   postType?: string;
   currency?: string;
-  price?: string;
+  price?: number;
   productName?: string;
   description?: string;
   scheduledAt?: string;

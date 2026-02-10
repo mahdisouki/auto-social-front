@@ -465,7 +465,7 @@ export function CreatePostPage() {
 		}
 
 		setIsUploading(true);
-
+		
 		try {
 			console.log('📤 Uploading enhanced image to server...');
 
@@ -517,7 +517,7 @@ export function CreatePostPage() {
 			postType: formData.postType || undefined,
 			sceneId: formData.sceneId || undefined,
 			currency: formData.currency || undefined,
-			price: formData.price || undefined,
+			price: formData.price as any,
 			productName: formData.productName || undefined,
 			description: formData.description || undefined,
 			backgroundType: formData.backgroundType,
@@ -565,6 +565,17 @@ export function CreatePostPage() {
 
 	return (
 		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-hidden" style={{ background: '#000000' }}>
+			<style>{`
+				/* Remove number input spinners for price field */
+				.no-spinner::-webkit-outer-spin-button,
+				.no-spinner::-webkit-inner-spin-button {
+					-webkit-appearance: none;
+					margin: 0;
+				}
+				.no-spinner[type=number] {
+					-moz-appearance: textfield;
+				}
+			`}</style>
 			{/* Preview Modal */}
 			{showPreviewModal && (
 				<div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowPreviewModal(false)}>
@@ -685,7 +696,7 @@ export function CreatePostPage() {
 				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 py-6">
 					<div className="flex flex-wrap items-center gap-3 mb-4">
 						<h2 className="text-white text-sm font-semibold uppercase tracking-wider shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
-							Aperçu du fil
+							Poster a 
 						</h2>
 						<div className="flex gap-0 rounded-lg overflow-hidden shrink-0" style={{ border: '1px solid #FFFFFF1A' }}>
 							<button
@@ -730,7 +741,7 @@ export function CreatePostPage() {
 							</button>
 						</div>
 					</div>
-					<div className="bg-white rounded-2xl shadow-xl w-full max-w-xl min-h-[580px] overflow-visible">
+					<div className="bg-white rounded-2xl shadow-xl w-full max-w-xl min-h-[720px] max-h-[860px] overflow-hidden">
 						<div className="p-4 border-b border-gray-100 rounded-t-2xl">
 							<div className="flex items-center gap-3">
 								{user?.profileImage ? (
@@ -951,12 +962,13 @@ export function CreatePostPage() {
 											style={{ background: '#0E0E13' }}
 										>
 											<input
-												type="text"
+												type="number"
 												name="price"
+												min={0}
 												value={formData.price}
 												onChange={handleInputChange}
-												placeholder="0.00"
-												className="flex-1 min-w-0 px-4 py-2.5 text-sm border-0 border-r border-white/10 focus:ring-0 focus:outline-none placeholder-gray-500"
+												placeholder="0"
+												className="flex-1 min-w-0 px-4 py-2.5 text-sm border-0 border-r border-white/10 focus:ring-0 focus:outline-none placeholder-gray-500 no-spinner"
 												style={{ background: '#0E0E13', color: '#E0E0E0' }}
 											/>
 											<select
@@ -973,30 +985,7 @@ export function CreatePostPage() {
 										</div>
 									</div>
 									
-									<div>
-										<label className="block text-xs font-medium text-gray-300 mb-1">Planification</label>
-										<DatePicker
-											selected={
-												formData.scheduledAt
-													? (() => {
-															const d = new Date(formData.scheduledAt);
-															return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
-														})()
-													: selectedDate
-											}
-											onChange={handleDateChange}
-											showTimeSelect
-											timeFormat="HH:mm"
-											timeIntervals={15}
-											dateFormat="d MMM yyyy HH:mm"
-											locale="fr"
-											timeZone="UTC"
-											minDate={new Date()}
-											placeholderText="Date et heure"
-											className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
-											wrapperClassName="w-full"
-										/>
-									</div>
+									{/* Planification moved after LÉGENDE to be last */}
 								</div>
 							)}
 						</div>
@@ -1329,17 +1318,43 @@ export function CreatePostPage() {
 										<div className="grid grid-cols-2 gap-3 pt-1">
 											<div>
 												<label className="block text-xs font-medium text-gray-300 mb-1">Texte sur l’image</label>
-											<select name="addText" value={formData.addText} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
-												<option value="no">Non</option>
-												<option value="yes">Oui</option>
-											</select>
-										</div>
+												<button
+													type="button"
+													onClick={() =>
+														setFormData(prev => ({
+															...prev,
+															addText: prev.addText === 'yes' ? 'no' : 'yes',
+														}))
+													}
+													className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+													style={{
+														background: formData.addText === 'yes' ? '#9747FF' : '#0E0E13',
+														color: '#FFFFFF',
+														border: '1px solid rgba(255,255,255,0.1)',
+													}}
+												>
+													{formData.addText === 'yes' ? 'Oui' : 'Non'}
+												</button>
+											</div>
 											<div>
 												<label className="block text-xs font-medium text-gray-300 mb-1">Prix sur l'image</label>
-												<select name="addPrice" value={formData.addPrice} onChange={handleInputChange} className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none" style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}>
-													<option value="no">Non</option>
-													<option value="yes">Oui</option>
-												</select>
+												<button
+													type="button"
+													onClick={() =>
+														setFormData(prev => ({
+															...prev,
+															addPrice: prev.addPrice === 'yes' ? 'no' : 'yes',
+														}))
+													}
+													className="w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+													style={{
+														background: formData.addPrice === 'yes' ? '#9747FF' : '#0E0E13',
+														color: '#FFFFFF',
+														border: '1px solid rgba(255,255,255,0.1)',
+													}}
+												>
+													{formData.addPrice === 'yes' ? 'Oui' : 'Non'}
+												</button>
 											</div>
 										</div>
 									</div>
@@ -1438,6 +1453,36 @@ export function CreatePostPage() {
 									</div>
 								</div>
 							)}
+						</div>
+
+						{/* Planification - placed after LÉGENDE so it's the last control */}
+						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
+							<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
+								<div>
+									<label className="block text-xs font-medium text-gray-300 mb-1">Planification</label>
+									<DatePicker
+										selected={
+											formData.scheduledAt
+												? (() => {
+														const d = new Date(formData.scheduledAt);
+														return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
+													})()
+												: selectedDate
+										}
+										onChange={handleDateChange}
+										showTimeSelect
+										timeFormat="HH:mm"
+										timeIntervals={15}
+										dateFormat="d MMM yyyy HH:mm"
+										locale="fr"
+										timeZone="UTC"
+										minDate={new Date()}
+										placeholderText="Date et heure"
+										className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
+										wrapperClassName="w-full"
+									/>
+								</div>
+							</div>
 						</div>
 						
 					</div>
