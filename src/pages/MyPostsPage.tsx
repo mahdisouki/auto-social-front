@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { SearchIcon, EyeIcon, TrashIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
+import postsRightImg from '../assets/postsR.png';
+import postsLeftImg from '../assets/postsL.png';
+import instagramIcon from '../assets/insta.png';
+import facebookIcon from '../assets/fb.png';
 
 export function MyPostsPage() {
 	const navigate = useNavigate();
@@ -13,7 +17,7 @@ export function MyPostsPage() {
 	const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
 	const [selectedStatus, setSelectedStatus] = useState<string>('all');
 	const [currentPage, setCurrentPage] = useState(1);
-	const [limit] = useState(10);
+	const [limit, setLimit] = useState(10);
 	// Delete confirmation toast: post id when waiting for confirm, null otherwise
 	const [deleteConfirmPostId, setDeleteConfirmPostId] = useState<string | null>(null);
 
@@ -122,28 +126,30 @@ export function MyPostsPage() {
 	};
 
 	return (
-		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
-			<div className="relative z-10 flex flex-col min-h-0 flex-1">
-				{/* Page title */}
-				<h2
-					className="text-white mb-2 italic"
-					style={{
-						fontFamily: 'Playfair Display, serif',
-						fontSize: '26px',
-						fontWeight: 400,
-					}}
-				>
-					Mes publications
-				</h2>
-				<div
-					className="mb-6"
-					style={{
-						width: '140px',
-						height: '3px',
-						background: '#9747FF',
-						borderRadius: '2px',
-					}}
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 overflow-y-auto overflow-x-hidden relative" style={{ background: '#000000', zoom: '0.8' }}>
+			{/* Gradient background on the left */}
+			<div className="absolute top-0 left-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsLeftImg} 
+					alt="" 
+					className="w-full h-full object-cover "
+					style={{ mixBlendMode: 'screen', transform: 'scaleX(2)' }}
 				/>
+			</div>
+			
+			{/* Gradient background on the right */}
+			<div className="absolute top-0 right-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsRightImg} 
+					alt="" 
+					className="w-full h-full object-cover opacity-50"
+					style={{ mixBlendMode: 'screen' }}
+				/>
+			</div>
+			
+			<div className="relative z-10 flex flex-col min-h-0 flex-1">
+				
+			
 
 				{/* Error Message */}
 				{error && (
@@ -169,8 +175,8 @@ export function MyPostsPage() {
 				<div
 					className="rounded-2xl p-6 mb-6 overflow-hidden"
 					style={{
-						background: 'rgba(14, 14, 19, 0.95)',
-						border: '1px solid rgba(255,255,255,0.1)',
+						background: '#0E0E13',
+						borderRight: '1px solid #FFFFFF1A',
 					}}
 				>
 					<div className="flex flex-col sm:flex-row gap-4">
@@ -256,77 +262,68 @@ export function MyPostsPage() {
 							<div
 								key={post._id}
 								onClick={() => navigate(`/posts/${post._id}`)}
-								className="overflow-hidden rounded-2xl border transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+								className="overflow-hidden rounded-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02]"
 								style={{
-									background: 'rgba(14, 14, 19, 0.95)',
-									borderColor: 'rgba(255,255,255,0.1)',
+									background: '#0E0E13',
+									border: '1px solid #FFFFFF1A',
 								}}
 							>
 								<div className="relative">
 									<img
 										src={getPostImage(post)}
 										alt={post.caption || post.productName || 'Post image'}
-										className="w-full h-48 object-cover"
+									className="w-full h-96 object-cover"
 										onError={(e) => {
 											(e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop';
 										}}
 									/>
-									<div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-										{post.platform.map((platform) => (
-											<span
-												key={platform}
-												className="px-2 py-1 rounded-lg text-xs font-medium text-white"
-												style={{ background: 'rgba(0,0,0,0.5)' }}
-											>
-												{getPlatformName(platform)}
-											</span>
-										))}
+									{/* Platform icons in top right */}
+									<div className="absolute top-3 right-3 flex gap-2">
+										{post.platform.includes('instagram') && (
+											<img src={instagramIcon} alt="Instagram" className="w-8 h-8" />
+										)}
+										{post.platform.includes('facebook') && (
+											<img src={facebookIcon} alt="Facebook" className="w-8 h-8" />
+										)}
 									</div>
-									<div className="absolute top-3 right-3 flex items-center gap-2">
-										<span className="px-2 py-1 rounded-lg text-xs font-medium" style={getStatusStyle(post.status)}>
-											{post.status}
-										</span>
-										<button
-											type="button"
-											onClick={(e) => handleDeleteClick(e, post._id)}
-											className="p-1.5 rounded-lg text-white transition-opacity hover:opacity-90"
-											style={{ background: 'rgba(239, 68, 68, 0.8)' }}
-											title="Supprimer"
-										>
-											<TrashIcon className="w-4 h-4" />
-										</button>
-									</div>
+									{/* Delete button - hidden by default, shown on hover */}
+									<button
+										type="button"
+										onClick={(e) => handleDeleteClick(e, post._id)}
+										className="absolute top-3 left-3 p-1.5 rounded-lg text-white transition-opacity hover:opacity-90 opacity-0 hover:opacity-100"
+										style={{ background: 'rgba(239, 68, 68, 0.8)' }}
+										title="Supprimer"
+									>
+										<TrashIcon className="w-4 h-4" />
+									</button>
 								</div>
 								<div className="p-4">
-									<h3 className="font-semibold mb-2 line-clamp-2 text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-										{post.productName || post.caption?.substring(0, 50) || 'Sans titre'}
-									</h3>
-									{post.caption && (
-										<p className="text-sm mb-2 line-clamp-2 text-gray-400">
-											{post.caption}
-										</p>
-									)}
-									<p className="text-sm mb-3 text-gray-500">
-										{formatDate(post.publishedAt || post.scheduledAt || post.createdAt)}
-									</p>
-									{post.publishedUrl && (
-										<a
-											href={post.publishedUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											onClick={(e) => e.stopPropagation()}
-											className="flex items-center gap-1 text-sm font-medium transition-colors hover:opacity-90"
-											style={{ color: '#9747FF' }}
+									{/* Category and Status row */}
+									<div className="flex justify-between items-center mb-2">
+										<span className="text-sm font-medium" style={{ color: '#9747FF' }}>
+											{post.postType}
+										</span>
+										<span 
+											className="px-3 py-1 rounded-lg text-xs font-medium"
+											style={{ 
+												background: '#9747FF',
+												color: '#FFFFFF'
+											}}
 										>
-											<EyeIcon />
-											Voir sur la plateforme
-										</a>
-									)}
-									{post.price && post.currency && (
-										<div className="text-sm font-semibold mb-2 text-gray-200">
-											{post.currency} {post.price}
-										</div>
-									)}
+											{post.status === 'posted' ? 'Publié' : post.status === 'scheduled' ? 'Planifié' : post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+										</span>
+									</div>
+									
+									{/* Title */}
+									<h3 className="font-semibold mb-3 line-clamp-2 text-white text-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+										{post.caption?.substring(0, 50) || post.productName || 'Sans titre'}
+									</h3>
+									
+									{/* Planification */}
+									<div className="text-sm text-gray-400 mb-1">Planification</div>
+									<div className="text-sm text-white">
+										{formatDate(post.scheduledAt || post.createdAt)}
+									</div>
 								</div>
 							</div>
 						))}
@@ -337,38 +334,28 @@ export function MyPostsPage() {
 			{/* Pagination */}
 			{!isLoading && filteredPosts.length > 0 && (
 				<div
-					className="shrink-0 pt-6 mt-4 flex justify-center items-center gap-2"
+					className="shrink-0 pt-6 mt-4 flex justify-center items-center gap-4"
 					style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
 				>
-					<button
-						type="button"
-						onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-						disabled={currentPage === 1 || isLoading}
-						className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+					<label className="text-sm text-gray-400">Publications par page:</label>
+					<select
+						value={limit}
+						onChange={(e) => {
+							setLimit(Number(e.target.value));
+							setCurrentPage(1);
+						}}
+						className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
 						style={{
-							background: 'transparent',
-							border: '1px solid rgba(255,255,255,0.2)',
+							background: 'rgba(255,255,255,0.05)',
+							border: '1px solid rgba(255,255,255,0.1)',
 							color: '#d1d5db',
 						}}
 					>
-						Précédent
-					</button>
-					<span className="px-4 py-2 text-sm text-gray-400">
-						Page {currentPage}
-					</span>
-					<button
-						type="button"
-						onClick={() => setCurrentPage((prev) => prev + 1)}
-						disabled={filteredPosts.length < limit || isLoading}
-						className="px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-						style={{
-							background: 'transparent',
-							border: '1px solid rgba(255,255,255,0.2)',
-							color: '#d1d5db',
-						}}
-					>
-						Suivant
-					</button>
+						<option value="5">5</option>
+						<option value="10">10</option>
+						<option value="20">20</option>
+						<option value="50">50</option>
+					</select>
 				</div>
 			)}
 

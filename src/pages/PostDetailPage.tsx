@@ -7,6 +7,8 @@ import { postsApi } from '../lib/api';
 import { usePostsStore } from '../stores/postsStore';
 import { CheckIcon, CloseIcon } from '../components/icons';
 import type { Post } from '../types/api';
+import postsRightImg from '../assets/postsR.png';
+import postsLeftImg from '../assets/postsL.png';
 
 registerLocale('fr', fr);
 
@@ -14,7 +16,7 @@ type EditForm = {
 	caption: string;
 	productName: string;
 	description: string;
-	price: string;
+	price: number;
 	currency: string;
 	postType: string;
 	platform: string[];
@@ -34,7 +36,7 @@ export function PostDetailPage() {
 		caption: '',
 		productName: '',
 		description: '',
-		price: '',
+		price: 0,
 		currency: 'TND',
 		postType: '',
 		platform: [],
@@ -139,7 +141,7 @@ export function PostDetailPage() {
 			caption: post.caption ?? '',
 			productName: post.productName ?? '',
 			description: post.description ?? '',
-			price: post.price ?? '',
+			price: post.price ?? 0,
 			currency: post.currency ?? 'TND',
 			postType: post.postType ?? '',
 			platform: post.platform ?? [],
@@ -232,8 +234,28 @@ export function PostDetailPage() {
 	const cardStyle = { background: '#0E0E13', border: '1px solid #FFFFFF1A', borderRadius: '1rem' };
 
 	return (
-		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-y-auto py-6 px-4 md:px-6 lg:px-8" style={{ background: '#000000' }}>
-			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-y-auto py-6 px-4 md:px-6 lg:px-8 relative" style={{ background: '#000000' }}>
+			{/* Gradient background on the left */}
+			<div className="absolute top-0 left-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsLeftImg} 
+					alt="" 
+					className="w-full h-full object-cover opacity-50"
+					style={{ mixBlendMode: 'screen', transform: 'scaleX(2)' }}
+				/>
+			</div>
+			
+			{/* Gradient background on the right */}
+			<div className="absolute top-0 right-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsRightImg} 
+					alt="" 
+					className="w-full h-full object-cover opacity-50"
+					style={{ mixBlendMode: 'screen',transform: 'scaleX(2)' }}
+				/>
+			</div>
+			
+			<div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
 				{/* Main Content */}
 				<div className="lg:col-span-2 space-y-6">
 					{/* Images */}
@@ -500,9 +522,9 @@ export function PostDetailPage() {
 									<div className="flex-1">
 										<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Prix</label>
 										<input
-											type="text"
+											type="number"
 											value={editForm.price}
-											onChange={(e) => setEditForm((prev) => ({ ...prev, price: e.target.value }))}
+											onChange={(e) => setEditForm((prev) => ({ ...prev, price: Number(e.target.value) }))}
 											className="w-full mt-1 px-3 py-2 rounded-lg bg-white/5 border border-white/20 text-gray-100 placeholder-gray-500 focus:ring-2 focus:ring-[#9747FF]"
 											placeholder="Prix"
 										/>
@@ -542,7 +564,7 @@ export function PostDetailPage() {
 											<p className="text-gray-300 mt-1 whitespace-pre-wrap">{post.description}</p>
 										</div>
 									)}
-									{post.price && post.currency && (
+									{post.price !== undefined && post.currency && (
 										<div>
 											<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Prix</label>
 											<p className="text-white mt-1 font-semibold text-lg">

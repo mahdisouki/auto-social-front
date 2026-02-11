@@ -1,20 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePostsStore } from '../stores/postsStore';
-import sahmIcon from '../assets/sahm.png';
-import calendarImage from '../assets/Group 37391.png';
-import card3Image from '../assets/card3.png';
-import rectangleImage from '../assets/Rectangle 9873.png';
-import card1Image from '../assets/card1.png';
+
 import dash1Image from '../assets/dash1.png';
 import dash2Image from '../assets/dash2.png';
 import backgrounddash from '../assets/backgrounddash.jpg';
 import fbIcon from '../assets/fb.png';
 import instaIcon from '../assets/insta.png';
 import placeholderPost1 from '../assets/beauté/1.jpg';
-import placeholderPost2 from '../assets/electronics/1.jpg';
-import placeholderPost3 from '../assets/sports/1.jpg';
+
 export function DashboardPage() {
 	const navigate = useNavigate();
 	const { 
@@ -23,17 +18,63 @@ export function DashboardPage() {
 		stats, 
 		isLoading, 
 		error, 
-		fetchDashboardData,
+		fetchPosts,
 		clearError 
 	} = usePostsStore();
 
+	const [histogramPlatform, setHistogramPlatform] = useState<'facebook' | 'instagram'>('facebook');
+
 	useEffect(() => {
 		// Fetch data on component mount and reload
-		fetchDashboardData().catch((err) => {
+		Promise.all([
+			fetchPosts({ limit: 1000 }),
+			
+		]).catch((err) => {
 			console.error('Failed to fetch dashboard data:', err);
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
+
+	// Calculate histogram data based on selected platform
+	const histogramData = useMemo(() => {
+		const platformPosts = posts.filter(post => post.platform.includes(histogramPlatform));
+		
+		// Group by month
+		const monthCounts: { [key: string]: number } = {};
+		const currentDate = new Date();
+		const months = [];
+		
+		// Initialize last 6 months
+		for (let i = 5; i >= 0; i--) {
+			const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+			const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+			months.push(key);
+			monthCounts[key] = 0;
+		}
+		
+		// Count posts per month
+		platformPosts.forEach(post => {
+			const date = new Date(post.createdAt);
+			const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+			if (monthCounts[key] !== undefined) {
+				monthCounts[key]++;
+			}
+		});
+		
+		const maxCount = Math.max(...Object.values(monthCounts), 1);
+		
+		return months.map(month => ({
+			month: month.split('-')[1],
+			count: monthCounts[month],
+			height: (monthCounts[month] / maxCount) * 100
+		}));
+	}, [posts, histogramPlatform]);
+
+	// Calculate social account counts from posts
+	const facebookPostsCount = posts.filter(post => post.platform.includes('facebook')).length;
+	const instagramPostsCount = posts.filter(post => post.platform.includes('instagram')).length;
+	const hasFacebookAccount = facebookPostsCount > 0;
+	const hasInstagramAccount = instagramPostsCount > 0;
 
 	// Show loading state
 		if (isLoading && !stats) {
@@ -64,7 +105,7 @@ export function DashboardPage() {
 					<button 
 						onClick={() => {
 							clearError();
-							fetchDashboardData();
+							fetchPosts({ limit: 1000 });
 						}}
 						className="px-4 py-2 rounded-lg text-white transition-colors"
 						style={{
@@ -298,127 +339,185 @@ export function DashboardPage() {
 						>
 							<button
 								type="button"
-								className="px-3 py-1.5 text-xs font-semibold text-white uppercase"
-								style={{ background: '#9747FF' }}
+								onClick={() => setHistogramPlatform('facebook')}
+								className={`px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
+									histogramPlatform === 'facebook' ? 'text-white' : 'text-gray-400 hover:text-white'
+								}`}
+								style={{ background: histogramPlatform === 'facebook' ? '#9747FF' : 'transparent' }}
 							>
 								Facebook
 							</button>
 							<button
 								type="button"
-								className="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase hover:text-white transition-colors"
-								style={{ background: 'transparent' }}
+								onClick={() => setHistogramPlatform('instagram')}
+								className={`px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
+									histogramPlatform === 'instagram' ? 'text-white' : 'text-gray-400 hover:text-white'
+								}`}
+								style={{ background: histogramPlatform === 'instagram' ? '#9747FF' : 'transparent' }}
 							>
 								Instagram
 							</button>
 						</div>
 					</div>
-					{/* Histogram placeholder */}
+					{/* Histogram */}
 					<div
-						className="flex-1 flex items-center justify-center rounded-xl min-h-[180px]"
+						className="flex-1 rounded-xl min-h-[180px] px-4 py-6 flex items-end justify-between gap-2"
 						style={{
 							background: 'rgba(255,255,255,0.03)',
 							border: '1px solid rgba(255,255,255,0.06)',
 						}}
 					>
-						<span className="text-white/40 text-lg font-bold uppercase tracking-wider">
-							Histogramme
-						</span>
+						{histogramData.length > 0 ? (
+							histogramData.map((data, index) => (
+								<div
+									key={index}
+									className="flex-1 flex flex-col items-center justify-end gap-1 group"
+								>
+									<div className="relative w-full flex items-end justify-center" style={{ height: '120px' }}>
+										{/* Tooltip on hover */}
+										<div
+											className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-[#9747FF] text-white text-xs px-2 py-1 rounded"
+											style={{ whiteSpace: 'nowrap' }}
+										>
+											{data.count} post{data.count !== 1 ? 's' : ''}
+										</div>
+										{/* Bar */}
+										<div
+											className="w-full rounded-t transition-all duration-300 group-hover:opacity-80"
+											style={{
+												height: `${data.height}%`,
+												minHeight: data.count > 0 ? '8px' : '0px',
+												background: 'linear-gradient(180deg, #9747FF 0%, #6B2BC7 100%)',
+											}}
+										></div>
+									</div>
+									{/* Month label */}
+									<span className="text-gray-400 text-xs mt-1">
+										{['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][parseInt(data.month) - 1]}
+									</span>
+								</div>
+							))
+						) : (
+							<div className="w-full flex items-center justify-center">
+								<span className="text-white/40 text-sm">
+									Aucune donnée disponible
+								</span>
+							</div>
+						)}
 					</div>
 				</div>
 			</div>
 
 			{/* Second row: Publications récentes (left, larger) + Vue d'ensemble (right, smaller) */}
-			<div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 mt-6">
-				{/* Card: Publications récentes */}
-				<div
-					className="rounded-2xl p-6 overflow-hidden"
-					style={{
-						background: 'rgba(14, 14, 19, 0.95)',
-						border: '1px solid rgba(255,255,255,0.1)',
-					}}
-				>
-					<div className="flex items-start justify-between gap-4 mb-4">
-						<div>
-							<h3
-								className="text-white italic"
-								style={{
-									fontFamily: 'Playfair Display, serif',
-									fontSize: '22px',
-									fontWeight: 400,
-								}}
-							>
-								Publications récentes
-							</h3>
-							<div
-								className="mt-2"
-								style={{
-									width: '140px',
-									height: '3px',
-									background: '#9747FF',
-									borderRadius: '2px',
-								}}
-							/>
-						</div>
-						<button
-							type="button"
-							className="rounded-lg px-4 py-2 text-[#9747FF] flex-shrink-0 capitalize"
-							style={{
-								fontFamily: 'Inter, sans-serif',
-								fontWeight: 500,
-								fontSize: '10px',
-								lineHeight: '12px',
-								letterSpacing: '0.02em',
-								border: '1px solid #9747FF',
-							}}
-						>
-							Voir Tous
-						</button>
-					</div>
-					<div className="grid grid-cols-3 gap-4">
-						{[
-							{ img: placeholderPost1, category: 'Food', status: 'Publié', name: 'S7an Kosksi' },
-							{ img: placeholderPost2, category: 'Food', status: 'Publié', name: 'lablebi' },
-							{ img: placeholderPost3, category: 'Food', status: 'Publié', name: 'chaneb' },
-						].map((post, i) => (
-							<div
-								key={i}
-								className="rounded-xl overflow-hidden flex flex-col"
-								style={{
-									background: 'rgba(0,0,0,0.3)',
-									border: '1px solid rgba(255,255,255,0.08)',
-								}}
-							>
-								<div className="relative aspect-[4/5] w-full overflow-hidden">
-									<img
-										src={post.img}
-										alt=""
-										className="absolute inset-0 w-full h-full object-cover"
-									/>
-									<div className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-[#1877F2]">
-										<img src={fbIcon} alt="" className="w-4 h-4 object-contain" />
-									</div>
-								</div>
-								<div
-									className="p-3 flex flex-col gap-1"
+			<div className={`grid grid-cols-1 gap-6 mt-6 ${posts.length > 0 ? 'lg:grid-cols-[2fr_1fr]' : 'lg:grid-cols-1'}`}>
+				{/* Card: Publications récentes - Only show if there are posts */}
+				{posts.length > 0 && (
+					<div
+						className="rounded-2xl p-6 overflow-hidden"
+						style={{
+							background: 'rgba(14, 14, 19, 0.95)',
+							border: '1px solid rgba(255,255,255,0.1)',
+						}}
+					>
+						<div className="flex items-start justify-between gap-4 mb-4">
+							<div>
+								<h3
+									className="text-white italic"
 									style={{
-										background: 'rgba(30, 20, 40, 0.9)',
+										fontFamily: 'Playfair Display, serif',
+										fontSize: '22px',
+										fontWeight: 400,
 									}}
 								>
-									<div className="flex items-center justify-between gap-1">
-										<span className="text-[#C098F5] text-xs">{post.category}</span>
-										<span
-											className="rounded px-2 py-0.5 text-xs font-medium text-white"
-											style={{ background: '#9747FF' }}
-										>
-											{post.status}
-										</span>
-									</div>
-									<p className="text-white text-sm font-bold truncate">{post.name}</p>
-								</div>
+									Publications récentes
+								</h3>
+								<div
+									className="mt-2"
+									style={{
+										width: '140px',
+										height: '3px',
+										background: '#9747FF',
+										borderRadius: '2px',
+									}}
+								/>
 							</div>
-						))}
+							<button
+								type="button"
+								onClick={() => navigate('/posts')}
+								className="rounded-lg px-4 py-2 text-[#9747FF] flex-shrink-0 capitalize"
+								style={{
+									fontFamily: 'Inter, sans-serif',
+									fontWeight: 500,
+									fontSize: '10px',
+									lineHeight: '12px',
+									letterSpacing: '0.02em',
+									border: '1px solid #9747FF',
+								}}
+							>
+								Voir Tous
+							</button>
+						</div>
+						<div className="grid grid-cols-3 gap-4">
+							{posts
+								.slice()
+								.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+								.slice(0, 3)
+								.map((post) => (
+								<div
+									key={post._id}
+									onClick={() => navigate(`/posts/${post._id}`)}
+									className="rounded-xl overflow-hidden flex flex-col cursor-pointer hover:opacity-90 transition-opacity"
+									style={{
+										background: 'rgba(0,0,0,0.3)',
+										border: '1px solid rgba(255,255,255,0.08)',
+									}}
+								>
+									<div className="relative aspect-[4/5] w-full overflow-hidden">
+										<img
+											src={post.images?.[0] || post.mediaUrl || post.backgroundUrl || placeholderPost1}
+											alt=""
+											className="absolute inset-0 w-full h-full object-cover"
+											onError={(e) => {
+												(e.target as HTMLImageElement).src = placeholderPost1;
+											}}
+										/>
+										<div className="absolute top-2 right-2 flex gap-1">
+											{post.platform.includes('facebook') && (
+												<div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-[#1877F2]">
+													<img src={fbIcon} alt="" className="w-4 h-4 object-contain" />
+												</div>
+											)}
+											{post.platform.includes('instagram') && (
+												<div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-gradient-to-br from-purple-600 to-pink-500">
+													<img src={instaIcon} alt="" className="w-4 h-4 object-contain" />
+												</div>
+											)}
+										</div>
+									</div>
+									<div
+										className="p-3 flex flex-col gap-1"
+										style={{
+											background: 'rgba(30, 20, 40, 0.9)',
+										}}
+									>
+										<div className="flex items-center justify-between gap-1">
+											<span className="text-[#C098F5] text-xs">{post.productName || post.postType || 'Food'}</span>
+											<span
+												className="rounded px-2 py-0.5 text-xs font-medium text-white capitalize"
+												style={{ background: '#9747FF' }}
+											>
+												{post.status === 'posted' ? 'Publié' : post.status === 'scheduled' ? 'Planifié' : post.status}
+											</span>
+										</div>
+										<p className="text-white text-sm font-bold truncate">
+											{post.caption?.substring(0, 30) || post.productName || 'Sans titre'}
+										</p>
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
-				</div>
+				)}
 
 				{/* Card: Vue d'ensemble */}
 				<div

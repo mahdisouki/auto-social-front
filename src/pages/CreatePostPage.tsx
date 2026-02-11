@@ -32,6 +32,7 @@ import sportScene3 from '../assets/sports/3.jpg';
 import sportScene4 from '../assets/sports/4.jpg';
 import sportScene5 from '../assets/sports/5.jpg';
 import sportScene6 from '../assets/sports/6.jpg';
+import postsL from '../assets/postsL.png';
 import { useAuthStore } from '../stores/authStore';
 import { uploadApi } from '../lib/api';
 
@@ -564,7 +565,7 @@ export function CreatePostPage() {
 	};
 
 	return (
-		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-hidden" style={{ background: '#000000' }}>
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col overflow-hidden" style={{ background: '#000000', zoom: 0.85 }}>
 			<style>{`
 				/* Remove number input spinners for price field */
 				.no-spinner::-webkit-outer-spin-button,
@@ -683,7 +684,15 @@ export function CreatePostPage() {
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row lg:items-stretch w-full h-full min-h-0 min-w-0 overflow-hidden">
+			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row lg:items-stretch w-full h-full min-h-0 min-w-0 overflow-hidden relative">
+				{/* Left gradient image */}
+				<img 
+					src={postsL} 
+					alt="" 
+					className="absolute left-0 top-0 h-full pointer-events-none hidden lg:block"
+					style={{ zIndex: 0,transform: 'scaleX(4)' }}
+				/>
+
 				<input
 					id="file-upload"
 					type="file"
@@ -693,55 +702,8 @@ export function CreatePostPage() {
 				/>
 
 				{/* Left/Center: Feed preview card */}
-				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 py-6">
-					<div className="flex flex-wrap items-center gap-3 mb-4">
-						<h2 className="text-white text-sm font-semibold uppercase tracking-wider shrink-0" style={{ fontFamily: 'Inter, sans-serif' }}>
-							Poster a 
-						</h2>
-						<div className="flex gap-0 rounded-lg overflow-hidden shrink-0" style={{ border: '1px solid #FFFFFF1A' }}>
-							<button
-								type="button"
-								onClick={() => {
-									setPreviewTab('facebook');
-									setFormData(prev => ({
-										...prev,
-										platform: prev.platform.includes('facebook')
-											? prev.platform.filter(p => p !== 'facebook')
-											: [...prev.platform, 'facebook'],
-									}));
-								}}
-								className="px-6 py-2 text-sm font-medium transition-colors"
-								style={{
-									background: formData.platform.includes('facebook') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
-									color: '#FFFFFF',
-									fontFamily: 'Inter, sans-serif',
-								}}
-							>
-								Facebook
-							</button>
-							<button
-								type="button"
-								onClick={() => {
-									setPreviewTab('instagram');
-									setFormData(prev => ({
-										...prev,
-										platform: prev.platform.includes('instagram')
-											? prev.platform.filter(p => p !== 'instagram')
-											: [...prev.platform, 'instagram'],
-									}));
-								}}
-								className="px-6 py-2 text-sm font-medium transition-colors"
-								style={{
-									background: formData.platform.includes('instagram') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
-									color: '#FFFFFF',
-									fontFamily: 'Inter, sans-serif',
-								}}
-							>
-								Instagram
-							</button>
-						</div>
-					</div>
-					<div className="bg-white rounded-2xl shadow-xl w-full max-w-xl min-h-[720px] max-h-[860px] overflow-hidden">
+				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 py-6 relative" style={{ zIndex: 1 }}>
+					<div className="bg-white rounded-2xl shadow-xl w-full max-w-[320px] sm:max-w-md md:max-w-xl min-h-[500px] sm:min-h-[600px] md:min-h-[720px] max-h-[600px] sm:max-h-[750px] md:max-h-[860px] overflow-hidden">
 						<div className="p-4 border-b border-gray-100 rounded-t-2xl">
 							<div className="flex items-center gap-3">
 								{user?.profileImage ? (
@@ -824,7 +786,7 @@ export function CreatePostPage() {
 
 				{/* Right: Sidebar with accordion */}
 				<aside
-					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-none lg:h-full"
+					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-full"
 					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
 				>
 					<div className="p-4 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-1">
@@ -1068,7 +1030,7 @@ export function CreatePostPage() {
 												<p className="text-xs text-gray-400 mb-2">Choisissez une scène</p>
 												{formData.postType === 'clothing' && (
 													<div>
-														<div className="grid grid-cols-3 gap-3">
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															<button
 																type="button"
 																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_1' }))}
@@ -1123,7 +1085,7 @@ export function CreatePostPage() {
 												{formData.postType === 'accessories' && (
 													<div>
 														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Accessoires</p>
-														<div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{[{ id: 'acc_1', src: accScene1, alt: 'Accessoires 1' }, { id: 'acc_2', src: accScene2, alt: 'Accessoires 2' }, { id: 'acc_3', src: accScene3, alt: 'Accessoires 3' }, { id: 'acc_4', src: accScene4, alt: 'Accessoires 4' }].map(({ id, src, alt }) => (
 																<button
 																	key={id}
@@ -1148,7 +1110,7 @@ export function CreatePostPage() {
 												)}
 												{formData.postType === 'beauty' && (
 													<div>
-														<div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{[{ id: 'beauty_1', src: beauteScene1, alt: 'Beauté 1' }, { id: 'beauty_2', src: beauteScene2, alt: 'Beauté 2' }, { id: 'beauty_3', src: beauteScene3, alt: 'Beauté 3' }, { id: 'beauty_4', src: beauteScene4, alt: 'Beauté 4' }].map(({ id, src, alt }) => (
 																<button
 																	key={id}
@@ -1173,7 +1135,7 @@ export function CreatePostPage() {
 												)}
 												{formData.postType === 'electronics' && (
 													<div>
-														<div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{[{ id: 'elec_1', src: elecScene1, alt: 'Électronique 1' }, { id: 'elec_2', src: elecScene2, alt: 'Électronique 2' }, { id: 'elec_3', src: elecScene3, alt: 'Électronique 3' }, { id: 'elec_4', src: elecScene4, alt: 'Électronique 4' }, { id: 'elec_5', src: elecScene5, alt: 'Électronique 5' }].map(({ id, src, alt }) => (
 																<button
 																	key={id}
@@ -1198,7 +1160,7 @@ export function CreatePostPage() {
 												)}
 												{formData.postType === 'furniture' && (
 													<div>
-														<div className="grid grid-cols-3 gap-3">
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{[{ id: 'fourn_1', src: fournScene1, alt: 'Meubles 1' }, { id: 'fourn_2', src: fournScene2, alt: 'Meubles 2' }, { id: 'fourn_3', src: fournScene3, alt: 'Meubles 3' }].map(({ id, src, alt }) => (
 																<button
 																	key={id}
@@ -1482,13 +1444,57 @@ export function CreatePostPage() {
 										wrapperClassName="w-full"
 									/>
 								</div>
+								<div>
+									<label className="block text-xs font-medium text-gray-300 mb-1">Plateformes</label>
+									<div className="flex gap-0 rounded-lg overflow-hidden" style={{ border: '1px solid #FFFFFF1A' }}>
+										<button
+											type="button"
+											onClick={() => {
+												setPreviewTab('facebook');
+												setFormData(prev => ({
+													...prev,
+													platform: prev.platform.includes('facebook')
+														? prev.platform.filter(p => p !== 'facebook')
+														: [...prev.platform, 'facebook'],
+												}));
+											}}
+											className="flex-1 py-2 text-sm font-medium transition-colors"
+											style={{
+												background: formData.platform.includes('facebook') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
+												color: '#FFFFFF',
+												fontFamily: 'Inter, sans-serif',
+											}}
+										>
+											Facebook
+										</button>
+										<button
+											type="button"
+											onClick={() => {
+												setPreviewTab('instagram');
+												setFormData(prev => ({
+													...prev,
+													platform: prev.platform.includes('instagram')
+														? prev.platform.filter(p => p !== 'instagram')
+														: [...prev.platform, 'instagram'],
+												}));
+											}}
+											className="flex-1 py-2 text-sm font-medium transition-colors"
+											style={{
+												background: formData.platform.includes('instagram') ? '#9747FF' : 'rgba(255, 255, 255, 0.08)',
+												color: '#FFFFFF',
+												fontFamily: 'Inter, sans-serif',
+											}}
+										>
+											Instagram
+										</button>
+									</div>
+								</div>
 							</div>
 						</div>
-						
 					</div>
 
 					{/* Sidebar footer: enhanced actions + Generate button */}
-					<div className="p-4 border-t border-white/10 space-y-3" style={{ background: '#0E0E13' }}>
+					<div className="p-4 border-t border-white/10 space-y-3 lg:mt-0" style={{ background: '#0E0E13' }}>
 						{enhancedImagePreview && (
 							<div className="flex gap-2">
 								<button
