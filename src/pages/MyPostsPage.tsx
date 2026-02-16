@@ -173,10 +173,12 @@ export function MyPostsPage() {
 
 				{/* Search and Filters card */}
 				<div
-					className="rounded-2xl p-6 mb-6 overflow-hidden"
+					className="rounded-2xl p-4 relative"
 					style={{
 						background: '#0E0E13',
 						borderRight: '1px solid #FFFFFF1A',
+						minHeight: '150px',
+						zIndex: 20,
 					}}
 				>
 					<div className="flex flex-col sm:flex-row gap-4">
@@ -232,7 +234,7 @@ export function MyPostsPage() {
 
 				{/* Loading State */}
 				{isLoading && (
-					<div className="flex justify-center items-center py-12">
+					<div className="flex justify-center items-center py-12 mt-8">
 						<div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#9747FF' }} />
 					</div>
 				)}
@@ -240,7 +242,7 @@ export function MyPostsPage() {
 				{/* Empty state */}
 				{!isLoading && filteredPosts.length === 0 && (
 					<div
-						className="rounded-2xl p-12 text-center"
+						className="rounded-2xl p-12 text-center mt-8"
 						style={{
 							background: 'rgba(14, 14, 19, 0.95)',
 							border: '1px solid rgba(255,255,255,0.1)',
@@ -257,7 +259,7 @@ export function MyPostsPage() {
 
 				{/* Posts Grid */}
 				{!isLoading && filteredPosts.length > 0 && (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mt-8">
 						{filteredPosts.map((post) => (
 							<div
 								key={post._id}
@@ -329,35 +331,35 @@ export function MyPostsPage() {
 						))}
 					</div>
 				)}
-			</div>
 
-			{/* Pagination */}
-			{!isLoading && filteredPosts.length > 0 && (
-				<div
-					className="shrink-0 pt-6 mt-4 flex justify-center items-center gap-4"
-					style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
-				>
-					<label className="text-sm text-gray-400">Publications par page:</label>
-					<select
-						value={limit}
-						onChange={(e) => {
-							setLimit(Number(e.target.value));
-							setCurrentPage(1);
-						}}
-						className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-						style={{
-							background: 'rgba(255,255,255,0.05)',
-							border: '1px solid rgba(255,255,255,0.1)',
-							color: '#d1d5db',
-						}}
+				{/* Pagination */}
+				{!isLoading && filteredPosts.length > 0 && (
+					<div
+						className="shrink-0 pt-6 mt-4 flex justify-center items-center gap-4 "
+						style={{ borderTop: '1px solid rgba(255,255,255,0.1)', zIndex: 20 }}
 					>
-						<option value="5">5</option>
-						<option value="10">10</option>
-						<option value="20">20</option>
-						<option value="50">50</option>
-					</select>
-				</div>
-			)}
+						<label className="text-sm text-gray-400">Publications par page:</label>
+						<select
+							value={limit}
+							onChange={(e) => {
+								setLimit(Number(e.target.value));
+								setCurrentPage(1);
+							}}
+							className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+							style={{
+								background: '#0E0E13',
+								border: '1px solid rgba(255,255,255,0.1)',
+								color: '#d1d5db',
+							}}
+						>
+							<option value="5">5</option>
+							<option value="10">10</option>
+							<option value="20">20</option>
+							<option value="50">50</option>
+						</select>
+					</div>
+				)}
+			</div>
 
 				{/* Delete confirmation modal */}
 				{deleteConfirmPostId && (

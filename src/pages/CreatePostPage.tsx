@@ -7,6 +7,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 registerLocale('fr', fr);
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
+import { postsApi, uploadApi } from '../lib/api';
 import accScene1 from '../assets/accessoires/1.jpg';
 import accScene2 from '../assets/accessoires/2.jpg';
 import accScene3 from '../assets/accessoires/3.jpg';
@@ -34,7 +35,6 @@ import sportScene5 from '../assets/sports/5.jpg';
 import sportScene6 from '../assets/sports/6.jpg';
 import postsL from '../assets/postsL.png';
 import { useAuthStore } from '../stores/authStore';
-import { uploadApi } from '../lib/api';
 
 export function CreatePostPage() {
 	const navigate = useNavigate();
@@ -66,7 +66,6 @@ export function CreatePostPage() {
 	const [uploadedImages, setUploadedImages] = useState<File[]>([]);
 	const [imagePreviews, setImagePreviews] = useState<string[]>([]);
 	const [isUploading, setIsUploading] = useState(false);
-	const [isProcessingImages, setIsProcessingImages] = useState(false);
 	const [enhancedImageBlob, setEnhancedImageBlob] = useState<Blob | null>(null);
 	const [enhancedImagePreview, setEnhancedImagePreview] = useState<string | null>(null);
 	const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -77,8 +76,7 @@ export function CreatePostPage() {
 	const [customModelImage, setCustomModelImage] = useState<File | null>(null);
 	const [customModelPreview, setCustomModelPreview] = useState<string | null>(null);
 	const [openSections, setOpenSections] = useState<number[]>([1]);
-	const [previewTab, setPreviewTab] = useState<'facebook' | 'instagram'>('facebook');
-	const [isRegeneratingImage, setIsRegeneratingImage] = useState(false);
+	const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 	const [backgroundTab, setBackgroundTab] = useState<'color' | 'scene' | 'personnaliser'>('color');
 
 	const toggleSection = (num: number) => {
@@ -163,8 +161,6 @@ export function CreatePostPage() {
 			return;
 		}
 
-		setIsProcessingImages(true);
-
 		// Use only the first image
 		const file = imageFiles[0];
 		console.log('=== IMAGE UPLOAD DEBUG ===');
@@ -187,8 +183,6 @@ export function CreatePostPage() {
 			console.error('ERROR creating object URL:', error);
 			alert('Failed to load image preview. Please try again.');
 		}
-		
-		setIsProcessingImages(false);
 
 		// Clear the input so the same file can be selected again
 		e.target.value = '';
@@ -217,8 +211,6 @@ export function CreatePostPage() {
 			return;
 		}
 
-		setIsProcessingImages(true);
-
 		// Use only the first image
 		const file = imageFiles[0];
 		console.log('Processing dropped file:', file.name, 'Type:', file.type, 'Size:', file.size);
@@ -231,8 +223,6 @@ export function CreatePostPage() {
 		} catch (error) {
 			console.error('Error creating object URL for dropped file:', file.name, error);
 		}
-		
-		setIsProcessingImages(false);
 	};
 
 	const removeImage = (index: number) => {
@@ -249,8 +239,9 @@ export function CreatePostPage() {
 	const handleRemoveCurrentImage = (e: React.MouseEvent) => {
 		e.stopPropagation();
 		if (enhancedImagePreview) {
-			URL.revokeObjectURL(enhancedImagePreview);
-			setEnhancedImageBlob(null);
+			if (enhancedImagePreview.startsWith('blob:')) {
+				URL.revokeObjectURL(enhancedImagePreview);
+			}
 			setEnhancedImagePreview(null);
 		}
 		removeImage(0);
@@ -387,43 +378,136 @@ export function CreatePostPage() {
 				}
 			}
 
-			// Call genai.py API
-			const pythonApiUrl = 'https://ai.postoryai.com';
-			
-			const aiResponse = await fetch(`${pythonApiUrl}/edit-product`, {
-				method: 'POST',
-				body: formDataAI,
+			// Convert uploaded image to base64
+			const imageBase64 = await new Promise<string>((resolve, reject) => {
+				const reader = new FileReader();
+				reader.onloadend = () => {
+					const result = reader.result as string;
+					// Remove the data:image/...;base64, prefix
+					resolve(result.split(',')[1]);
+				};
+				reader.onerror = reject;
+				reader.readAsDataURL(uploadedImages[0]);
 			});
 
-			if (!aiResponse.ok) {
-				const errorText = await aiResponse.text();
-				console.error('AI API Error:', errorText);
-				throw new Error(`AI enhancement failed: ${aiResponse.statusText}`);
+			// Convert custom model image to base64 if provided
+			let customModelBase64: string | undefined;
+			if (customModelImage && formData.modelType === 'custom') {
+				customModelBase64 = await new Promise<string>((resolve, reject) => {
+					const reader = new FileReader();
+					reader.onloadend = () => {
+						const result = reader.result as string;
+						resolve(result.split(',')[1]);
+					};
+					reader.onerror = reject;
+					reader.readAsDataURL(customModelImage);
+				});
 			}
 
-			// Get the JSON response with image and captions
-			const responseData = await aiResponse.json();
-			console.log('✅ Response received:', responseData);
+			// Get scene reference base64 if needed
+			let sceneReferenceBase64: string | undefined;
+			if (formData.backgroundType === 'scene' && formData.sceneId) {
+				const sceneMap: Record<string, { src: string; ext: string }> = {
+					'acc_1': { src: accScene1, ext: 'jpg' },
+					'acc_2': { src: accScene2, ext: 'jpg' },
+					'acc_3': { src: accScene3, ext: 'jpg' },
+					'acc_4': { src: accScene4, ext: 'jpg' },
+					'cloth_1': { src: clothScene1, ext: 'jpg' },
+					'cloth_2': { src: clothScene2, ext: 'jpg' },
+					'cloth_3': { src: clothScene3, ext: 'jpg' },
+					'beauty_1': { src: beauteScene1, ext: 'jpg' },
+					'beauty_2': { src: beauteScene2, ext: 'jpg' },
+					'beauty_3': { src: beauteScene3, ext: 'jpg' },
+					'beauty_4': { src: beauteScene4, ext: 'jpg' },
+					'elec_1': { src: elecScene1, ext: 'jpg' },
+					'elec_2': { src: elecScene2, ext: 'jpg' },
+					'elec_3': { src: elecScene3, ext: 'jpg' },
+					'elec_4': { src: elecScene4, ext: 'jpg' },
+					'elec_5': { src: elecScene5, ext: 'jpg' },
+					'fourn_1': { src: fournScene1, ext: 'jpg' },
+					'fourn_2': { src: fournScene2, ext: 'png' },
+					'fourn_3': { src: fournScene3, ext: 'jpg' },
+					'sport_1': { src: sportScene1, ext: 'jpg' },
+					'sport_2': { src: sportScene2, ext: 'jpg' },
+					'sport_3': { src: sportScene3, ext: 'jpg' },
+					'sport_4': { src: sportScene4, ext: 'jpg' },
+					'sport_5': { src: sportScene5, ext: 'jpg' },
+					'sport_6': { src: sportScene6, ext: 'jpg' },
+				};
+
+				const scene = sceneMap[formData.sceneId];
+				if (scene) {
+					// Fetch the scene image and convert to base64
+					const sceneResponse = await fetch(scene.src);
+					const sceneBlob = await sceneResponse.blob();
+					sceneReferenceBase64 = await new Promise<string>((resolve, reject) => {
+						const reader = new FileReader();
+						reader.onloadend = () => {
+							const result = reader.result as string;
+							resolve(result.split(',')[1]);
+						};
+						reader.onerror = reject;
+						reader.readAsDataURL(sceneBlob);
+					});
+					console.log(`✅ Scene reference loaded: ${formData.sceneId} (${sceneBlob.size} bytes)`);
+				} else {
+					console.warn(`⚠️ Scene ID '${formData.sceneId}' not found in sceneMap`);
+				}
+			}
+
+			// Call Node.js API which handles Python AI service internally
+			console.log('🚀 Calling Node.js API /posts/generate...');
+			console.log('📦 Parameters:', {
+				backgroundType: formData.backgroundType,
+				hasSceneReference: !!sceneReferenceBase64,
+				sceneReferenceSize: sceneReferenceBase64 ? `${(sceneReferenceBase64.length / 1024).toFixed(2)} KB` : '0 KB',
+				useModel: formData.useModel,
+				modelType: formData.modelType,
+				postType: formData.postType,
+			});
+			
+			const response = await postsApi.generateAndCreatePost({
+				imageBase64,
+				postType: formData.postType || undefined,
+				currency: formData.currency || undefined,
+				price: formData.price || undefined,
+				backgroundType: formData.backgroundType,
+				backgroundColor: formData.backgroundColor,
+				useModel: formData.useModel,
+				modelType: formData.modelType,
+				modelEthnicity: formData.modelType === 'ai' ? formData.modelEthnicity : undefined,
+				modelGender: formData.modelType === 'ai' ? formData.modelGender : undefined,
+				customModelImage: customModelBase64,
+				sceneReference: sceneReferenceBase64,
+				addText: formData.addText,
+				addPrice: formData.addPrice,
+				generateCaption: generateCaption ? 'yes' : 'no',
+				captionLanguage: captionLanguage || 'french',
+			});
+
+			console.log('✅ AI image generated successfully:', response.data);
+
+			// Get the base64 image and caption from response
+			const responseData = response.data.data;
+			const generatedImageBase64 = responseData.image;
+			const generatedCaption = responseData.caption || '';
 
 			// Convert base64 image to blob
-			const imageData = atob(responseData.image);
+			const imageData = atob(generatedImageBase64);
 			const imageArray = new Uint8Array(imageData.length);
 			for (let i = 0; i < imageData.length; i++) {
 				imageArray[i] = imageData.charCodeAt(i);
 			}
 			const enhancedBlob = new Blob([imageArray], { type: 'image/png' });
-			console.log('✅ Image enhanced successfully, size:', enhancedBlob.size);
+			console.log('✅ Image blob created, size:', enhancedBlob.size);
 
-			// Create preview URL (revoke previous one when regenerating to avoid leak)
+			// Create preview URL
 			const previewUrl = URL.createObjectURL(enhancedBlob);
 			setEnhancedImageBlob(enhancedBlob);
 			setEnhancedImagePreview(prev => {
-				if (prev) URL.revokeObjectURL(prev);
+				if (prev && prev.startsWith('blob:')) URL.revokeObjectURL(prev);
 				return previewUrl;
 			});
-			
-			// Set caption in state
-			const generatedCaption = responseData.caption || '';
 			
 			// Store in appropriate state based on language (only when AI caption was requested)
 			if (generateCaption && captionLanguage) {
@@ -444,19 +528,13 @@ export function CreatePostPage() {
 			
 			if (generateCaption) console.log(`📝 Generated ${captionLanguage} caption:`, generatedCaption);
 
-		} catch (aiError) {
-			console.error('Failed to enhance image:', aiError);
-			alert('Failed to enhance image. Please try again or adjust settings.');
+		} catch (aiError: any) {
+			console.error('Failed to generate image:', aiError);
+			const errorMessage = aiError.response?.data?.message || aiError.message || 'Failed to generate image';
+			alert(`Failed to generate image: ${errorMessage}. Please try again or adjust settings.`);
 		} finally {
 			setIsUploading(false);
-			setIsRegeneratingImage(false);
 		}
-	};
-
-	const handleRegenerateImage = () => {
-		// Keep current preview visible so container height doesn't collapse; show loading overlay
-		setIsRegeneratingImage(true);
-		handleEnhanceImage();
 	};
 
 	const handleSaveAndCreatePost = async () => {
@@ -468,9 +546,9 @@ export function CreatePostPage() {
 		setIsUploading(true);
 		
 		try {
-			console.log('📤 Uploading enhanced image to server...');
+			console.log('📤 Uploading enhanced image to Cloudinary...');
 
-			// Upload enhanced image to your main server
+			// Upload enhanced image to Cloudinary
 			const formDataUpload = new FormData();
 			const enhancedFile = new File([enhancedImageBlob], 'enhanced.png', { type: 'image/png' });
 			formDataUpload.append('images', enhancedFile);
@@ -478,70 +556,35 @@ export function CreatePostPage() {
 			const uploadResponse = await uploadApi.uploadImages(formDataUpload);
 			const uploadedImageUrls = uploadResponse.data.data.images.map((img: any) => img.url);
 
-			console.log('✅ Image uploaded successfully');
+			console.log('✅ Image uploaded to Cloudinary');
 
-			// Log AI enhancement settings
-			console.log('🎨 AI Enhancement Settings:');
-			console.log('  backgroundType:', formData.backgroundType);
-			console.log('  backgroundColor:', formData.backgroundColor);
-			console.log('  useModel:', formData.useModel);
-			console.log('  modelEthnicity:', formData.modelEthnicity);
-			console.log('  modelGender:', formData.modelGender);
-			console.log('  addText:', formData.addText);
-
-		// Create post with enhanced images
-		console.log('📝 Creating post with data:', {
-			caption: formData.caption || '',
-			platform: formData.platform,
-			images: uploadedImageUrls,
-			scheduledAt: formData.scheduledAt,
-			postType: formData.postType,
-			sceneId: formData.sceneId,
-			currency: formData.currency,
-			price: formData.price,
-			productName: formData.productName,
-			description: formData.description,
-			backgroundType: formData.backgroundType,
-			backgroundColor: formData.backgroundColor,
-			useModel: formData.useModel,
-			modelEthnicity: formData.modelEthnicity,
-			modelGender: formData.modelGender,
-			addText: formData.addText,
-		});
-
-		await createPost({
-			caption: formData.caption || '',
-			aiPrompt: '',
-			platform: formData.platform,
-			scheduledAt: formData.scheduledAt || undefined,
-			images: uploadedImageUrls,
-			postType: formData.postType || undefined,
-			sceneId: formData.sceneId || undefined,
-			currency: formData.currency || undefined,
-			price: formData.price as any,
-			productName: formData.productName || undefined,
-			description: formData.description || undefined,
-			backgroundType: formData.backgroundType,
-			backgroundColor: formData.backgroundColor,
-			useModel: formData.useModel,
-			modelType: formData.modelType,
-			modelEthnicity: formData.modelEthnicity,
-			modelGender: formData.modelGender,
-			addText: formData.addText,
-		});
-		navigate('/posts');
+			// Create post with uploaded image
+			await createPost({
+				caption: formData.caption || '',
+				aiPrompt: '',
+				platform: formData.platform,
+				scheduledAt: formData.scheduledAt || undefined,
+				images: uploadedImageUrls,
+				postType: formData.postType || undefined,
+				currency: formData.currency || undefined,
+				price: formData.price as any,
+				productName: formData.productName || undefined,
+				description: formData.description || undefined,
+				backgroundType: formData.backgroundType,
+				backgroundColor: formData.backgroundColor,
+				useModel: formData.useModel,
+				modelType: formData.modelType,
+				modelEthnicity: formData.modelEthnicity,
+				modelGender: formData.modelGender,
+				addText: formData.addText,
+			});
+			
+			console.log('✅ Post created successfully');
+			navigate('/posts');
 		} catch (err: any) {
 			console.error('Failed to create post:', err);
-			console.error('Error response:', err.response?.data);
-			console.error('Error status:', err.response?.status);
-			console.error('Full error object:', JSON.stringify(err.response, null, 2));
-
-			// Check if it's an authentication error
-			if (err.response?.status === 401) {
-				alert('Authentication required. Please log in again.');
-			} else {
-				alert(`Failed to create post: ${err.response?.data?.message || err.message}`);
-			}
+			const errorMessage = err.response?.data?.message || err.message;
+			alert(`Failed to create post: ${errorMessage}`);
 		} finally {
 			setIsUploading(false);
 		}
@@ -736,17 +779,6 @@ export function CreatePostPage() {
 									<div className="w-full flex justify-center bg-gray-100 min-h-0">
 										<div className="relative inline-block max-w-full">
 											<img src={enhancedImagePreview} alt="" className="max-w-full h-auto block" />
-											{isRegeneratingImage && (
-												<div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-													<span className="flex items-center gap-2 text-white font-medium">
-														<svg className="animate-spin h-8 w-8" fill="none" viewBox="0 0 24 24">
-															<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-															<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-														</svg>
-														Régénération...
-													</span>
-												</div>
-											)}
 										</div>
 									</div>
 									<button
@@ -784,10 +816,43 @@ export function CreatePostPage() {
 					</div>
 				</div>
 
+				{/* Mobile toggle button for right sidebar (icon under left sidebar) */}
+				<button
+					type="button"
+					onClick={() => setIsMobileRightOpen(true)}
+					className="fixed left-4 top-20 z-30 lg:hidden w-12 h-12 mt-2 rounded-full shadow-lg flex items-center justify-center"
+					style={{ background: '#9747FF', color: '#FFFFFF' }}
+				>
+					<svg
+						className="w-5 h-5"
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							strokeWidth={2}
+							d="M4 6h16M4 12h10M4 18h7"
+						/>
+					</svg>
+				</button>
+
+				{/* Mobile overlay for right sidebar */}
+				{isMobileRightOpen && (
+					<div
+						className="fixed inset-0 bg-black/60 z-20 lg:hidden"
+						onClick={() => setIsMobileRightOpen(false)}
+					/>
+				)}
+
 				{/* Right: Sidebar with accordion */}
 				<aside
-					className="w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-full"
+					className={`w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-full lg:static lg:flex ${
+						isMobileRightOpen ? 'fixed right-0 top-0 h-full z-30' : 'hidden lg:flex'
+					}`}
 					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
+					onClick={(e) => e.stopPropagation()}
 				>
 					<div className="p-4 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-1">
 						{/* 1. PHOTO DU PRODUIT */}
@@ -1033,7 +1098,12 @@ export function CreatePostPage() {
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_1' }))}
+																onClick={() => setFormData(prev => ({
+																	...prev,
+																	backgroundType: 'scene',
+																	// Toggle: click again to disable this scene
+																	sceneId: prev.sceneId === 'cloth_1' ? '' : 'cloth_1',
+																}))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_1' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1049,7 +1119,11 @@ export function CreatePostPage() {
 															</button>
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_2' }))}
+																onClick={() => setFormData(prev => ({
+																	...prev,
+																	backgroundType: 'scene',
+																	sceneId: prev.sceneId === 'cloth_2' ? '' : 'cloth_2',
+																}))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_2' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1065,7 +1139,11 @@ export function CreatePostPage() {
 															</button>
 															<button
 																type="button"
-																onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: 'cloth_3' }))}
+																onClick={() => setFormData(prev => ({
+																	...prev,
+																	backgroundType: 'scene',
+																	sceneId: prev.sceneId === 'cloth_3' ? '' : 'cloth_3',
+																}))}
 																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																style={{
 																	borderColor: formData.sceneId === 'cloth_3' ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1090,7 +1168,11 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
+																	onClick={() => setFormData(prev => ({
+																		...prev,
+																		backgroundType: 'scene',
+																		sceneId: prev.sceneId === id ? '' : id,
+																	}))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1115,7 +1197,11 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
+																	onClick={() => setFormData(prev => ({
+																		...prev,
+																		backgroundType: 'scene',
+																		sceneId: prev.sceneId === id ? '' : id,
+																	}))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1140,7 +1226,11 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
+																	onClick={() => setFormData(prev => ({
+																		...prev,
+																		backgroundType: 'scene',
+																		sceneId: prev.sceneId === id ? '' : id,
+																	}))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1165,7 +1255,11 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
+																	onClick={() => setFormData(prev => ({
+																		...prev,
+																		backgroundType: 'scene',
+																		sceneId: prev.sceneId === id ? '' : id,
+																	}))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1190,7 +1284,11 @@ export function CreatePostPage() {
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: id }))}
+																	onClick={() => setFormData(prev => ({
+																		...prev,
+																		backgroundType: 'scene',
+																		sceneId: prev.sceneId === id ? '' : id,
+																	}))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
@@ -1450,7 +1548,6 @@ export function CreatePostPage() {
 										<button
 											type="button"
 											onClick={() => {
-												setPreviewTab('facebook');
 												setFormData(prev => ({
 													...prev,
 													platform: prev.platform.includes('facebook')
@@ -1470,7 +1567,6 @@ export function CreatePostPage() {
 										<button
 											type="button"
 											onClick={() => {
-												setPreviewTab('instagram');
 												setFormData(prev => ({
 													...prev,
 													platform: prev.platform.includes('instagram')
@@ -1493,27 +1589,16 @@ export function CreatePostPage() {
 						</div>
 					</div>
 
-					{/* Sidebar footer: enhanced actions + Generate button */}
+					{/* Sidebar footer: Generate/Save buttons */}
 					<div className="p-4 border-t border-white/10 space-y-3 lg:mt-0" style={{ background: '#0E0E13' }}>
-						{enhancedImagePreview && (
+						{enhancedImagePreview ? (
 							<div className="flex gap-2">
 								<button
-									type="button"
-									onClick={handleRegenerateImage}
-									disabled={isUploading || isRegeneratingImage}
-									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+									type="submit"
+									disabled={isUploading}
+									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors"
 								>
-									{isRegeneratingImage ? (
-										<>
-											<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-												<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-												<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-											</svg>
-											Régénération...
-										</>
-									) : (
-										'Régénérer'
-									)}
+									{isUploading ? 'Régénération...' : 'Régénérer'}
 								</button>
 								<button
 									type="button"
@@ -1524,8 +1609,7 @@ export function CreatePostPage() {
 									{isUploading ? 'Enregistrement...' : 'Sauvegarder'}
 								</button>
 							</div>
-						)}
-						{!enhancedImagePreview && (
+						) : (
 							<button
 								type="submit"
 								disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}

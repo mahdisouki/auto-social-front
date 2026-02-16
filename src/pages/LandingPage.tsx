@@ -149,12 +149,12 @@ const LandingPage = () => {
 
       {/* Hero Section */}
       <main 
-        className="pt-32 px-4 sm:px-6 lg:px-8 min-h-screen"
+        className="pt-20 sm:pt-24 md:pt-32 px-4 sm:px-6 lg:px-8 min-h-[70vh] sm:min-h-[80vh] md:min-h-screen flex flex-col"
         style={{
           background: '#000000'
         }}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto flex-1 flex flex-col">
           {/* Social Icons with Connection Lines - Top Left */}
           <div className="absolute top-62 left-10 lg:left-20" style={{ zIndex: 200 }}>
             <div className="relative" style={{ zIndex: 200 }}>
@@ -227,12 +227,11 @@ const LandingPage = () => {
             />
             <div className="relative" style={{ zIndex: 1 }}>
               <h1 
-                className="mb-6"
+                className="mb-6 text-[32px] sm:text-[48px] md:text-[60px] lg:text-[70px]"
                 style={{
                   fontFamily: 'Playfair Display, serif',
                   fontWeight: 400,
                   fontStyle: 'italic',
-                  fontSize: '70px',
                   lineHeight: '125%',
                   letterSpacing: '4%',
                   textAlign: 'center',
@@ -266,8 +265,8 @@ const LandingPage = () => {
               </p>
 
               <Link 
-                to="/dashboard" 
-                className="inline-block bg-[#9333EA] text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
+                to="/login" 
+                className="inline-block bg-[#9333EA] text-white px-8 py-4 mt-12 mb-20 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
                 style={{
                   boxShadow: '0px 0px 27.1px 0px #9747FF8A'
                 }}
@@ -281,13 +280,14 @@ const LandingPage = () => {
           </div>
           
         </div>
-        <div className="w-screen pt-35 -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="w-screen mt-auto -mx-4 sm:-mx-6 lg:-mx-8">
               <img src={tsawerImage} alt="Social Media Icons" className="w-full h-auto object-contain max-h-[80vh]" />
           </div>
       </main>
 
       {/* Why Postora AI Section */}
       <section 
+        id="solution"
         className="py-20 px-4 sm:px-6 lg:px-8" 
         style={{ 
           fontFamily: 'Poppins, sans-serif',
@@ -299,12 +299,11 @@ const LandingPage = () => {
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="mb-4"
+              className="mb-4 text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '64px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize',
@@ -313,12 +312,11 @@ const LandingPage = () => {
               }}
             >
               POURQUOI <span 
-                className="text-[#3C2C4D]"
+                className="text-[#3C2C4D] text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
                 style={{
                   fontFamily: 'Playfair Display, serif',
                   fontWeight: 400,
                   fontStyle: 'italic',
-                  fontSize: '64px',
                   lineHeight: '110%',
                   letterSpacing: '-1%',
                   textTransform: 'capitalize'
@@ -471,12 +469,11 @@ const LandingPage = () => {
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="text-white mb-4"
+              className="text-white mb-4 text-[32px] sm:text-[40px] md:text-[48px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '48px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize'
@@ -573,17 +570,16 @@ const LandingPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
+      <section id="tarifs" className="py-20 px-4 sm:px-6 lg:px-8" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="mb-4 text-white"
+              className="mb-4 text-white text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '64px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize'
@@ -806,12 +802,11 @@ const LandingPage = () => {
             {/* Section Header */}
             <div className="flex-shrink-0 md:w-1/3">
               <h2 
-                className="mb-4 text-white"
+                className="mb-4 text-white text-[32px] sm:text-[44px] md:text-[52px] lg:text-[60px]"
                 style={{
                   fontFamily: 'Playfair Display, serif',
                   fontWeight: 400,
                   fontStyle: 'normal',
-                  fontSize: '60px',
                   lineHeight: '110%',
                   letterSpacing: '-1%',
                   textTransform: 'capitalize'

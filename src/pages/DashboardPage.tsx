@@ -22,7 +22,21 @@ export function DashboardPage() {
 		clearError 
 	} = usePostsStore();
 
-	const [histogramPlatform, setHistogramPlatform] = useState<'facebook' | 'instagram'>('facebook');
+	const [histogramPlatforms, setHistogramPlatforms] = useState<('facebook' | 'instagram')[]>(['facebook']);
+
+	const toggleHistogramPlatform = (platform: 'facebook' | 'instagram') => {
+		if (histogramPlatforms.includes(platform)) {
+			// Remove platform if already selected
+			const newPlatforms = histogramPlatforms.filter(p => p !== platform);
+			// Keep at least one platform selected
+			if (newPlatforms.length > 0) {
+				setHistogramPlatforms(newPlatforms);
+			}
+		} else {
+			// Add platform
+			setHistogramPlatforms([...histogramPlatforms, platform]);
+		}
+	};
 
 	useEffect(() => {
 		// Fetch data on component mount and reload
@@ -35,9 +49,16 @@ export function DashboardPage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	// Calculate histogram data based on selected platform
+	// Calculate histogram data based on selected platforms
 	const histogramData = useMemo(() => {
-		const platformPosts = posts.filter(post => post.platform.includes(histogramPlatform));
+		const platformPosts = posts.filter(post => {
+			// If both platforms selected, only show posts that have BOTH platforms
+			if (histogramPlatforms.length === 2) {
+				return post.platform.includes('facebook') && post.platform.includes('instagram');
+			}
+			// If one platform selected, show posts that include that platform
+			return histogramPlatforms.some(p => post.platform.includes(p));
+		});
 		
 		// Group by month
 		const monthCounts: { [key: string]: number } = {};
@@ -68,7 +89,7 @@ export function DashboardPage() {
 			count: monthCounts[month],
 			height: (monthCounts[month] / maxCount) * 100
 		}));
-	}, [posts, histogramPlatform]);
+	}, [posts, histogramPlatforms]);
 
 	// Calculate social account counts from posts
 	const facebookPostsCount = posts.filter(post => post.platform.includes('facebook')).length;
@@ -120,6 +141,39 @@ export function DashboardPage() {
 	}
 
 	return (
+		<>
+			<style>
+				{`
+					@keyframes pulse {
+						0%, 100% {
+							transform: scale(1);
+							opacity: 1;
+						}
+						50% {
+							transform: scale(1.1);
+							opacity: 0.9;
+						}
+					}
+					
+					@keyframes fadeIn {
+						from {
+							opacity: 0;
+							transform: translateY(10px);
+						}
+						to {
+							opacity: 1;
+							transform: translateY(0);
+						}
+					}
+					
+					@keyframes ping {
+						75%, 100% {
+							transform: scale(2);
+							opacity: 0;
+						}
+					}
+				`}
+			</style>
 		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 relative overflow-y-auto overflow-x-hidden" style={{ background: '#000000' }}>
 			{/* Left side decorative image */}
 			<img 
@@ -339,66 +393,69 @@ export function DashboardPage() {
 						>
 							<button
 								type="button"
-								onClick={() => setHistogramPlatform('facebook')}
+								onClick={() => toggleHistogramPlatform('facebook')}
 								className={`px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
-									histogramPlatform === 'facebook' ? 'text-white' : 'text-gray-400 hover:text-white'
+									histogramPlatforms.includes('facebook') ? 'text-white' : 'text-gray-400 hover:text-white'
 								}`}
-								style={{ background: histogramPlatform === 'facebook' ? '#9747FF' : 'transparent' }}
+								style={{ background: histogramPlatforms.includes('facebook') ? '#9747FF' : 'transparent' }}
 							>
 								Facebook
 							</button>
 							<button
 								type="button"
-								onClick={() => setHistogramPlatform('instagram')}
+								onClick={() => toggleHistogramPlatform('instagram')}
 								className={`px-3 py-1.5 text-xs font-semibold uppercase transition-colors ${
-									histogramPlatform === 'instagram' ? 'text-white' : 'text-gray-400 hover:text-white'
+									histogramPlatforms.includes('instagram') ? 'text-white' : 'text-gray-400 hover:text-white'
 								}`}
-								style={{ background: histogramPlatform === 'instagram' ? '#9747FF' : 'transparent' }}
+								style={{ background: histogramPlatforms.includes('instagram') ? '#9747FF' : 'transparent' }}
 							>
 								Instagram
 							</button>
 						</div>
 					</div>
-					{/* Histogram */}
+					{/* Histogram - Monthly points per platform */}
 					<div
-						className="flex-1 rounded-xl min-h-[180px] px-4 py-6 flex items-end justify-between gap-2"
+						className="flex-1 rounded-xl min-h-[200px] px-6 py-6 relative overflow-hidden transition-all duration-500"
 						style={{
 							background: 'rgba(255,255,255,0.03)',
 							border: '1px solid rgba(255,255,255,0.06)',
 						}}
 					>
 						{histogramData.length > 0 ? (
-							histogramData.map((data, index) => (
-								<div
-									key={index}
-									className="flex-1 flex flex-col items-center justify-end gap-1 group"
-								>
-									<div className="relative w-full flex items-end justify-center" style={{ height: '120px' }}>
-										{/* Tooltip on hover */}
-										<div
-											className="absolute -top-8 opacity-0 group-hover:opacity-100 transition-opacity bg-[#9747FF] text-white text-xs px-2 py-1 rounded"
-											style={{ whiteSpace: 'nowrap' }}
-										>
-											{data.count} post{data.count !== 1 ? 's' : ''}
+							<div className="w-full h-full flex items-end justify-between gap-4">
+								{histogramData.map((data, index) => {
+									const monthLabel =
+										['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][parseInt(data.month) - 1];
+									// Ensure a visible minimum height for non‑zero counts
+									const barHeight = data.count > 0 ? Math.max(data.height, 8) : 0;
+									return (
+										<div key={index} className="flex-1 flex flex-col items-center h-full">
+											<div className="relative flex-1 w-full flex items-end justify-center">
+												{data.count > 0 && (
+													<>
+														<div className="absolute -top-5 text-xs font-semibold text-white/80">
+															{data.count}
+														</div>
+														<div
+															className="w-2 rounded-full transition-all duration-300 hover:scale-y-110"
+															style={{
+																height: `${barHeight}%`,
+																background: 'linear-gradient(180deg, #FF47D4 0%, #9747FF 100%)',
+																boxShadow: '0 8px 20px rgba(0,0,0,0.4)',
+															}}
+														/>
+													</>
+												)}
+											</div>
+											<span className="mt-2 text-gray-400 text-xs font-medium">
+												{monthLabel}
+											</span>
 										</div>
-										{/* Bar */}
-										<div
-											className="w-full rounded-t transition-all duration-300 group-hover:opacity-80"
-											style={{
-												height: `${data.height}%`,
-												minHeight: data.count > 0 ? '8px' : '0px',
-												background: 'linear-gradient(180deg, #9747FF 0%, #6B2BC7 100%)',
-											}}
-										></div>
-									</div>
-									{/* Month label */}
-									<span className="text-gray-400 text-xs mt-1">
-										{['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'][parseInt(data.month) - 1]}
-									</span>
-								</div>
-							))
+									);
+								})}
+							</div>
 						) : (
-							<div className="w-full flex items-center justify-center">
+							<div className="w-full h-full flex items-center justify-center">
 								<span className="text-white/40 text-sm">
 									Aucune donnée disponible
 								</span>
@@ -583,5 +640,6 @@ export function DashboardPage() {
 			</div>
 			
 		</div>
+		</>
 	);
 }

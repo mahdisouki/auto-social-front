@@ -42,11 +42,6 @@ function Shell() {
 					<MenuIcon />
 				</button>
 				<Routes>
-					<Route path="/" element={
-						<ProtectedRoute>
-							<Navigate to="/dashboard" replace />
-						</ProtectedRoute>
-					} />
 					<Route path="/dashboard" element={
 						<ProtectedRoute>
 							<DashboardPage />
