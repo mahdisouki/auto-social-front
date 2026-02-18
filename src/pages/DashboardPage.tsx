@@ -8,13 +8,11 @@ import dash2Image from '../assets/dash2.png';
 import backgrounddash from '../assets/backgrounddash.jpg';
 import fbIcon from '../assets/fb.png';
 import instaIcon from '../assets/insta.png';
-import placeholderPost1 from '../assets/beauté/1.jpg';
 
 export function DashboardPage() {
 	const navigate = useNavigate();
 	const { 
 		posts, 
-		messages, 
 		stats, 
 		isLoading, 
 		error, 
@@ -530,14 +528,7 @@ export function DashboardPage() {
 									}}
 								>
 									<div className="relative aspect-[4/5] w-full overflow-hidden">
-										<img
-											src={post.images?.[0] || post.mediaUrl || post.backgroundUrl || placeholderPost1}
-											alt=""
-											className="absolute inset-0 w-full h-full object-cover"
-											onError={(e) => {
-												(e.target as HTMLImageElement).src = placeholderPost1;
-											}}
-										/>
+										
 										<div className="absolute top-2 right-2 flex gap-1">
 											{post.platform.includes('facebook') && (
 												<div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden bg-[#1877F2]">

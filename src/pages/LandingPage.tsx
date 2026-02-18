@@ -34,12 +34,13 @@ const LandingPage = () => {
       {/* Mobile sidebar - opens from the right */}
       <aside
         className={`
-          fixed inset-y-0 right-0 z-50 w-64 flex flex-col transform transition-transform duration-300 ease-in-out md:hidden
+          fixed inset-y-0 right-0 w-64 flex flex-col transform transition-transform duration-300 ease-in-out md:hidden
           ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
         style={{
           background: '#000000',
           borderLeft: '1px solid rgba(255,255,255,0.1)',
+          zIndex: 9999,
         }}
       >
         <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
@@ -137,11 +138,11 @@ const LandingPage = () => {
             {/* Mobile menu button */}
             <button
               type="button"
-              onClick={() => setMobileMenuOpen(true)}
-              className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors"
-              aria-label="Ouvrir le menu"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors relative"
+              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
             >
-              <MenuIcon />
+              {mobileMenuOpen ? <MenuIcon /> : <MenuIcon />}
             </button>
           </div>
         </div>

@@ -8,32 +8,77 @@ registerLocale('fr', fr);
 import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import { postsApi, uploadApi } from '../lib/api';
-import accScene1 from '../assets/accessoires/1.jpg';
-import accScene2 from '../assets/accessoires/2.jpg';
-import accScene3 from '../assets/accessoires/3.jpg';
-import accScene4 from '../assets/accessoires/4.jpg';
-import clothScene1 from '../assets/cloths/1.jpg';
-import clothScene2 from '../assets/cloths/2.jpg';
-import clothScene3 from '../assets/cloths/3.jpg';
-import beauteScene1 from '../assets/beauté/1.jpg';
-import beauteScene2 from '../assets/beauté/2.jpg';
-import beauteScene3 from '../assets/beauté/3.jpg';
-import beauteScene4 from '../assets/beauté/4.jpg';
-import elecScene1 from '../assets/electronics/1.jpg';
-import elecScene2 from '../assets/electronics/2.jpg';
-import elecScene3 from '../assets/electronics/3.jpg';
-import elecScene4 from '../assets/electronics/4.jpg';
-import elecScene5 from '../assets/electronics/5.jpg';
-import fournScene1 from '../assets/fourniture/1.jpg';
-import fournScene2 from '../assets/fourniture/2.png';
-import fournScene3 from '../assets/fourniture/3.jpg';
-import sportScene1 from '../assets/sports/1.jpg';
-import sportScene2 from '../assets/sports/2.jpg';
-import sportScene3 from '../assets/sports/3.jpg';
-import sportScene4 from '../assets/sports/4.jpg';
-import sportScene5 from '../assets/sports/5.jpg';
-import sportScene6 from '../assets/sports/6.jpg';
 import postsL from '../assets/postsL.png';
+
+// Scene images from Cloudinary (single source of truth for UI + API)
+const SCENE_MAP: Record<string, { url: string; ext: string; mime: string }> = {
+	// accessoires (16)
+	acc_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333451/autosocial/scenes/accessoires/xMu3k8fn_s1qt1p.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333439/autosocial/scenes/accessoires/ZAD4fi4T_yw6ljg.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333438/autosocial/scenes/accessoires/y4Rep5A8_o2g4xi.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333436/autosocial/scenes/accessoires/0c2DDQGz_vz0jef.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333435/autosocial/scenes/accessoires/4Q4I8o8n_wkwo2m.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_6: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333427/autosocial/scenes/accessoires/2VBwg4xZ_nxwjti.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_7: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333410/autosocial/scenes/accessoires/RMbMfq31_fhkh8w.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_8: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333064/autosocial/scenes/accessoires/QGn2i9A0_sdrzxx.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_9: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333061/autosocial/scenes/accessoires/OUBHt0GX_ayiifc.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_10: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333061/autosocial/scenes/accessoires/b3v5cGLF_tdm3o6.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_11: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333058/autosocial/scenes/accessoires/Dmytq0bQ_ed82hx.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_12: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333056/autosocial/scenes/accessoires/oAen44WA_se7o97.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_13: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333050/autosocial/scenes/accessoires/in1f3qsc_mzqgle.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_14: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333049/autosocial/scenes/accessoires/KdPUQSFg_z2xazi.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_15: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333039/autosocial/scenes/accessoires/5PQDSMqB_jlg54e.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	acc_16: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333038/autosocial/scenes/accessoires/IhD6r4et_n79wix.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// beauty (4)
+	beauty_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333504/autosocial/scenes/beauty/LexVFJbO_ve2dww.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	beauty_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333503/autosocial/scenes/beauty/CUMLIsXT_llhp7x.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	beauty_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333502/autosocial/scenes/beauty/Cb21SxXO_ndgzbi.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	beauty_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771333468/autosocial/scenes/beauty/O786gBCI_z6pnf1.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// books (6)
+	books_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337001/autosocial/scenes/books/xiZ6o9UI_nhy78r.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	books_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337000/autosocial/scenes/books/JJQFlRkw_kwkk7s.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	books_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771336998/autosocial/scenes/books/iat41m4Q_vtupmt.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	books_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771336995/autosocial/scenes/books/Fq0KuXeA_l2db6z.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	books_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771336992/autosocial/scenes/books/sFPQkWG1_qz6zxb.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	books_6: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771335239/autosocial/scenes/books/MOIXBLT8_gtyiju.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// clothes (12)
+	cloth_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337157/autosocial/scenes/clothes/9bJvDy0Z_cfmfl5.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337141/autosocial/scenes/clothes/uMBM8BxS_mzacqm.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337141/autosocial/scenes/clothes/qFNFu2qv_qcbzno.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337139/autosocial/scenes/clothes/ZwbhWXwa_silbhj.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337139/autosocial/scenes/clothes/kLkKwTSZ_uvzcov.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_6: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337134/autosocial/scenes/clothes/ttEosMnJ_kr2fed.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_7: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337133/autosocial/scenes/clothes/Oag4TWAW_bbgmya.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_8: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337133/autosocial/scenes/clothes/g9TsaZhO_hvlpsu.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_9: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337131/autosocial/scenes/clothes/P2ZeqIyz_nnwkyp.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_10: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337127/autosocial/scenes/clothes/lb50sB3h_cmc9uj.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_11: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337125/autosocial/scenes/clothes/D14IWa6W_iyju3d.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	cloth_12: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337127/autosocial/scenes/clothes/lb50sB3h_cmc9uj.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// electronics (5)
+	elec_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337395/autosocial/scenes/electronics/3fffpOFJ_erfzrn.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	elec_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337394/autosocial/scenes/electronics/qYad2deQ_bu0vmp.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	elec_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337391/autosocial/scenes/electronics/GTuFEFhh_ivo1c4.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	elec_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337391/autosocial/scenes/electronics/f1lTGU5D_yaz2do.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	elec_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337387/autosocial/scenes/electronics/KD6HM2K1_qad5dr.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// furniture (3)
+	fourn_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337546/autosocial/scenes/furnitures/INPUT_IMAGE_FURNITURE_PRODUCT_You_are_a_profess-1770156549651_z3raia.png', ext: 'png', mime: 'image/png' },
+	fourn_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337538/autosocial/scenes/furnitures/IPLD8qQP_iphl5l.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	fourn_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337538/autosocial/scenes/furnitures/cZQiXFp5_bwatbr.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// sport (6)
+	sport_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337612/autosocial/scenes/sport/98EyWzgG_rkqm3k.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	sport_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337611/autosocial/scenes/sport/pDlErmLM_sxxqes.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	sport_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337610/autosocial/scenes/sport/26eR7ex2_l5q3ct.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	sport_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337609/autosocial/scenes/sport/0Y19KPim_dk9mdh.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	sport_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337606/autosocial/scenes/sport/nNqFLq4P_jfilhz.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	sport_6: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337605/autosocial/scenes/sport/K7L71UFQ_teuqi2.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	// toys (6)
+	toys_1: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337650/autosocial/scenes/toys/BiQhIAex_ljd3nz.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	toys_2: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337648/autosocial/scenes/toys/XLCZIdlg_jrluan.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	toys_3: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337647/autosocial/scenes/toys/fw09Dwxs_ddsib3.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	toys_4: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337646/autosocial/scenes/toys/1NsodZ2g_ko600o.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	toys_5: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337645/autosocial/scenes/toys/FnWk4Hfw_hblcr7.jpg', ext: 'jpg', mime: 'image/jpeg' },
+	toys_6: { url: 'https://res.cloudinary.com/ddcsuzef0/image/upload/v1771337641/autosocial/scenes/toys/8NoFaC8I_cfdmhy.jpg', ext: 'jpg', mime: 'image/jpeg' },
+};
 import { useAuthStore } from '../stores/authStore';
 
 export function CreatePostPage() {
@@ -163,22 +208,14 @@ export function CreatePostPage() {
 
 		// Use only the first image
 		const file = imageFiles[0];
-		console.log('=== IMAGE UPLOAD DEBUG ===');
-		console.log('File name:', file.name);
-		console.log('File type:', file.type);
-		console.log('File size:', file.size, 'bytes');
+
 		
 		try {
 			// Create blob URL
 			const objectURL = URL.createObjectURL(file);
-			console.log('Created object URL:', objectURL);
-			console.log('URL is valid:', objectURL.startsWith('blob:'));
-			
-			// Update state
 			setUploadedImages([file]);
 			setImagePreviews([objectURL]);
 			
-			console.log('State updated successfully');
 		} catch (error) {
 			console.error('ERROR creating object URL:', error);
 			alert('Failed to load image preview. Please try again.');
@@ -213,11 +250,9 @@ export function CreatePostPage() {
 
 		// Use only the first image
 		const file = imageFiles[0];
-		console.log('Processing dropped file:', file.name, 'Type:', file.type, 'Size:', file.size);
 		
 		try {
 			const objectURL = URL.createObjectURL(file);
-			console.log('Generated object URL for dropped file:', objectURL);
 			setUploadedImages([file]);
 			setImagePreviews([objectURL]);
 		} catch (error) {
@@ -266,7 +301,6 @@ export function CreatePostPage() {
 		setCustomModelImage(file);
 		setCustomModelPreview(previewUrl);
 
-		console.log('Custom model image uploaded:', file.name);
 	};
 
 	const removeCustomModel = () => {
@@ -293,8 +327,7 @@ export function CreatePostPage() {
 
 		try {
 			const file = uploadedImages[0];
-			console.log('🎨 Enhancing image with AI...');
-			console.log(`Processing image: ${file.name}`);
+		
 
 			// Create FormData for genai.py endpoint
 			const formDataAI = new FormData();
@@ -302,52 +335,22 @@ export function CreatePostPage() {
 			formDataAI.append('background_type', formData.backgroundType);
 			formDataAI.append('background_color', formData.backgroundColor);
 			formDataAI.append('scene_id', formData.sceneId || '');
-			// Scene reference: use images directly from asset folders (same as displayed in UI)
+			// Scene reference: fetch from Cloudinary and send to API
 			if (formData.backgroundType === 'scene' && formData.sceneId) {
-				const sceneMap: Record<string, { url: string; ext: string; mime: string }> = {
-					acc_1: { url: accScene1, ext: 'jpg', mime: 'image/jpeg' },
-					acc_2: { url: accScene2, ext: 'jpg', mime: 'image/jpeg' },
-					acc_3: { url: accScene3, ext: 'jpg', mime: 'image/jpeg' },
-					acc_4: { url: accScene4, ext: 'jpg', mime: 'image/jpeg' },
-					cloth_1: { url: clothScene1, ext: 'jpg', mime: 'image/jpeg' },
-					cloth_2: { url: clothScene2, ext: 'jpg', mime: 'image/jpeg' },
-					cloth_3: { url: clothScene3, ext: 'jpg', mime: 'image/jpeg' },
-					beauty_1: { url: beauteScene1, ext: 'jpg', mime: 'image/jpeg' },
-					beauty_2: { url: beauteScene2, ext: 'jpg', mime: 'image/jpeg' },
-					beauty_3: { url: beauteScene3, ext: 'jpg', mime: 'image/jpeg' },
-					beauty_4: { url: beauteScene4, ext: 'jpg', mime: 'image/jpeg' },
-					elec_1: { url: elecScene1, ext: 'jpg', mime: 'image/jpeg' },
-					elec_2: { url: elecScene2, ext: 'jpg', mime: 'image/jpeg' },
-					elec_3: { url: elecScene3, ext: 'jpg', mime: 'image/jpeg' },
-					elec_4: { url: elecScene4, ext: 'jpg', mime: 'image/jpeg' },
-					elec_5: { url: elecScene5, ext: 'jpg', mime: 'image/jpeg' },
-					fourn_1: { url: fournScene1, ext: 'jpg', mime: 'image/jpeg' },
-					fourn_2: { url: fournScene2, ext: 'png', mime: 'image/png' },
-					fourn_3: { url: fournScene3, ext: 'jpg', mime: 'image/jpeg' },
-					sport_1: { url: sportScene1, ext: 'jpg', mime: 'image/jpeg' },
-					sport_2: { url: sportScene2, ext: 'jpg', mime: 'image/jpeg' },
-					sport_3: { url: sportScene3, ext: 'jpg', mime: 'image/jpeg' },
-					sport_4: { url: sportScene4, ext: 'jpg', mime: 'image/jpeg' },
-					sport_5: { url: sportScene5, ext: 'jpg', mime: 'image/jpeg' },
-					sport_6: { url: sportScene6, ext: 'jpg', mime: 'image/jpeg' },
-				};
-				const scene = sceneMap[formData.sceneId];
+				const scene = SCENE_MAP[formData.sceneId];
 				if (scene) {
 					const sceneRes = await fetch(scene.url);
 					const sceneBlob = await sceneRes.blob();
 					const sceneFile = new File([sceneBlob], `scene-ref-${formData.sceneId}.${scene.ext}`, { type: sceneBlob.type || scene.mime });
 					formDataAI.append('scene_reference', sceneFile);
-					console.log(`   ✅ Sending scene reference: ${formData.sceneId}.${scene.ext}`);
 				}
 			}
 			formDataAI.append('use_model', formData.useModel);
 			formDataAI.append('model_type', formData.modelType);
 			
-			console.log('🔍 MODEL TYPE:', formData.modelType);
 			
 			// Only send ethnicity and gender for AI models
 			if (formData.modelType === 'ai') {
-				console.log('✅ AI MODEL - Adding ethnicity and gender');
 				formDataAI.append('model_ethnicity', formData.modelEthnicity);
 				formDataAI.append('model_gender', formData.modelGender);
 			} else {
@@ -356,7 +359,6 @@ export function CreatePostPage() {
 			
 			// Send custom model image for custom models
 			if (customModelImage && formData.modelType === 'custom') {
-				console.log('✅ CUSTOM MODEL - Adding custom model image');
 				formDataAI.append('custom_model_image', customModelImage);
 			}
 			
@@ -367,16 +369,7 @@ export function CreatePostPage() {
 			formDataAI.append('generate_caption', generateCaption ? 'yes' : 'no');
 			formDataAI.append('caption_language', captionLanguage || 'french');
 			formDataAI.append('post_type', formData.postType || 'other');
-			
-			// Log all FormData entries
-			console.log('📤 SENDING TO BACKEND:');
-			for (let [key, value] of formDataAI.entries()) {
-				if (value instanceof File) {
-					console.log(`   ${key}: [File: ${value.name}]`);
-				} else {
-					console.log(`   ${key}: ${value}`);
-				}
-			}
+		
 
 			// Convert uploaded image to base64
 			const imageBase64 = await new Promise<string>((resolve, reject) => {
@@ -407,38 +400,10 @@ export function CreatePostPage() {
 			// Get scene reference base64 if needed
 			let sceneReferenceBase64: string | undefined;
 			if (formData.backgroundType === 'scene' && formData.sceneId) {
-				const sceneMap: Record<string, { src: string; ext: string }> = {
-					'acc_1': { src: accScene1, ext: 'jpg' },
-					'acc_2': { src: accScene2, ext: 'jpg' },
-					'acc_3': { src: accScene3, ext: 'jpg' },
-					'acc_4': { src: accScene4, ext: 'jpg' },
-					'cloth_1': { src: clothScene1, ext: 'jpg' },
-					'cloth_2': { src: clothScene2, ext: 'jpg' },
-					'cloth_3': { src: clothScene3, ext: 'jpg' },
-					'beauty_1': { src: beauteScene1, ext: 'jpg' },
-					'beauty_2': { src: beauteScene2, ext: 'jpg' },
-					'beauty_3': { src: beauteScene3, ext: 'jpg' },
-					'beauty_4': { src: beauteScene4, ext: 'jpg' },
-					'elec_1': { src: elecScene1, ext: 'jpg' },
-					'elec_2': { src: elecScene2, ext: 'jpg' },
-					'elec_3': { src: elecScene3, ext: 'jpg' },
-					'elec_4': { src: elecScene4, ext: 'jpg' },
-					'elec_5': { src: elecScene5, ext: 'jpg' },
-					'fourn_1': { src: fournScene1, ext: 'jpg' },
-					'fourn_2': { src: fournScene2, ext: 'png' },
-					'fourn_3': { src: fournScene3, ext: 'jpg' },
-					'sport_1': { src: sportScene1, ext: 'jpg' },
-					'sport_2': { src: sportScene2, ext: 'jpg' },
-					'sport_3': { src: sportScene3, ext: 'jpg' },
-					'sport_4': { src: sportScene4, ext: 'jpg' },
-					'sport_5': { src: sportScene5, ext: 'jpg' },
-					'sport_6': { src: sportScene6, ext: 'jpg' },
-				};
-
-				const scene = sceneMap[formData.sceneId];
+				const scene = SCENE_MAP[formData.sceneId];
 				if (scene) {
-					// Fetch the scene image and convert to base64
-					const sceneResponse = await fetch(scene.src);
+					// Fetch the scene image from Cloudinary and convert to base64
+					const sceneResponse = await fetch(scene.url);
 					const sceneBlob = await sceneResponse.blob();
 					sceneReferenceBase64 = await new Promise<string>((resolve, reject) => {
 						const reader = new FileReader();
@@ -449,22 +414,12 @@ export function CreatePostPage() {
 						reader.onerror = reject;
 						reader.readAsDataURL(sceneBlob);
 					});
-					console.log(`✅ Scene reference loaded: ${formData.sceneId} (${sceneBlob.size} bytes)`);
 				} else {
 					console.warn(`⚠️ Scene ID '${formData.sceneId}' not found in sceneMap`);
 				}
 			}
 
-			// Call Node.js API which handles Python AI service internally
-			console.log('🚀 Calling Node.js API /posts/generate...');
-			console.log('📦 Parameters:', {
-				backgroundType: formData.backgroundType,
-				hasSceneReference: !!sceneReferenceBase64,
-				sceneReferenceSize: sceneReferenceBase64 ? `${(sceneReferenceBase64.length / 1024).toFixed(2)} KB` : '0 KB',
-				useModel: formData.useModel,
-				modelType: formData.modelType,
-				postType: formData.postType,
-			});
+		
 			
 			const response = await postsApi.generateAndCreatePost({
 				imageBase64,
@@ -485,7 +440,6 @@ export function CreatePostPage() {
 				captionLanguage: captionLanguage || 'french',
 			});
 
-			console.log('✅ AI image generated successfully:', response.data);
 
 			// Get the base64 image and caption from response
 			const responseData = response.data.data;
@@ -499,7 +453,6 @@ export function CreatePostPage() {
 				imageArray[i] = imageData.charCodeAt(i);
 			}
 			const enhancedBlob = new Blob([imageArray], { type: 'image/png' });
-			console.log('✅ Image blob created, size:', enhancedBlob.size);
 
 			// Create preview URL
 			const previewUrl = URL.createObjectURL(enhancedBlob);
@@ -526,7 +479,6 @@ export function CreatePostPage() {
 				caption: generateCaption ? generatedCaption : prev.caption,
 			}));
 			
-			if (generateCaption) console.log(`📝 Generated ${captionLanguage} caption:`, generatedCaption);
 
 		} catch (aiError: any) {
 			console.error('Failed to generate image:', aiError);
@@ -546,7 +498,6 @@ export function CreatePostPage() {
 		setIsUploading(true);
 		
 		try {
-			console.log('📤 Uploading enhanced image to Cloudinary...');
 
 			// Upload enhanced image to Cloudinary
 			const formDataUpload = new FormData();
@@ -556,7 +507,6 @@ export function CreatePostPage() {
 			const uploadResponse = await uploadApi.uploadImages(formDataUpload);
 			const uploadedImageUrls = uploadResponse.data.data.images.map((img: any) => img.url);
 
-			console.log('✅ Image uploaded to Cloudinary');
 
 			// Create post with uploaded image
 			await createPost({
@@ -745,9 +695,9 @@ export function CreatePostPage() {
 				/>
 
 				{/* Left/Center: Feed preview card */}
-				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 py-6 relative" style={{ zIndex: 1 }}>
-					<div className="bg-white rounded-2xl shadow-xl w-full max-w-[320px] sm:max-w-md md:max-w-xl min-h-[500px] sm:min-h-[600px] md:min-h-[720px] max-h-[600px] sm:max-h-[750px] md:max-h-[860px] overflow-hidden">
-						<div className="p-4 border-b border-gray-100 rounded-t-2xl">
+				<div className="flex-1 flex flex-col items-center min-w-0 min-h-0 overflow-y-auto px-4 md:px-6 lg:px-8 pt-12 pb-6 relative" style={{ zIndex: 1 }}>
+					<div className="bg-white rounded-2xl shadow-xl w-full max-w-[400px] sm:max-w-md md:max-w-xl min-h-[650px] sm:min-h-[700px] md:min-h-[720px] max-h-[750px] sm:max-h-[800px] md:max-h-[860px] flex flex-col overflow-hidden">
+						<div className="p-4 border-b border-gray-100 rounded-t-2xl shrink-0">
 							<div className="flex items-center gap-3">
 								{user?.profileImage ? (
 									<img
@@ -764,21 +714,21 @@ export function CreatePostPage() {
 								)}
 								<span className="font-semibold text-gray-900">{user?.name || 'Votre page'}</span>
 							</div>
-							<p className="text-gray-400 text-sm mt-1">
+							<p className="text-black text-sm mt-1">
 								{formData.caption || 'Votre légende apparaîtra ici...'}
 							</p>
 						</div>
 						<div
-							className="relative min-h-[320px] bg-gray-50 border-b border-gray-100 cursor-pointer rounded-b-2xl flex flex-col items-stretch"
+							className="relative min-h-[320px] lg:min-h-0 lg:flex-1 bg-gray-50 border-b border-gray-100 cursor-pointer rounded-b-2xl flex flex-col items-stretch"
 							onDragOver={handleDragOver}
 							onDrop={handleDrop}
 							onClick={() => document.getElementById('file-upload')?.click()}
 						>
 							{enhancedImagePreview ? (
 								<>
-									<div className="w-full flex justify-center bg-gray-100 min-h-0">
-										<div className="relative inline-block max-w-full">
-											<img src={enhancedImagePreview} alt="" className="max-w-full h-auto block" />
+									<div className="w-full flex justify-center bg-gray-100 min-h-0 lg:h-full lg:flex-1">
+										<div className="relative inline-block max-w-full lg:w-full lg:h-full lg:flex lg:items-center lg:justify-center">
+											<img src={enhancedImagePreview} alt="" className="max-w-full h-auto block lg:h-full lg:w-full lg:object-contain" />
 										</div>
 									</div>
 									<button
@@ -791,9 +741,9 @@ export function CreatePostPage() {
 								</>
 							) : imagePreviews[0] ? (
 								<>
-									<div className="w-full flex justify-center bg-gray-100 min-h-0">
-										<div className="relative inline-block max-w-full">
-											<img src={imagePreviews[0]} alt="" className="max-w-full h-auto block" />
+									<div className="w-full flex justify-center bg-gray-100 min-h-0 lg:h-full lg:flex-1">
+										<div className="relative inline-block max-w-full lg:w-full lg:h-full lg:flex lg:items-center lg:justify-center">
+											<img src={imagePreviews[0]} alt="" className="max-w-full h-auto block lg:h-full lg:w-full lg:object-contain" />
 										</div>
 									</div>
 									<button
@@ -848,12 +798,30 @@ export function CreatePostPage() {
 
 				{/* Right: Sidebar with accordion */}
 				<aside
-					className={`w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 max-h-[70vh] lg:max-h-full lg:static lg:flex ${
-						isMobileRightOpen ? 'fixed right-0 top-0 h-full z-30' : 'hidden lg:flex'
+					className={`w-full lg:w-[380px] shrink-0 rounded-2xl overflow-hidden flex flex-col min-h-0 lg:max-h-full lg:static lg:flex transition-transform duration-300 ${
+						isMobileRightOpen 
+							? 'fixed bottom-0 left-0 right-0 z-30 max-h-[85vh] rounded-t-2xl translate-y-0' 
+							: 'hidden lg:flex translate-y-full lg:translate-y-0'
 					}`}
 					style={{ background: '#0E0E13', borderRight: '0.89px solid #FFFFFF0D' }}
 					onClick={(e) => e.stopPropagation()}
 				>
+					{/* Mobile close button */}
+					{isMobileRightOpen && (
+						<div className="lg:hidden flex items-center justify-between p-4 border-b border-white/10">
+							<span className="text-white font-semibold text-sm uppercase tracking-wider">Paramètres</span>
+							<button
+								type="button"
+								onClick={() => setIsMobileRightOpen(false)}
+								className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"
+								style={{ color: '#FFFFFF' }}
+							>
+								<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+								</svg>
+							</button>
+						</div>
+					)}
 					<div className="p-4 overflow-y-auto overflow-x-hidden flex-1 min-h-0 space-y-1">
 						{/* 1. PHOTO DU PRODUIT */}
 						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
@@ -1096,67 +1064,25 @@ export function CreatePostPage() {
 												{formData.postType === 'clothing' && (
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-															<button
-																type="button"
-																onClick={() => setFormData(prev => ({
-																	...prev,
-																	backgroundType: 'scene',
-																	// Toggle: click again to disable this scene
-																	sceneId: prev.sceneId === 'cloth_1' ? '' : 'cloth_1',
-																}))}
-																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																style={{
-																	borderColor: formData.sceneId === 'cloth_1' ? '#9747FF' : 'rgba(255,255,255,0.1)',
-																	boxShadow: formData.sceneId === 'cloth_1' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																}}
-															>
-																<img src={clothScene1} alt="Vêtements 1" className="w-full aspect-square object-cover" />
-																{formData.sceneId === 'cloth_1' && (
-																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																	</div>
-																)}
-															</button>
-															<button
-																type="button"
-																onClick={() => setFormData(prev => ({
-																	...prev,
-																	backgroundType: 'scene',
-																	sceneId: prev.sceneId === 'cloth_2' ? '' : 'cloth_2',
-																}))}
-																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																style={{
-																	borderColor: formData.sceneId === 'cloth_2' ? '#9747FF' : 'rgba(255,255,255,0.1)',
-																	boxShadow: formData.sceneId === 'cloth_2' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																}}
-															>
-																<img src={clothScene2} alt="Vêtements 2" className="w-full aspect-square object-cover" />
-																{formData.sceneId === 'cloth_2' && (
-																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																	</div>
-																)}
-															</button>
-															<button
-																type="button"
-																onClick={() => setFormData(prev => ({
-																	...prev,
-																	backgroundType: 'scene',
-																	sceneId: prev.sceneId === 'cloth_3' ? '' : 'cloth_3',
-																}))}
-																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																style={{
-																	borderColor: formData.sceneId === 'cloth_3' ? '#9747FF' : 'rgba(255,255,255,0.1)',
-																	boxShadow: formData.sceneId === 'cloth_3' ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																}}
-															>
-																<img src={clothScene3} alt="Vêtements 3" className="w-full aspect-square object-cover" />
-																{formData.sceneId === 'cloth_3' && (
-																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																	</div>
-																)}
-															</button>
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('cloth_')).map(([id, { url }]) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={url} alt={`Vêtements ${id.replace('cloth_', '')}`} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
 														</div>
 													</div>
 												)}
@@ -1164,22 +1090,18 @@ export function CreatePostPage() {
 													<div>
 														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Accessoires</p>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-															{[{ id: 'acc_1', src: accScene1, alt: 'Accessoires 1' }, { id: 'acc_2', src: accScene2, alt: 'Accessoires 2' }, { id: 'acc_3', src: accScene3, alt: 'Accessoires 3' }, { id: 'acc_4', src: accScene4, alt: 'Accessoires 4' }].map(({ id, src, alt }) => (
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('acc_')).map(([id, { url }]) => (
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({
-																		...prev,
-																		backgroundType: 'scene',
-																		sceneId: prev.sceneId === id ? '' : id,
-																	}))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
 																	}}
 																>
-																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	<img src={url} alt={`Accessoires ${id.replace('acc_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
 																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
@@ -1193,22 +1115,18 @@ export function CreatePostPage() {
 												{formData.postType === 'beauty' && (
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-															{[{ id: 'beauty_1', src: beauteScene1, alt: 'Beauté 1' }, { id: 'beauty_2', src: beauteScene2, alt: 'Beauté 2' }, { id: 'beauty_3', src: beauteScene3, alt: 'Beauté 3' }, { id: 'beauty_4', src: beauteScene4, alt: 'Beauté 4' }].map(({ id, src, alt }) => (
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('beauty_')).map(([id, { url }]) => (
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({
-																		...prev,
-																		backgroundType: 'scene',
-																		sceneId: prev.sceneId === id ? '' : id,
-																	}))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
 																	}}
 																>
-																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	<img src={url} alt={`Beauté ${id.replace('beauty_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
 																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
@@ -1222,22 +1140,18 @@ export function CreatePostPage() {
 												{formData.postType === 'electronics' && (
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-															{[{ id: 'elec_1', src: elecScene1, alt: 'Électronique 1' }, { id: 'elec_2', src: elecScene2, alt: 'Électronique 2' }, { id: 'elec_3', src: elecScene3, alt: 'Électronique 3' }, { id: 'elec_4', src: elecScene4, alt: 'Électronique 4' }, { id: 'elec_5', src: elecScene5, alt: 'Électronique 5' }].map(({ id, src, alt }) => (
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('elec_')).map(([id, { url }]) => (
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({
-																		...prev,
-																		backgroundType: 'scene',
-																		sceneId: prev.sceneId === id ? '' : id,
-																	}))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
 																	}}
 																>
-																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	<img src={url} alt={`Électronique ${id.replace('elec_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
 																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
@@ -1251,22 +1165,18 @@ export function CreatePostPage() {
 												{formData.postType === 'furniture' && (
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-															{[{ id: 'fourn_1', src: fournScene1, alt: 'Meubles 1' }, { id: 'fourn_2', src: fournScene2, alt: 'Meubles 2' }, { id: 'fourn_3', src: fournScene3, alt: 'Meubles 3' }].map(({ id, src, alt }) => (
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('fourn_')).map(([id, { url }]) => (
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({
-																		...prev,
-																		backgroundType: 'scene',
-																		sceneId: prev.sceneId === id ? '' : id,
-																	}))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
 																	}}
 																>
-																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	<img src={url} alt={`Meubles ${id.replace('fourn_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
 																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
@@ -1280,22 +1190,18 @@ export function CreatePostPage() {
 												{formData.postType === 'sports' && (
 													<div>
 														<div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-															{[{ id: 'sport_1', src: sportScene1, alt: 'Sports 1' }, { id: 'sport_2', src: sportScene2, alt: 'Sports 2' }, { id: 'sport_3', src: sportScene3, alt: 'Sports 3' }, { id: 'sport_4', src: sportScene4, alt: 'Sports 4' }, { id: 'sport_5', src: sportScene5, alt: 'Sports 5' }, { id: 'sport_6', src: sportScene6, alt: 'Sports 6' }].map(({ id, src, alt }) => (
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('sport_')).map(([id, { url }]) => (
 																<button
 																	key={id}
 																	type="button"
-																	onClick={() => setFormData(prev => ({
-																		...prev,
-																		backgroundType: 'scene',
-																		sceneId: prev.sceneId === id ? '' : id,
-																	}))}
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
 																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
 																	style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
 																	}}
 																>
-																	<img src={src} alt={alt} className="w-full aspect-square object-cover" />
+																	<img src={url} alt={`Sports ${id.replace('sport_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
 																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
 																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
@@ -1306,11 +1212,63 @@ export function CreatePostPage() {
 														</div>
 													</div>
 												)}
-												{formData.postType && formData.postType !== 'clothing' && formData.postType !== 'accessories' && formData.postType !== 'beauty' && formData.postType !== 'electronics' && formData.postType !== 'furniture' && formData.postType !== 'sports' && (
-													<p className="text-xs text-gray-500">Les scènes sont disponibles pour les types « Vêtements », « Accessoires », « Beauté », « Électronique », « Meubles » et « Sports ».</p>
+												{formData.postType === 'books' && (
+													<div>
+														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Livres</p>
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('books_')).map(([id, { url }]) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={url} alt={`Livres ${id.replace('books_', '')}`} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType === 'toys' && (
+													<div>
+														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Jouets</p>
+														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
+															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('toys_')).map(([id, { url }]) => (
+																<button
+																	key={id}
+																	type="button"
+																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
+																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																	style={{
+																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
+																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
+																	}}
+																>
+																	<img src={url} alt={`Jouets ${id.replace('toys_', '')}`} className="w-full aspect-square object-cover" />
+																	{formData.sceneId === id && (
+																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																		</div>
+																	)}
+																</button>
+															))}
+														</div>
+													</div>
+												)}
+												{formData.postType && formData.postType !== 'clothing' && formData.postType !== 'accessories' && formData.postType !== 'beauty' && formData.postType !== 'electronics' && formData.postType !== 'furniture' && formData.postType !== 'sports' && formData.postType !== 'books' && formData.postType !== 'toys' && (
+													<p className="text-xs text-gray-500">Les scènes sont disponibles pour les types Vêtements, Accessoires, Beauté, Électronique, Meubles, Sports, Livres et Jouets.</p>
 												)}
 												{!formData.postType && (
-													<p className="text-xs text-gray-500">Sélectionnez un type de post pour afficher les scènes (Vêtements, Accessoires, Beauté, Électronique, Meubles, Sports).</p>
+													<p className="text-xs text-gray-500">Sélectionnez un type de post pour afficher les scènes.</p>
 												)}
 											</div>
 										)}

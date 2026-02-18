@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import signupImage from '../assets/Group 37391.png';
+import signupImage from '../assets/signup.webp';
 import LoginR from '../assets/LoginR.png';
 import LoginL from '../assets/LoginL.png';
 

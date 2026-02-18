@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { GoogleIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
-import sunglassesImage from '../assets/Rectangle 9873.png';
-import bannerImage from '../assets/Frame 2147227131.png';
+import loginImage from '../assets/login.webp';
 import LoginR from '../assets/LoginR.png';
 import LoginL from '../assets/LoginL.png';
 
@@ -20,7 +18,6 @@ export function LoginPage() {
 	});
 	const [isSignUp, setIsSignUp] = useState(false);
 	
-	const from = location.state?.from?.pathname || '/';
 	
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -133,18 +130,11 @@ export function LoginPage() {
 			{/* Left Column - Product Image Only */}
 			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
 				<img 
-					src={sunglassesImage} 
-					alt="Premium Sunglasses" 
+					src={loginImage} 
+					alt="Premium Watch" 
 					className="w-full h-full object-cover"
 				/>
-				{/* Overlay Banner - Positioned at bottom left */}
-				<div className="absolute bottom-8 left-8">
-					<img 
-						src={bannerImage} 
-						alt="Product Banner" 
-						className="w-96 object-contain"
-					/>
-				</div>
+				
 			</div>
 
 			{/* Right Column - Login Form */}
