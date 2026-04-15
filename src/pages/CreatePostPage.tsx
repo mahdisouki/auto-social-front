@@ -490,8 +490,18 @@ export function CreatePostPage() {
 	};
 
 	const handleSaveAndCreatePost = async () => {
-		if (!enhancedImageBlob) {
-			alert('No enhanced image available');
+		const hasEnhanced = Boolean(enhancedImageBlob);
+		const sourceFile = hasEnhanced
+			? new File([enhancedImageBlob as Blob], 'enhanced.png', { type: 'image/png' })
+			: uploadedImages[0];
+
+		if (!sourceFile) {
+			alert('No image available');
+			return;
+		}
+
+		if (formData.platform.length === 0) {
+			alert('Please select at least one platform');
 			return;
 		}
 
@@ -499,10 +509,9 @@ export function CreatePostPage() {
 		
 		try {
 
-			// Upload enhanced image to Cloudinary
+			// Upload selected image to Cloudinary (generated image if available, otherwise uploaded image)
 			const formDataUpload = new FormData();
-			const enhancedFile = new File([enhancedImageBlob], 'enhanced.png', { type: 'image/png' });
-			formDataUpload.append('images', enhancedFile);
+			formDataUpload.append('images', sourceFile);
 
 			const uploadResponse = await uploadApi.uploadImages(formDataUpload);
 			const uploadedImageUrls = uploadResponse.data.data.images.map((img: any) => img.url);
@@ -543,18 +552,8 @@ export function CreatePostPage() {
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		
-		if (formData.platform.length === 0) {
-			alert('Please select at least one platform');
-			return;
-		}
-		
-		if (uploadedImages.length === 0) {
-			alert('Please upload at least one image');
-			return;
-		}
-
-		// Start the enhancement process
-		await handleEnhanceImage();
+		// Temporary mode: skip generation and post uploaded image directly
+		await handleSaveAndCreatePost();
 	};
 
 	return (
@@ -1547,46 +1546,26 @@ export function CreatePostPage() {
 						</div>
 					</div>
 
-					{/* Sidebar footer: Generate/Save buttons */}
+					{/* Sidebar footer: direct post button (generation disabled temporarily) */}
 					<div className="p-4 border-t border-white/10 space-y-3 lg:mt-0" style={{ background: '#0E0E13' }}>
-						{enhancedImagePreview ? (
-							<div className="flex gap-2">
-								<button
-									type="submit"
-									disabled={isUploading}
-									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white border border-white/20 hover:bg-white/10 disabled:opacity-50 transition-colors"
-								>
-									{isUploading ? 'Régénération...' : 'Régénérer'}
-								</button>
-								<button
-									type="button"
-									onClick={handleSaveAndCreatePost}
-									disabled={isUploading}
-									className="flex-1 py-2 px-3 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
-								>
-									{isUploading ? 'Enregistrement...' : 'Sauvegarder'}
-								</button>
-							</div>
-						) : (
-							<button
-								type="submit"
-								disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
-								className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-								style={{ background: '#9747FF' }}
-							>
-								{isLoading || isUploading ? (
-									<span className="flex items-center justify-center gap-2">
-										<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-										</svg>
-										Génération...
-									</span>
-								) : (
-									'GENERE LE POST (1 Token)'
-								)}
-							</button>
-						)}
+						<button
+							type="submit"
+							disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
+							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+							style={{ background: '#9747FF' }}
+						>
+							{isLoading || isUploading ? (
+								<span className="flex items-center justify-center gap-2">
+									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+									</svg>
+									Publication...
+								</span>
+							) : (
+								'PUBLIER LE POST'
+							)}
+						</button>
 					</div>
 				</aside>
 			</form>
