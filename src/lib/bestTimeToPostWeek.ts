@@ -1,0 +1,115 @@
+import type { BestTimeCategoryKey } from './bestTimeToPost';
+
+const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+export type BestTimeByDay = Record<typeof DAY_ORDER[number], string | null>;
+
+const FALLBACK_WEEK: Record<BestTimeCategoryKey, BestTimeByDay> = {
+  accessoires: {
+    Sunday: '16:30',
+    Monday: '16:00',
+    Tuesday: '19:30',
+    Wednesday: '18:30',
+    Thursday: '18:30',
+    Friday: '15:00',
+    Saturday: '17:00',
+  },
+  beauty: {
+    Sunday: '20:30',
+    Monday: '17:00',
+    Tuesday: '18:30',
+    Wednesday: '16:00',
+    Thursday: '18:00',
+    Friday: '18:00',
+    Saturday: '18:00',
+  },
+  clothes: {
+    Sunday: '19:30',
+    Monday: '23:30',
+    Tuesday: '22:00',
+    Wednesday: '11:30',
+    Thursday: '17:30',
+    Friday: '17:00',
+    Saturday: '23:00',
+  },
+  food: {
+    Sunday: '19:30',
+    Monday: '23:30',
+    Tuesday: '22:00',
+    Wednesday: '11:30',
+    Thursday: '19:30',
+    Friday: '20:00',
+    Saturday: '20:30',
+  },
+  technology: {
+    Sunday: '15:30',
+    Monday: '18:30',
+    Tuesday: '20:00',
+    Wednesday: '21:00',
+    Thursday: '15:30',
+    Friday: '10:30',
+    Saturday: '12:00',
+  },
+};
+
+function normalizeDbData(dbData: any): Record<BestTimeCategoryKey, Record<string, string>> {
+  const out: any = {
+    accessoires: {},
+    beauty: {},
+    clothes: {},
+    food: {},
+    technology: {},
+  };
+
+  for (const cat of Object.keys(out)) {
+    const catKey = cat as BestTimeCategoryKey;
+    const catDays = dbData?.[catKey] ?? dbData?.[cat] ?? {};
+    for (const day of DAY_ORDER) {
+      const t = catDays?.[day] ?? catDays?.[day.toLowerCase()];
+      if (typeof t === 'string' && t) out[catKey][day] = t;
+    }
+  }
+
+  return out as Record<BestTimeCategoryKey, Record<string, string>>;
+}
+
+let cachedWeekData: Record<BestTimeCategoryKey, Record<string, string>> | null = null;
+let cachePromise: Promise<void> | null = null;
+
+async function loadBestTimesFromApi(): Promise<void> {
+  if (cachedWeekData) return;
+  if (cachePromise) return cachePromise;
+
+  cachePromise = (async () => {
+    try {
+      const apiBase = (import.meta as any).env?.VITE_API_URL || 'https://api.postoryai.com/api';
+      const res = await fetch(`${apiBase}/meta/best-time-to-post`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json?.success) throw new Error('API returned success=false');
+
+      cachedWeekData = normalizeDbData(json.data);
+    } catch {
+      cachedWeekData = null;
+    }
+  })();
+
+  await cachePromise;
+}
+
+export async function getBestTimesWeekForCategory(category: BestTimeCategoryKey): Promise<BestTimeByDay> {
+  await loadBestTimesFromApi();
+
+  const out: any = {};
+  for (const day of DAY_ORDER) {
+    const fromDb = cachedWeekData?.[category]?.[day];
+    out[day] = (fromDb as string | undefined) ?? FALLBACK_WEEK[category]?.[day] ?? null;
+  }
+
+  return out as BestTimeByDay;
+}
+
+export function getDayOrder() {
+  return [...DAY_ORDER];
+}
+
