@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { MenuIcon, CloseIcon } from '../components/icons';
 import vectorLogo from '../assets/postoruai.png';
 import worldIcon from '../assets/world.png';
 import tikIcon from '../assets/tik.png';
@@ -12,10 +13,89 @@ import connLeft from '../assets/conn.png';
 import connRight from '../assets/conn2.png';
 import tsawerImage from '../assets/tsawer.png';
 import circle1 from '../assets/circle1.png';
+import landingr from '../assets/landingr.png';
+import landL from '../assets/landL.png';
 
 const LandingPage = () => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
   return (
     <div className="min-h-screen relative overflow-hidden font-['Poppins']" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
+      {/* Mobile sidebar overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={closeMobileMenu}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Mobile sidebar - opens from the right */}
+      <aside
+        className={`
+          fixed inset-y-0 right-0 w-64 flex flex-col transform transition-transform duration-300 ease-in-out md:hidden
+          ${mobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}
+        `}
+        style={{
+          background: '#000000',
+          borderLeft: '1px solid rgba(255,255,255,0.1)',
+          zIndex: 9999,
+        }}
+      >
+        <div className="flex items-center justify-between px-4 py-5 border-b border-white/10">
+          <img src={vectorLogo} alt="Postora" className="h-8 w-auto object-contain" />
+          <button
+            type="button"
+            onClick={closeMobileMenu}
+            className="p-2 rounded-lg text-gray-400 hover:text-white hover:bg-white/10"
+            aria-label="Fermer le menu"
+          >
+            <CloseIcon />
+          </button>
+        </div>
+        <nav className="flex flex-col p-4 gap-1">
+         
+          <a
+            href="#solution"
+            onClick={closeMobileMenu}
+            className="px-3 py-2.5 rounded-lg text-white hover:bg-white/10 transition-colors text-sm font-medium"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Solution
+          </a>
+          <a
+            href="#tarifs"
+            onClick={closeMobileMenu}
+            className="px-3 py-2.5 rounded-lg text-white hover:bg-white/10 transition-colors text-sm font-medium"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Tarifs
+          </a>
+          <div className="border-t border-white/10 my-2" />
+          <Link
+            to="/login"
+            onClick={closeMobileMenu}
+            className="px-3 py-2.5 rounded-lg text-white hover:bg-white/10 transition-colors text-sm font-medium"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            Connexion
+          </Link>
+          <Link
+            to="/signup"
+            onClick={closeMobileMenu}
+            className="px-3 py-2.5 rounded-lg text-center text-white font-medium text-sm transition-colors"
+            style={{
+              fontFamily: 'Inter, sans-serif',
+              borderRadius: '12px',
+              backgroundColor: '#9333EA',
+            }}
+          >
+            S'inscrire
+          </Link>
+        </nav>
+      </aside>
+
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md shadow-sm" style={{ background: '#000000' }}>
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
@@ -27,11 +107,8 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Navigation */}
-            <nav className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 xl:space-x-8 flex-1 justify-center">
-              <a href="#accueil" className="text-white hover:text-purple-400 transition-colors whitespace-nowrap" style={{ fontSize: '10px', fontFamily: 'Inter, sans-serif' }}>
-                Accueil
-              </a>
+            {/* Navigation - hidden on mobile (shown in sidebar) */}
+            <nav className="hidden md:flex items-center space-x-2 sm:space-x-3 md:space-x-4 lg:space-x-6 xl:space-x-8 flex-1 justify-center">
               <a href="#solution" className="text-white hover:text-purple-400 transition-colors whitespace-nowrap" style={{ fontSize: '10px', fontFamily: 'Inter, sans-serif' }}>
                 Solution
               </a>
@@ -40,15 +117,14 @@ const LandingPage = () => {
               </a>
             </nav>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 flex-shrink-0">
+            {/* Auth Buttons - hidden on mobile (shown in sidebar) */}
+            <div className="hidden md:flex items-center space-x-1.5 sm:space-x-2 md:space-x-3 lg:space-x-4 flex-shrink-0">
               <Link 
                 to="/login" 
                 className="text-white hover:text-purple-400 transition-colors font-medium whitespace-nowrap"
                 style={{ fontSize: '10px', fontFamily: 'Inter, sans-serif' }}
               >
-                <span className="hidden sm:inline">Se connecter</span>
-                <span className="sm:hidden">Connexion</span>
+                Se connecter
               </Link>
               <Link 
                 to="/signup" 
@@ -58,18 +134,28 @@ const LandingPage = () => {
                 S'inscrire
               </Link>
             </div>
+
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg text-white hover:bg-white/10 transition-colors relative"
+              aria-label={mobileMenuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+            >
+              {mobileMenuOpen ? <MenuIcon /> : <MenuIcon />}
+            </button>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
       <main 
-        className="pt-32 px-4 sm:px-6 lg:px-8 min-h-screen"
+        className="pt-20 sm:pt-24 md:pt-32 px-4 sm:px-6 lg:px-8 min-h-[70vh] sm:min-h-[80vh] md:min-h-screen flex flex-col"
         style={{
           background: '#000000'
         }}
       >
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto flex-1 flex flex-col">
           {/* Social Icons with Connection Lines - Top Left */}
           <div className="absolute top-62 left-10 lg:left-20" style={{ zIndex: 200 }}>
             <div className="relative" style={{ zIndex: 200 }}>
@@ -142,12 +228,11 @@ const LandingPage = () => {
             />
             <div className="relative" style={{ zIndex: 1 }}>
               <h1 
-                className="mb-6"
+                className="mb-6 text-[32px] sm:text-[48px] md:text-[60px] lg:text-[70px]"
                 style={{
                   fontFamily: 'Playfair Display, serif',
                   fontWeight: 400,
                   fontStyle: 'italic',
-                  fontSize: '70px',
                   lineHeight: '125%',
                   letterSpacing: '4%',
                   textAlign: 'center',
@@ -181,8 +266,8 @@ const LandingPage = () => {
               </p>
 
               <Link 
-                to="/dashboard" 
-                className="inline-block bg-[#9333EA] text-white px-8 py-4 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
+                to="/login" 
+                className="inline-block bg-[#9333EA] text-white px-8 py-4 mt-12 mb-20 rounded-2xl text-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
                 style={{
                   boxShadow: '0px 0px 27.1px 0px #9747FF8A'
                 }}
@@ -196,13 +281,14 @@ const LandingPage = () => {
           </div>
           
         </div>
-        <div className="w-screen pt-35 -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="w-screen mt-auto -mx-4 sm:-mx-6 lg:-mx-8">
               <img src={tsawerImage} alt="Social Media Icons" className="w-full h-auto object-contain max-h-[80vh]" />
           </div>
       </main>
 
       {/* Why Postora AI Section */}
       <section 
+        id="solution"
         className="py-20 px-4 sm:px-6 lg:px-8" 
         style={{ 
           fontFamily: 'Poppins, sans-serif',
@@ -214,22 +300,32 @@ const LandingPage = () => {
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="mb-4"
+              className="mb-4 text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '64px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize',
-                textAlign: 'center'
+                textAlign: 'center',
+                color: '#3C2C4D'
               }}
             >
-              POURQUOI <span className="text-[#9333EA]">POSTORA AI</span> ?
+              POURQUOI <span 
+                className="text-[#3C2C4D] text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
+                style={{
+                  fontFamily: 'Playfair Display, serif',
+                  fontWeight: 400,
+                  fontStyle: 'italic',
+                  lineHeight: '110%',
+                  letterSpacing: '-1%',
+                  textTransform: 'capitalize'
+                }}
+              >POSTORA AI ?</span>
             </h2>
             <p 
-              className="max-w-3xl mx-auto"
+              className="max-w-6xl mx-auto"
               style={{
                 fontFamily: 'Inter, sans-serif',
                 fontWeight: 400,
@@ -238,19 +334,24 @@ const LandingPage = () => {
                 lineHeight: '100%',
                 letterSpacing: '5%',
                 textAlign: 'center',
-                color: '#4B5563'
+                color: '#000000'
               }}
             >
               Postora AI vous aide à gérer, améliorer et programmer vos contenus pour les réseaux sociaux et le web sans perte de temps
             </p>
           </div>
 
-          {/* Cards Grid */}
-          <div className="mb-20">
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Cards Grid (desktop) / Carousel (mobile) */}
+          <div className="mb-20 max-w-6xl mx-auto">
+            <div
+              className="flex md:grid md:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth md:overflow-visible pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              style={{ scrollSnapType: 'x mandatory' }}
+            >
               {/* Card 1 */}
-              <div className="rounded-2xl overflow-hidden relative" style={{ background: '#C098F5' }}>
-                {/* Number Badge */}
+              <div
+                className="rounded-2xl overflow-hidden relative flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
+                style={{ background: '#C098F5' }}
+              >
                 <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-black flex items-center justify-center z-10">
                   <span className="text-white font-bold text-lg">1</span>
                 </div>
@@ -258,7 +359,7 @@ const LandingPage = () => {
                   <img src={card1} alt="Card 1" className="w-[90%] h-auto object-cover" />
                 </div>
                 <div className="p-6">
-                  <h3 
+                  <h3
                     className="mb-3"
                     style={{
                       fontFamily: 'Playfair Display, serif',
@@ -267,20 +368,23 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: '#000000',
                     }}
                   >
                     Générer Du Contenu
                   </h3>
-                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif',fontWeight: 400 }}>
+                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                     Transformez vos idées brutes en visuels publicitaires professionnels en quelques secondes grâce à notre IA de pointe.
                   </p>
                 </div>
               </div>
-              
+
               {/* Card 2 */}
-              <div className="rounded-2xl overflow-hidden relative" style={{ background: '#C098F5' }}>
-                {/* Number Badge */}
+              <div
+                className="rounded-2xl overflow-hidden relative flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
+                style={{ background: '#C098F5' }}
+              >
                 <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-black flex items-center justify-center z-10">
                   <span className="text-white font-bold text-lg">2</span>
                 </div>
@@ -288,7 +392,7 @@ const LandingPage = () => {
                   <img src={card2} alt="Card 2" className="w-[90%] h-auto object-cover" />
                 </div>
                 <div className="p-6 pt-15">
-                  <h3 
+                  <h3
                     className="mb-3"
                     style={{
                       fontFamily: 'Playfair Display, serif',
@@ -297,20 +401,23 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: '#000000',
                     }}
                   >
                     Multi-Réseaux
                   </h3>
-                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif',fontWeight: 400 }}>
+                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                     Gérez tous vos réseaux sociaux depuis une seule plateforme. Planifiez vos publications à l'avance et publiez automatiquement.
                   </p>
                 </div>
               </div>
-              
+
               {/* Card 3 */}
-              <div className="rounded-2xl overflow-hidden relative" style={{ background: '#C098F5' }}>
-                {/* Number Badge */}
+              <div
+                className="rounded-2xl overflow-hidden relative flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
+                style={{ background: '#C098F5' }}
+              >
                 <div className="absolute top-4 left-4 w-8 h-8 rounded-full bg-black flex items-center justify-center z-10">
                   <span className="text-white font-bold text-lg">3</span>
                 </div>
@@ -318,7 +425,7 @@ const LandingPage = () => {
                   <img src={card3} alt="Card 3" className="w-[70%] h-auto object-cover" />
                 </div>
                 <div className="p-6">
-                  <h3 
+                  <h3
                     className="mb-3"
                     style={{
                       fontFamily: 'Playfair Display, serif',
@@ -327,12 +434,13 @@ const LandingPage = () => {
                       fontSize: '30px',
                       lineHeight: '32px',
                       letterSpacing: '0.6px',
-                      verticalAlign: 'middle'
+                      verticalAlign: 'middle',
+                      color: '#000000',
                     }}
                   >
                     Optimiser & Analyser
                   </h3>
-                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif',fontWeight: 400 }}>
+                  <p className="text-gray-800 leading-relaxed" style={{ fontFamily: 'Inter, sans-serif', fontWeight: 400 }}>
                     Analysez les performances de vos contenus et optimisez votre stratégie grâce à des insights détaillés et des recommandations personnalisées.
                   </p>
                 </div>
@@ -344,35 +452,29 @@ const LandingPage = () => {
 
       {/* Testimonials Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
-        {/* Right Gradient Background - Circular */}
-        <div 
+        {/* Right Background Image */}
+        <img 
+          src={landingr} 
+          alt="" 
           className="absolute pointer-events-none"
           style={{
             right: '-20%',
-            top: '10%',
-            width: '800px',
-            height: '700px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-            backdropFilter: 'blur(800px)',
-            WebkitBackdropFilter: 'blur(800px)',
-            zIndex: 0,
-            maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            filter: 'blur(60px)',
-            WebkitFilter: 'blur(60px)'
+            top: '5%',
+            width: '1200px',
+            height: '1000px',
+            objectFit: 'contain',
+            zIndex: 0
           }}
-        ></div>
+        />
         <div className="max-w-7xl mx-auto relative" style={{ zIndex: 10 }}>
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="text-white mb-4"
+              className="text-white mb-4 text-[32px] sm:text-[40px] md:text-[48px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '42px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize'
@@ -380,27 +482,28 @@ const LandingPage = () => {
             >
               ILS NOUS FONT CONFIANCE
             </h2>
-            <p className="text-white text-md">
+            <p className="text-[#D3D3D3] text-md">
               Postora AI vous aide à générer, améliorer et programmer vos contenus pour les réseaux sociaux et le web, sans perdre de temps.
             </p>
           </div>
 
-          {/* Testimonial Cards */}
-          <div className="grid md:grid-cols-3 gap-8">
+          {/* Testimonial Cards (carousel on mobile, grid on desktop) */}
+          <div
+            className="flex md:grid md:grid-cols-3 gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth md:overflow-visible pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
             {/* Testimonial 1 */}
-            <div 
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow"
+            <div
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
               style={{
                 background: '#0E0E13',
-                border: '1px solid #FFFFFF33'
+                border: '1px solid #FFFFFF33',
               }}
             >
               <p className="text-white text-sm mb-8 leading-relaxed">
                 "Lorem ipsum dolor sit amet. Aut adipisci quibusdam sed quidem odio ut mollitia voluptatem est corrupti voluptate est dolorum galisum et illo omnis? "
               </p>
-              
               <div className="border-t border-gray-600 mb-6"></div>
-              
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                   <svg className="w-full h-full text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -415,19 +518,17 @@ const LandingPage = () => {
             </div>
 
             {/* Testimonial 2 */}
-            <div 
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow"
+            <div
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
               style={{
                 background: '#0E0E13',
-                border: '1px solid #FFFFFF33'
+                border: '1px solid #FFFFFF33',
               }}
             >
               <p className="text-white text-sm mb-8 leading-relaxed">
                 "Lorem ipsum dolor sit amet. Aut adipisci quibusdam sed quidem odio ut mollitia voluptatem est corrupti voluptate est dolorum galisum et illo omnis? "
               </p>
-              
               <div className="border-t border-gray-600 mb-6"></div>
-              
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                   <svg className="w-full h-full text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -442,19 +543,17 @@ const LandingPage = () => {
             </div>
 
             {/* Testimonial 3 */}
-            <div 
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow"
+            <div
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
               style={{
                 background: '#0E0E13',
-                border: '1px solid #FFFFFF33'
+                border: '1px solid #FFFFFF33',
               }}
             >
               <p className="text-white text-sm mb-8 leading-relaxed">
                 "Lorem ipsum dolor sit amet. Aut adipisci quibusdam sed quidem odio ut mollitia voluptatem est corrupti voluptate est dolorum galisum et illo omnis? "
               </p>
-              
               <div className="border-t border-gray-600 mb-6"></div>
-              
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                   <svg className="w-full h-full text-gray-400" fill="currentColor" viewBox="0 0 24 24">
@@ -472,17 +571,16 @@ const LandingPage = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
+      <section id="tarifs" className="py-20 px-4 sm:px-6 lg:px-8" style={{ fontFamily: 'Poppins, sans-serif', background: '#000000' }}>
         <div className="max-w-7xl mx-auto">
           {/* Section Header */}
           <div className="text-center mb-16">
             <h2 
-              className="mb-4 text-white"
+              className="mb-4 text-white text-[36px] sm:text-[48px] md:text-[56px] lg:text-[64px]"
               style={{
                 fontFamily: 'Playfair Display, serif',
                 fontWeight: 700,
                 fontStyle: 'italic',
-                fontSize: '64px',
                 lineHeight: '110%',
                 letterSpacing: '-1%',
                 textTransform: 'capitalize'
@@ -495,11 +593,14 @@ const LandingPage = () => {
             </p>
           </div>
 
-          {/* Pricing Cards */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {/* Pricing Cards (carousel on mobile, grid on desktop) */}
+          <div
+            className="flex md:grid md:grid-cols-3 gap-8 max-w-6xl mx-auto overflow-x-auto snap-x snap-mandatory scroll-smooth md:overflow-visible pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            style={{ scrollSnapType: 'x mandatory' }}
+          >
             {/* Basic Plan */}
-            <div 
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow transform scale-95"
+            <div
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow transform scale-95 flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
               style={{
                 background: '#0E0E13',
                 border: '1px solid #FFFFFF33'
@@ -559,7 +660,7 @@ const LandingPage = () => {
             </div>
 
             {/* Premium Plan - Highlighted */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#9333EA] hover:shadow-xl transition-shadow relative">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-[#9333EA] hover:shadow-xl transition-shadow relative flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center">
               <h3 className="text-2xl font-bold mb-2">Lorem</h3>
               <p className="text-gray-600 text-sm mb-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
               
@@ -607,8 +708,8 @@ const LandingPage = () => {
             </div>
 
             {/* Enterprise Plan */}
-            <div 
-              className="rounded-2xl p-8 hover:shadow-lg transition-shadow transform scale-95"
+            <div
+              className="rounded-2xl p-8 hover:shadow-lg transition-shadow transform scale-95 flex-shrink-0 w-[85vw] max-w-[340px] md:w-auto md:max-w-none snap-center"
               style={{
                 background: '#0E0E13',
                 border: '1px solid #FFFFFF33'
@@ -673,25 +774,20 @@ const LandingPage = () => {
 
       {/* FAQ and Footer Container */}
       <div className="relative" style={{ background: '#000000' }}>
-        {/* Left Gradient Background - Circular */}
-        <div 
+        {/* Left Background Image */}
+        <img 
+          src={landL} 
+          alt="" 
           className="absolute pointer-events-none"
           style={{
             left: '-10%',
-            top: '20%',
-            width: '500px',
-            height: '800px',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-            backdropFilter: 'blur(800px)',
-            WebkitBackdropFilter: 'blur(800px)',
-            zIndex: 0,
-            maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-            filter: 'blur(60px)',
-            WebkitFilter: 'blur(60px)'
+            top: '5%',
+            width: '900px',
+            height: '900px',
+            objectFit: 'contain',
+            zIndex: 0
           }}
-        ></div>
+        />
 
       {/* FAQ Section */}
       <section 
@@ -707,12 +803,11 @@ const LandingPage = () => {
             {/* Section Header */}
             <div className="flex-shrink-0 md:w-1/3">
               <h2 
-                className="mb-4 text-white"
+                className="mb-4 text-white text-[32px] sm:text-[44px] md:text-[52px] lg:text-[60px]"
                 style={{
                   fontFamily: 'Playfair Display, serif',
                   fontWeight: 400,
                   fontStyle: 'normal',
-                  fontSize: '60px',
                   lineHeight: '110%',
                   letterSpacing: '-1%',
                   textTransform: 'capitalize'
@@ -781,36 +876,6 @@ const LandingPage = () => {
                   </svg>
                 </a>
               </div>
-              <Link 
-                to="/privacy"
-                onClick={() => window.scrollTo(0, 0)}
-                className="text-white hover:text-purple-400 transition-colors"
-                style={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '10px',
-                  fontWeight: 200,
-                  textDecoration: 'underline',
-                  textDecorationColor: '#000000',
-                  textAlign: 'center'
-                }}
-              >
-                Politiques et Conditions
-              </Link>
-              <Link 
-                to="/terms"
-                onClick={() => window.scrollTo(0, 0)}
-                className="text-white hover:text-purple-400 transition-colors"
-                style={{
-                  fontFamily: 'Inter, sans-serif',
-                  fontSize: '10px',
-                  fontWeight: 200,
-                  textDecoration: 'underline',
-                  textDecorationColor: '#000000',
-                  textAlign: 'center'
-                }}
-              >
-                Terms et conditions
-              </Link>
             </div>
           </div>
         </div>
@@ -818,9 +883,35 @@ const LandingPage = () => {
         {/* Copyright Bar */}
         <div className="bg-[#9333EA] py-3">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-white text-center text-sm">
-              © 2025 POSTORA AI
-            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-center">
+              <p className="text-white text-sm">
+                © 2025 POSTORA AI
+              </p>
+              <Link
+                to="/privacy"
+                onClick={() => window.scrollTo(0, 0)}
+                className="text-white hover:text-purple-200 transition-colors underline"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '10px',
+                  fontWeight: 200,
+                }}
+              >
+                Politiques et Conditions
+              </Link>
+              <Link
+                to="/terms"
+                onClick={() => window.scrollTo(0, 0)}
+                className="text-white hover:text-purple-200 transition-colors underline"
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontSize: '10px',
+                  fontWeight: 200,
+                }}
+              >
+                Terms et conditions
+              </Link>
+            </div>
           </div>
         </div>
       </footer>

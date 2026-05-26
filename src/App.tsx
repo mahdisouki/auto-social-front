@@ -4,6 +4,7 @@ import { Sidebar } from './components/layout';
 import { MenuIcon } from './components/icons';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
 import { AdminRoute } from './components/auth/AdminRoute';
+import { PublicRoute } from './components/auth/PublicRoute';
 import { 
 	LoginPage,
 	SignupPage,
@@ -49,11 +50,6 @@ function Shell() {
 					<MenuIcon />
 				</button>
 				<Routes>
-					<Route path="/" element={
-						<ProtectedRoute>
-							<Navigate to="/dashboard" replace />
-						</ProtectedRoute>
-					} />
 					<Route path="/dashboard" element={
 						<ProtectedRoute>
 							<DashboardPage />
@@ -134,10 +130,26 @@ export default function App() {
 	return (
 		<BrowserRouter>
 			<Routes>
-				<Route path="/" element={<LandingPage />} />
-				<Route path="/landing" element={<LandingPage />} />
-				<Route path="/login" element={<LoginPage />} />
-				<Route path="/signup" element={<SignupPage />} />
+				<Route path="/" element={
+					<PublicRoute>
+						<LandingPage />
+					</PublicRoute>
+				} />
+				<Route path="/landing" element={
+					<PublicRoute>
+						<LandingPage />
+					</PublicRoute>
+				} />
+				<Route path="/login" element={
+					<PublicRoute>
+						<LoginPage />
+					</PublicRoute>
+				} />
+				<Route path="/signup" element={
+					<PublicRoute>
+						<SignupPage />
+					</PublicRoute>
+				} />
 				<Route path="/auth/facebook/callback" element={<FacebookCallbackPage />} />
 				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
 				<Route path="/privacy" element={<PrivacyPolicyPage />} />

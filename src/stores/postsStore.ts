@@ -21,7 +21,7 @@ interface PostsActions {
     images?: string[];
     postType?: string;
     currency?: string;
-    price?: string;
+    price?: number;
     productName?: string;
     description?: string;
     backgroundType?: string;

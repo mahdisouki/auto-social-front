@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuthStore } from '../stores/authStore';
-import signupImage from '../assets/Group 37391.png';
+import signupImage from '../assets/signup.webp';
+import LoginR from '../assets/LoginR.png';
+import LoginL from '../assets/LoginL.png';
 
 export function SignupPage() {
 	const navigate = useNavigate();
@@ -65,45 +67,54 @@ export function SignupPage() {
 
 	return (
 		<div className="h-screen flex relative overflow-hidden" style={{ background: '#000000' }}>
-			{/* Blur Circle - Top Left (Behind both columns) */}
-			<div 
-				className="absolute pointer-events-none"
-				style={{
-					left: '20%',
-					top: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
-				}}
-			></div>
+			<style>{`
+				/* Signup background images: mobile - one top-left, one bottom-right */
+				.signup-bg-left {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+					left: 0;
+					top: 0;
+					width: 300px;
+					height: 300px;
+					transform: rotate(270deg);
+					opacity: 0.6;
+				}
+				.signup-bg-right {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+					right: 0;
+					bottom: 0;
+					width: 300px;
+					height: 300px;
+					opacity: 0.6;
+				}
 
-			{/* Blur Circle - Bottom Right (Behind both columns) */}
-			<div 
-				className="absolute pointer-events-none"
-				style={{
-					right: '-10%',
-					bottom: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
-				}}
-			></div>
+				/* Signup background images: desktop (md and up) */
+				@media (min-width: 768px) {
+					.signup-bg-left {
+						left: 10%;
+						top: -40%;
+						width: 1400px;
+						height: 700px;
+						opacity: 1;
+					}
+					.signup-bg-right {
+						right: -10%;
+						bottom: 0%;
+						width: 800px;
+						height: 700px;
+						z-index: 10;
+						opacity: 1;
+					}
+				}
+			`}</style>
+			{/* Background Image - Top Left */}
+			<img src={LoginL} alt="" className="signup-bg-left" />
+
+			{/* Background Image - Bottom Right */}
+			<img src={LoginR} alt="" className="signup-bg-right" />
 
 			{/* Left Column - Image */}
 			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
@@ -282,7 +293,30 @@ export function SignupPage() {
 								</div>
 							</div>
 
-							
+							{/* Confirm Password Input */}
+							<div>
+								<label className="block text-xs font-medium text-gray-400 uppercase mb-2 tracking-wider">Confirmer le mot de passe</label>
+								<div className="relative">
+									<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+										<svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+										</svg>
+									</div>
+									<input 
+										type="password" 
+										name="confirmPassword"
+										value={formData.confirmPassword}
+										onChange={handleInputChange}
+										placeholder="••••••••••••"
+										required
+										minLength={6}
+										className="w-full pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-[#9747FF] focus:ring-0 transition-all text-white placeholder:text-gray-500 text-sm border border-[#374151] focus:border-[#9747FF]"
+										style={{
+											background: '#000000'
+										}}
+									/>
+								</div>
+							</div>
 
 							{/* Terms and Privacy Checkbox */}
 							<div className="flex items-start">
@@ -348,12 +382,7 @@ export function SignupPage() {
 				</div>
 			</div>
 
-			{/* Help Icon */}
-			<div className="fixed bottom-6 right-6">
-				<button className="w-12 h-12 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
-					<span className="text-gray-600 font-bold">?</span>
-				</button>
-			</div>
+			
 		</div>
 	);
 }

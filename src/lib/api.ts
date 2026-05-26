@@ -19,7 +19,7 @@ if (!import.meta.env.VITE_API_URL) {
 
 // Timeouts: default for most requests; longer for uploads and post creation
 const DEFAULT_TIMEOUT = 15000; // 15s for normal API calls
-const UPLOAD_AND_CREATE_TIMEOUT = 120000; // 2 min for uploads and create post (images, processing)
+const UPLOAD_AND_CREATE_TIMEOUT = 360000; // 6 min for AI generation, uploads and create post (images, processing)
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -51,10 +51,13 @@ api.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      // Don't auto-redirect for Meta API calls - let them handle the error
       const requestUrl = error.config?.url || '';
+      // Don't redirect when 401 is from login/register - let the page show the error
+      if (requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register')) {
+        return Promise.reject(error);
+      }
+      // Don't auto-redirect for Meta API calls - let them handle the error
       if (requestUrl.includes('/meta/')) {
-        // Just reject the error, don't redirect
         return Promise.reject(error);
       }
       // Forbidden — stay logged in (e.g. non-admin hitting admin routes)
@@ -109,6 +112,27 @@ export const postsApi = {
     addText?: string;
   }) =>
     api.post<ApiResponse>('/posts', data, { timeout: UPLOAD_AND_CREATE_TIMEOUT }),
+  
+  // Generate post with AI (calls Python AI service, returns base64 image and caption)
+  generateAndCreatePost: (data: {
+    imageBase64: string;
+    postType?: string;
+    currency?: string;
+    price?: string;
+    backgroundType?: string;
+    backgroundColor?: string;
+    useModel?: string;
+    modelType?: string;
+    modelEthnicity?: string;
+    modelGender?: string;
+    customModelImage?: string; // base64
+    sceneReference?: string; // base64 - scene background reference image
+    addText?: string;
+    addPrice?: string;
+    generateCaption?: string;
+    captionLanguage?: string;
+  }) =>
+    api.post<ApiResponse>('/posts/generate', data, { timeout: UPLOAD_AND_CREATE_TIMEOUT }),
   
   getUserPosts: (params?: {
     page?: number;

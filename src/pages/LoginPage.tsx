@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { GoogleIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
-import sunglassesImage from '../assets/Rectangle 9873.png';
-import bannerImage from '../assets/Frame 2147227131.png';
+import loginImage from '../assets/login.webp';
+import LoginR from '../assets/LoginR.png';
+import LoginL from '../assets/LoginL.png';
 
 export function LoginPage() {
 	const navigate = useNavigate();
@@ -18,7 +18,6 @@ export function LoginPage() {
 	});
 	const [isSignUp, setIsSignUp] = useState(false);
 	
-	const from = location.state?.from?.pathname || '/';
 	
 	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
@@ -78,62 +77,64 @@ export function LoginPage() {
 					transition: background-color 5000s ease-in-out 0s;
 					border: 1px solid #9747FF !important;
 				}
-			`}</style>
-			{/* Blur Circle - Top Left (Behind both columns) */}
-			<div 
-				className="absolute pointer-events-none"
-				style={{
-					left: '20%',
-					top: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
-				}}
-			></div>
 
-			{/* Blur Circle - Bottom Right (Behind both columns) */}
-			<div 
-				className="absolute pointer-events-none"
-				style={{
-					right: '-10%',
-					bottom: '0%',
-					width: '700px',
-					height: '400px',
-					borderRadius: '50%',
-					background: 'radial-gradient(circle, rgba(151, 71, 255, 0.2) 0%, rgba(151, 71, 255, 0.05) 50%, transparent 70%)',
-					backdropFilter: 'blur(800px)',
-					WebkitBackdropFilter: 'blur(800px)',
-					zIndex: 10,
-					maskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					WebkitMaskImage: 'radial-gradient(circle, black 0%, black 60%, transparent 80%)',
-					filter: 'blur(60px)',
-					WebkitFilter: 'blur(60px)'
-				}}
-			></div>
+				/* Login background images: mobile - one top-left, one bottom-right */
+				.login-bg-left {
+					position: absolute;
+					pointer-events: none;
+					
+					z-index: 0;
+					left: 0;
+					top: 0;
+					width: 300px;
+					height: 300px;
+					transform: rotate(270deg);
+					opacity: 0.6;
+				}
+				.login-bg-right {
+					position: absolute;
+					pointer-events: none;
+					z-index: 0;
+					right: 0;
+					bottom: 0;
+					width: 300px;
+					height: 300px;
+					opacity: 0.6;
+				}
+
+				/* Login background images: desktop (md and up) */
+				@media (min-width: 768px) {
+					.login-bg-left {
+						left: 10%;
+						top: -40%;
+						width: 1400px;
+						height: 700px;
+						opacity: 1;
+					}
+					.login-bg-right {
+						right: -10%;
+						bottom: 0%;
+						width: 800px;
+						height: 700px;
+						z-index: 10;
+						opacity: 1;
+					}
+				}
+			`}</style>
+			{/* Background Image - Top Left */}
+			<img src={LoginL} alt="" className="login-bg-left" />
+
+			{/* Background Image - Bottom Right */}
+			<img src={LoginR} alt="" className="login-bg-right" />
 
 			{/* Left Column - Product Image Only */}
 			<div className="hidden lg:flex lg:w-2/5 relative overflow-hidden bg-purple-900 z-10">
 				<img 
-					src={sunglassesImage} 
-					alt="Premium Sunglasses" 
+					src={loginImage} 
+					alt="Premium Watch" 
 					className="w-full h-full object-cover"
 				/>
-				{/* Overlay Banner - Positioned at bottom left */}
-				<div className="absolute bottom-8 left-8">
-					<img 
-						src={bannerImage} 
-						alt="Product Banner" 
-						className="w-96 object-contain"
-					/>
-				</div>
+				
 			</div>
 
 			{/* Right Column - Login Form */}
@@ -287,12 +288,7 @@ export function LoginPage() {
 				</div>
 			</div>
 
-			{/* Help Icon */}
-			<div className="fixed bottom-6 right-6">
-				<button className="w-12 h-12 bg-white border border-gray-300 rounded-full flex items-center justify-center shadow-lg hover:bg-gray-50 transition-colors">
-					<span className="text-gray-600 font-bold">?</span>
-				</button>
-			</div>
+			
 		</div>
 	);
 }

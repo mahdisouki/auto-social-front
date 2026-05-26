@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { SearchIcon, EyeIcon, TrashIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import type { Post } from '../types/api';
+import postsRightImg from '../assets/postsR.png';
+import postsLeftImg from '../assets/postsL.png';
+import instagramIcon from '../assets/insta.png';
+import facebookIcon from '../assets/fb.png';
 
 export function MyPostsPage() {
 	const navigate = useNavigate();
@@ -13,7 +17,7 @@ export function MyPostsPage() {
 	const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
 	const [selectedStatus, setSelectedStatus] = useState<string>('all');
 	const [currentPage, setCurrentPage] = useState(1);
-	const [limit] = useState(10);
+	const [limit, setLimit] = useState(10);
 	// Delete confirmation toast: post id when waiting for confirm, null otherwise
 	const [deleteConfirmPostId, setDeleteConfirmPostId] = useState<string | null>(null);
 
@@ -69,19 +73,19 @@ export function MyPostsPage() {
 		return platform.charAt(0).toUpperCase() + platform.slice(1);
 	};
 
-	// Get status badge color (dark theme); scheduled = green
-	const getStatusColor = (status: string) => {
+	// Get status badge color (dashboard-style purple accent)
+	const getStatusStyle = (status: string) => {
 		switch (status) {
 			case 'posted':
-				return 'bg-emerald-500/30 text-emerald-200';
+				return { background: 'rgba(151, 71, 255, 0.25)', color: '#C098F5' };
 			case 'scheduled':
-				return 'bg-green-500/30 text-green-200';
+				return { background: 'rgba(34, 197, 94, 0.2)', color: '#86efac' };
 			case 'draft':
-				return 'bg-gray-500/30 text-gray-300';
+				return { background: 'rgba(255,255,255,0.08)', color: '#d1d5db' };
 			case 'failed':
-				return 'bg-red-500/30 text-red-200';
+				return { background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5' };
 			default:
-				return 'bg-gray-500/30 text-gray-300';
+				return { background: 'rgba(255,255,255,0.08)', color: '#d1d5db' };
 		}
 	};
 
@@ -122,247 +126,300 @@ export function MyPostsPage() {
 	};
 
 	return (
-		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 container-max bg-gray-900/70 backdrop-blur-2xl rounded-2xl overflow-hidden">
-			{/* Scrollable content */}
-			<div className="flex-1 min-h-0 overflow-y-auto">
-			{/* Error Message */}
-			{error && (
-				<div className="mb-4 p-4 bg-red-500/20 border border-red-400/40 rounded-lg backdrop-blur-sm">
-					<p className="text-red-200">{error}</p>
-					<button
-						onClick={clearError}
-						className="mt-2 text-sm text-red-300 underline hover:no-underline"
-					>
-						Dismiss
-					</button>
-				</div>
-			)}
+		<div className="w-full h-full min-h-0 flex-1 flex flex-col py-6 px-4 md:px-6 lg:px-8 overflow-y-auto overflow-x-hidden relative" style={{ background: '#000000', zoom: '0.8' }}>
+			{/* Gradient background on the left */}
+			<div className="absolute top-0 left-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsLeftImg} 
+					alt="" 
+					className="w-full h-full object-cover "
+					style={{ mixBlendMode: 'screen', transform: 'scaleX(2)' }}
+				/>
+			</div>
+			
+			{/* Gradient background on the right */}
+			<div className="absolute top-0 right-0 w-1/2 h-full pointer-events-none z-0">
+				<img 
+					src={postsRightImg} 
+					alt="" 
+					className="w-full h-full object-cover opacity-50"
+					style={{ mixBlendMode: 'screen' }}
+				/>
+			</div>
+			
+			<div className="relative z-10 flex flex-col min-h-0 flex-1">
+				
+			
 
-			{/* Search and Filters */}
-			<div className="mb-6">
-				<div className="flex flex-col sm:flex-row gap-4">
-					<div className="flex-1 relative">
-						<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-						<input 
-							placeholder="Search posts..." 
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-100 placeholder-gray-400"
-						/>
+				{/* Error Message */}
+				{error && (
+					<div
+						className="mb-6 p-4 rounded-xl"
+						style={{
+							background: '#0E0E13',
+							border: '1px solid rgba(255,255,255,0.1)',
+						}}
+					>
+						<p className="text-white mb-4">{error}</p>
+						<button
+							onClick={clearError}
+							className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
+							style={{ background: '#9747FF' }}
+						>
+							Fermer
+						</button>
 					</div>
-					<div className="flex gap-2 flex-wrap">
-						{(['all', 'instagram', 'facebook', 'twitter', 'tiktok'] as const).map((platform) => (
-							<button 
-								key={platform}
-								onClick={() => setSelectedPlatform(platform === 'all' ? 'all' : platform)}
-								className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-									selectedPlatform === platform
-										? 'bg-primary text-white'
-										: 'border border-white/20 text-gray-300 hover:bg-white/10'
-								}`}
+				)}
+
+				{/* Search and Filters card */}
+				<div
+					className="rounded-2xl p-4 relative"
+					style={{
+						background: '#0E0E13',
+						borderRight: '1px solid #FFFFFF1A',
+						minHeight: '150px',
+						zIndex: 20,
+					}}
+				>
+					<div className="flex flex-col sm:flex-row gap-4">
+						<div className="flex-1 relative">
+							<SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+							<input
+								placeholder="Rechercher des publications..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+								className="w-full pl-10 pr-4 py-2.5 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 transition-colors"
+								style={{
+									background: 'rgba(255,255,255,0.05)',
+									border: '1px solid rgba(255,255,255,0.1)',
+								}}
+							/>
+						</div>
+						<div className="flex gap-2 flex-wrap">
+							{(['all', 'instagram', 'facebook'] as const).map((platform) => (
+								<button
+									key={platform}
+									type="button"
+									onClick={() => setSelectedPlatform(platform === 'all' ? 'all' : platform)}
+									className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+									style={
+										selectedPlatform === platform
+											? { background: '#9747FF', color: '#fff' }
+											: { background: 'rgba(255,255,255,0.05)', color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)' }
+									}
+								>
+									{platform === 'all' ? 'Tous' : getPlatformName(platform)}
+								</button>
+							))}
+						</div>
+					</div>
+					<div className="mt-4 flex gap-2 flex-wrap">
+						{(['all', 'draft', 'scheduled', 'posted', 'failed'] as const).map((status) => (
+							<button
+								key={status}
+								type="button"
+								onClick={() => setSelectedStatus(status)}
+								className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+								style={
+									selectedStatus === status
+										? { background: '#9747FF', color: '#fff' }
+										: { background: 'rgba(255,255,255,0.05)', color: '#d1d5db', border: '1px solid rgba(255,255,255,0.1)' }
+								}
 							>
-								{platform === 'all' ? 'All' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+								{status === 'all' ? 'Tous les statuts' : status.charAt(0).toUpperCase() + status.slice(1)}
 							</button>
 						))}
 					</div>
 				</div>
 
-				{/* Status Filter */}
-				<div className="mt-4 flex gap-2 flex-wrap">
-					{(['all', 'draft', 'scheduled', 'posted', 'failed'] as const).map((status) => (
-						<button 
-							key={status}
-							onClick={() => setSelectedStatus(status)}
-							className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-								selectedStatus === status
-									? 'bg-primary text-white'
-									: 'border border-white/20 text-gray-300 hover:bg-white/10'
-							}`}
-						>
-							{status === 'all' ? 'All Status' : status.charAt(0).toUpperCase() + status.slice(1)}
-						</button>
-					))}
-				</div>
-			</div>
+				{/* Loading State */}
+				{isLoading && (
+					<div className="flex justify-center items-center py-12 mt-8">
+						<div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: '#9747FF' }} />
+					</div>
+				)}
 
-			{/* Loading State */}
-			{isLoading && (
-				<div className="flex justify-center items-center py-12">
-					<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-				</div>
-			)}
+				{/* Empty state */}
+				{!isLoading && filteredPosts.length === 0 && (
+					<div
+						className="rounded-2xl p-12 text-center mt-8"
+						style={{
+							background: 'rgba(14, 14, 19, 0.95)',
+							border: '1px solid rgba(255,255,255,0.1)',
+						}}
+					>
+						<p className="text-gray-400 text-lg">Aucune publication trouvée</p>
+						<p className="text-gray-500 text-sm mt-2">
+							{searchQuery || selectedPlatform !== 'all' || selectedStatus !== 'all'
+								? 'Modifiez vos filtres pour afficher plus de résultats'
+								: 'Créez votre première publication pour commencer'}
+						</p>
+					</div>
+				)}
 
-			{/* Posts Grid */}
-			{!isLoading && filteredPosts.length === 0 && (
-				<div className="text-center py-12">
-					<p className="text-gray-400 text-lg">No posts found</p>
-					<p className="text-gray-500 text-sm mt-2">
-						{searchQuery || selectedPlatform !== 'all' || selectedStatus !== 'all'
-							? 'Try adjusting your filters'
-							: 'Create your first post to get started'}
-					</p>
-				</div>
-			)}
-
-			{!isLoading && filteredPosts.length > 0 && (
-					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full">
+				{/* Posts Grid */}
+				{!isLoading && filteredPosts.length > 0 && (
+					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mt-8">
 						{filteredPosts.map((post) => (
-							<div 
-								key={post._id} 
+							<div
+								key={post._id}
 								onClick={() => navigate(`/posts/${post._id}`)}
-								className={`overflow-hidden rounded-xl backdrop-blur-xl border transition-all duration-300 cursor-pointer hover:scale-[1.02] ${
-									post.status === 'scheduled'
-										? 'bg-green-500/10 border-green-500/30 hover:border-green-500/50'
-										: 'bg-white/5 border-white/10 hover:border-white/20'
-								}`}
+								className="overflow-hidden rounded-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+								style={{
+									background: '#0E0E13',
+									border: '1px solid #FFFFFF1A',
+								}}
 							>
 								<div className="relative">
-									<img 
-										src={getPostImage(post)} 
+									<img
+										src={getPostImage(post)}
 										alt={post.caption || post.productName || 'Post image'}
-										className="w-full h-48 object-cover"
+									className="w-full h-96 object-cover"
 										onError={(e) => {
 											(e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop';
 										}}
 									/>
-									<div className="absolute top-3 left-3 flex gap-2 flex-wrap">
-										{post.platform.map((platform) => (
-											<span 
-												key={platform}
-												className="px-2 py-1 bg-black/50 backdrop-blur-sm rounded-full text-xs font-medium text-gray-200"
-											>
-												{getPlatformName(platform)}
-											</span>
-										))}
+									{/* Platform icons in top right */}
+									<div className="absolute top-3 right-3 flex gap-2">
+										{post.platform.includes('instagram') && (
+											<img src={instagramIcon} alt="Instagram" className="w-8 h-8" />
+										)}
+										{post.platform.includes('facebook') && (
+											<img src={facebookIcon} alt="Facebook" className="w-8 h-8" />
+										)}
 									</div>
-									<div className="absolute top-3 right-3 flex items-center gap-2">
-										<span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
-											{post.status}
-										</span>
-										<button
-											type="button"
-											onClick={(e) => handleDeleteClick(e, post._id)}
-											className="p-1.5 rounded-lg bg-red-500/80 hover:bg-red-500 text-white transition-colors"
-											title="Supprimer"
-										>
-											<TrashIcon className="w-4 h-4" />
-										</button>
-									</div>
+									{/* Delete button - hidden by default, shown on hover */}
+									<button
+										type="button"
+										onClick={(e) => handleDeleteClick(e, post._id)}
+										className="absolute top-3 left-3 p-1.5 rounded-lg text-white transition-opacity hover:opacity-90 opacity-0 hover:opacity-100"
+										style={{ background: 'rgba(239, 68, 68, 0.8)' }}
+										title="Supprimer"
+									>
+										<TrashIcon className="w-4 h-4" />
+									</button>
 								</div>
 								<div className="p-4">
-									<h3 className={`font-semibold mb-2 line-clamp-2 ${post.status === 'scheduled' ? 'text-green-100' : 'text-gray-100'}`}>
-										{post.productName || post.caption?.substring(0, 50) || 'Untitled Post'}
-									</h3>
-									{post.caption && (
-										<p className={`text-sm mb-2 line-clamp-2 ${post.status === 'scheduled' ? 'text-green-200/90' : 'text-gray-400'}`}>
-											{post.caption}
-										</p>
-									)}
-									<p className={`text-sm mb-3 ${post.status === 'scheduled' ? 'text-green-300/80' : 'text-gray-500'}`}>
-										{formatDate(post.publishedAt || post.scheduledAt || post.createdAt)}
-									</p>
-									{post.publishedUrl && (
-										<a
-											href={post.publishedUrl}
-											target="_blank"
-											rel="noopener noreferrer"
-											onClick={(e) => e.stopPropagation()}
-											className="flex items-center gap-1 text-primary hover:text-primary/80 text-sm mb-3"
+									{/* Category and Status row */}
+									<div className="flex justify-between items-center mb-2">
+										<span className="text-sm font-medium" style={{ color: '#9747FF' }}>
+											{post.postType}
+										</span>
+										<span 
+											className="px-3 py-1 rounded-lg text-xs font-medium"
+											style={{ 
+												background: '#9747FF',
+												color: '#FFFFFF'
+											}}
 										>
-											<EyeIcon />
-											View on Platform
-										</a>
-									)}
-									{post.price && post.currency && (
-										<div className={`text-sm font-semibold mb-2 ${post.status === 'scheduled' ? 'text-green-200' : 'text-gray-200'}`}>
-											{post.currency} {post.price}
-										</div>
-									)}
+											{post.status === 'posted' ? 'Publié' : post.status === 'scheduled' ? 'Planifié' : post.status.charAt(0).toUpperCase() + post.status.slice(1)}
+										</span>
+									</div>
+									
+									{/* Title */}
+									<h3 className="font-semibold mb-3 line-clamp-2 text-white text-lg" style={{ fontFamily: 'Inter, sans-serif' }}>
+										{post.caption?.substring(0, 50) || post.productName || 'Sans titre'}
+									</h3>
+									
+									{/* Planification */}
+									<div className="text-sm text-gray-400 mb-1">Planification</div>
+									<div className="text-sm text-white">
+										{formatDate(post.scheduledAt || post.createdAt)}
+									</div>
 								</div>
 							</div>
 						))}
 					</div>
-			)}
+				)}
+
+				{/* Pagination */}
+				{!isLoading && filteredPosts.length > 0 && (
+					<div
+						className="shrink-0 pt-6 mt-4 flex justify-center items-center gap-4 "
+						style={{ borderTop: '1px solid rgba(255,255,255,0.1)', zIndex: 20 }}
+					>
+						<label className="text-sm text-gray-400">Publications par page:</label>
+						<select
+							value={limit}
+							onChange={(e) => {
+								setLimit(Number(e.target.value));
+								setCurrentPage(1);
+							}}
+							className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+							style={{
+								background: '#0E0E13',
+								border: '1px solid rgba(255,255,255,0.1)',
+								color: '#d1d5db',
+							}}
+						>
+							<option value="5">5</option>
+							<option value="10">10</option>
+							<option value="20">20</option>
+							<option value="50">50</option>
+						</select>
+					</div>
+				)}
 			</div>
 
-			{/* Pagination - fixed at bottom */}
-			{!isLoading && filteredPosts.length > 0 && (
-				<div className="shrink-0 pt-4 mt-4 border-t border-white/10 flex justify-center items-center gap-2">
-					<button
-						onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-						disabled={currentPage === 1 || isLoading}
-						className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						Previous
-					</button>
-					<span className="px-4 py-2 text-sm text-gray-400">
-						Page {currentPage}
-					</span>
-					<button
-						onClick={() => setCurrentPage((prev) => prev + 1)}
-						disabled={filteredPosts.length < limit || isLoading}
-						className="px-4 py-2 border border-white/20 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
-					>
-						Next
-					</button>
-				</div>
-			)}
-
-			{/* Delete confirmation toast */}
-			{deleteConfirmPostId && (
-				<div
-					className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0"
-					onClick={handleDeleteCancel}
-					role="presentation"
-				>
-					<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden />
+				{/* Delete confirmation modal */}
+				{deleteConfirmPostId && (
 					<div
-						className="relative w-full max-w-sm rounded-2xl shadow-2xl transition-all duration-200"
-						onClick={(e) => e.stopPropagation()}
-						style={{
-							background: 'linear-gradient(180deg, #1a1a1f 0%, #0e0e13 100%)',
-							border: '1px solid rgba(255,255,255,0.08)',
-							boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5), 0 0 0 1px rgba(239,68,68,0.15)',
-						}}
+						className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center sm:p-0"
+						onClick={handleDeleteCancel}
+						role="presentation"
 					>
-						<div className="p-6">
-							<div className="flex items-center gap-4">
-								<div
-									className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
-									style={{ background: 'rgba(239, 68, 68, 0.15)' }}
-								>
-									<TrashIcon className="w-6 h-6 text-red-400" />
+						<div className="absolute inset-0 bg-black/60 backdrop-blur-sm" aria-hidden />
+						<div
+							className="relative w-full max-w-sm rounded-2xl transition-all duration-200"
+							onClick={(e) => e.stopPropagation()}
+							style={{
+								background: '#0E0E13',
+								border: '1px solid rgba(255,255,255,0.1)',
+								boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+							}}
+						>
+							<div className="p-6">
+								<div className="flex items-center gap-4">
+									<div
+										className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl"
+										style={{ background: 'rgba(239, 68, 68, 0.15)' }}
+									>
+										<TrashIcon className="w-6 h-6 text-red-400" />
+									</div>
+									<div>
+										<h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+											Supprimer cette publication ?
+										</h3>
+										<p className="mt-0.5 text-sm text-gray-400">
+											Cette action est irréversible.
+										</p>
+									</div>
 								</div>
-								<div>
-									<h3 className="text-base font-semibold text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
-										Supprimer cette publication ?
-									</h3>
-									<p className="mt-0.5 text-sm text-gray-400">
-										Cette action est irréversible.
-									</p>
+								<div className="mt-6 flex gap-3">
+									<button
+										type="button"
+										onClick={handleDeleteCancel}
+										className="flex-1 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-200 transition-colors hover:opacity-90"
+										style={{
+											background: 'rgba(255,255,255,0.05)',
+											border: '1px solid rgba(255,255,255,0.1)',
+										}}
+									>
+										Annuler
+									</button>
+									<button
+										type="button"
+										onClick={handleDeleteConfirm}
+										className="flex-1 rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+										style={{ background: '#EF4444' }}
+									>
+										Supprimer
+									</button>
 								</div>
-							</div>
-							<div className="mt-6 flex gap-3">
-								<button
-									type="button"
-									onClick={handleDeleteCancel}
-									className="flex-1 rounded-xl border border-white/20 bg-white/5 px-4 py-2.5 text-sm font-medium text-gray-200 transition-colors hover:bg-white/10"
-								>
-									Annuler
-								</button>
-								<button
-									type="button"
-									onClick={handleDeleteConfirm}
-									className="flex-1 rounded-xl px-4 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
-									style={{ background: '#EF4444' }}
-								>
-									Supprimer
-								</button>
 							</div>
 						</div>
 					</div>
-				</div>
-			)}
+				)}
 		</div>
 	);
 }
