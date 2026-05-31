@@ -82,6 +82,7 @@ const SCENE_MAP: Record<string, { url: string; ext: string; mime: string }> = {
 import { useAuthStore } from '../stores/authStore';
 
 export function CreatePostPage() {
+	const APP_TIMEZONE = 'Africa/Tunis';
 	const navigate = useNavigate();
 	const location = useLocation();
 	const { createPost, isLoading, error, clearError } = usePostsStore();
@@ -110,6 +111,7 @@ export function CreatePostPage() {
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 	const [uploadedImages, setUploadedImages] = useState<File[]>([]);
 	const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+	const [isGenerating, setIsGenerating] = useState(false);
 	const [isUploading, setIsUploading] = useState(false);
 	const [enhancedImageBlob, setEnhancedImageBlob] = useState<Blob | null>(null);
 	const [enhancedImagePreview, setEnhancedImagePreview] = useState<string | null>(null);
@@ -172,16 +174,10 @@ export function CreatePostPage() {
 	const handleDateChange = (date: Date | null) => {
 		setSelectedDate(date);
 		if (date) {
-			// Save the exact time the user chose (e.g. 13:30) as UTC, so it doesn't shift by timezone
-			const y = date.getFullYear();
-			const m = date.getMonth();
-			const d = date.getDate();
-			const h = date.getHours();
-			const min = date.getMinutes();
-			const utcDate = new Date(Date.UTC(y, m, d, h, min, 0, 0));
 			setFormData(prev => ({
 				...prev,
-				scheduledAt: utcDate.toISOString(),
+				// Persist as ISO instant; interpreted/displayed in Tunisia timezone across the dashboard.
+				scheduledAt: date.toISOString(),
 			}));
 		} else {
 			setFormData(prev => ({
@@ -311,19 +307,17 @@ export function CreatePostPage() {
 		setCustomModelPreview(null);
 	};
 
-	const handleEnhanceImage = async () => {
+	const handleEnhanceImage = async (): Promise<Blob | null> => {
 		if (uploadedImages.length === 0) {
 			alert('Please upload an image first');
-			return;
+			return null;
 		}
 
 		// Validate custom model if selected
 		if (formData.useModel === 'yes' && formData.modelType === 'custom' && !customModelImage) {
 			alert('Please upload a custom model image');
-			return;
+			return null;
 		}
-
-		setIsUploading(true);
 
 		try {
 			const file = uploadedImages[0];
@@ -478,22 +472,22 @@ export function CreatePostPage() {
 				...prev,
 				caption: generateCaption ? generatedCaption : prev.caption,
 			}));
-			
 
+			return enhancedBlob;
 		} catch (aiError: any) {
 			console.error('Failed to generate image:', aiError);
 			const errorMessage = aiError.response?.data?.message || aiError.message || 'Failed to generate image';
 			alert(`Failed to generate image: ${errorMessage}. Please try again or adjust settings.`);
-		} finally {
-			setIsUploading(false);
+			return null;
 		}
 	};
 
-	const handleSaveAndCreatePost = async () => {
-		const hasEnhanced = Boolean(enhancedImageBlob);
-		const sourceFile = hasEnhanced
-			? new File([enhancedImageBlob as Blob], 'enhanced.png', { type: 'image/png' })
+	const handleSaveAndCreatePost = async (enhancedBlobOverride?: Blob | null) => {
+		const enhancedBlob = enhancedBlobOverride ?? enhancedImageBlob;
+		const sourceFile = enhancedBlob
+			? new File([enhancedBlob], 'enhanced.png', { type: 'image/png' })
 			: uploadedImages[0];
+		const effectiveScheduledAt = formData.scheduledAt || new Date(Date.now() + 60 * 1000).toISOString();
 
 		if (!sourceFile) {
 			alert('No image available');
@@ -505,8 +499,6 @@ export function CreatePostPage() {
 			return;
 		}
 
-		setIsUploading(true);
-		
 		try {
 
 			// Upload selected image to Cloudinary (generated image if available, otherwise uploaded image)
@@ -522,7 +514,7 @@ export function CreatePostPage() {
 				caption: formData.caption || '',
 				aiPrompt: '',
 				platform: formData.platform,
-				scheduledAt: formData.scheduledAt || undefined,
+				scheduledAt: effectiveScheduledAt,
 				images: uploadedImageUrls,
 				postType: formData.postType || undefined,
 				currency: formData.currency || undefined,
@@ -544,16 +536,36 @@ export function CreatePostPage() {
 			console.error('Failed to create post:', err);
 			const errorMessage = err.response?.data?.message || err.message;
 			alert(`Failed to create post: ${errorMessage}`);
-		} finally {
-			setIsUploading(false);
+			throw err;
 		}
 	};
 	
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		
-		// Temporary mode: skip generation and post uploaded image directly
-		await handleSaveAndCreatePost();
+	const handleGenerateClick = async () => {
+		setIsGenerating(true);
+		try {
+			await handleEnhanceImage();
+		} finally {
+			setIsGenerating(false);
+		}
+	};
+
+	const handlePublishClick = async () => {
+		if (!enhancedImageBlob) {
+			alert('Générez d\'abord l\'image avec l\'IA');
+			return;
+		}
+
+		if (formData.platform.length === 0) {
+			alert('Please select at least one platform');
+			return;
+		}
+
+		setIsUploading(true);
+		try {
+			await handleSaveAndCreatePost(enhancedImageBlob);
+		} finally {
+			setIsUploading(false);
+		}
 	};
 
 	return (
@@ -676,7 +688,7 @@ export function CreatePostPage() {
 				</div>
 			)}
 
-			<form onSubmit={handleSubmit} className="create-post-form flex-1 flex flex-col lg:flex-row lg:items-stretch w-full h-full min-h-0 min-w-0 overflow-hidden relative">
+			<form onSubmit={(e) => e.preventDefault()} className="create-post-form flex-1 flex flex-col lg:flex-row lg:items-stretch w-full h-full min-h-0 min-w-0 overflow-hidden relative">
 				{/* Left gradient image */}
 				<img 
 					src={postsL} 
@@ -1479,12 +1491,7 @@ export function CreatePostPage() {
 									<label className="block text-xs font-medium text-gray-300 mb-1">Planification</label>
 									<DatePicker
 										selected={
-											formData.scheduledAt
-												? (() => {
-														const d = new Date(formData.scheduledAt);
-														return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
-													})()
-												: selectedDate
+											formData.scheduledAt ? new Date(formData.scheduledAt) : selectedDate
 										}
 										onChange={handleDateChange}
 										showTimeSelect
@@ -1492,7 +1499,7 @@ export function CreatePostPage() {
 										timeIntervals={15}
 										dateFormat="d MMM yyyy HH:mm"
 										locale="fr"
-										timeZone="UTC"
+										timeZone={APP_TIMEZONE}
 										minDate={new Date()}
 										placeholderText="Date et heure"
 										className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
@@ -1546,15 +1553,35 @@ export function CreatePostPage() {
 						</div>
 					</div>
 
-					{/* Sidebar footer: direct post button (generation disabled temporarily) */}
+					{/* Sidebar footer: step 1 generate, step 2 publish */}
 					<div className="p-4 border-t border-white/10 space-y-3 lg:mt-0" style={{ background: '#0E0E13' }}>
 						<button
-							type="submit"
-							disabled={uploadedImages.length === 0 || formData.platform.length === 0 || isLoading || isUploading}
+							type="button"
+							onClick={handleGenerateClick}
+							disabled={uploadedImages.length === 0 || isGenerating || isUploading || isLoading}
 							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 							style={{ background: '#9747FF' }}
 						>
-							{isLoading || isUploading ? (
+							{isGenerating ? (
+								<span className="flex items-center justify-center gap-2">
+									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+									</svg>
+									Génération...
+								</span>
+							) : (
+								'GÉNÉRER'
+							)}
+						</button>
+						<button
+							type="button"
+							onClick={handlePublishClick}
+							disabled={!enhancedImageBlob || formData.platform.length === 0 || isGenerating || isUploading || isLoading}
+							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/20"
+							style={{ background: enhancedImageBlob ? '#22C55E' : 'rgba(255,255,255,0.08)' }}
+						>
+							{isUploading ? (
 								<span className="flex items-center justify-center gap-2">
 									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
 										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -1563,7 +1590,7 @@ export function CreatePostPage() {
 									Publication...
 								</span>
 							) : (
-								'PUBLIER LE POST'
+								'POSTER L\'IMAGE'
 							)}
 						</button>
 					</div>

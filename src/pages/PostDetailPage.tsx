@@ -24,6 +24,7 @@ type EditForm = {
 };
 
 export function PostDetailPage() {
+	const APP_TIMEZONE = 'Africa/Tunis';
 	const { id } = useParams<{ id: string }>();
 	const navigate = useNavigate();
 	const { updatePost } = usePostsStore();
@@ -67,21 +68,24 @@ export function PostDetailPage() {
 		fetchPost();
 	}, [id]);
 
-	// Format time in UTC like MongoDB: "15:00:00"
+	// Format time in Tunisia timezone: "15:00:00"
 	const formatTime = (dateString: string) => {
 		const date = new Date(dateString);
-		const h = date.getUTCHours();
-		const m = date.getUTCMinutes();
-		const s = date.getUTCSeconds();
-		return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+		return new Intl.DateTimeFormat('fr-FR', {
+			timeZone: APP_TIMEZONE,
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hour12: false,
+		}).format(date);
 	};
 
-	// Format date in UTC to match MongoDB (date + time 15:00:00)
+	// Format date in Tunisia timezone
 	const formatDate = (dateString?: string) => {
 		if (!dateString) return 'N/A';
 		const date = new Date(dateString);
 		const datePart = date.toLocaleDateString('fr-FR', {
-			timeZone: 'UTC',
+			timeZone: APP_TIMEZONE,
 			year: 'numeric',
 			month: 'long',
 			day: 'numeric',
@@ -150,16 +154,10 @@ export function PostDetailPage() {
 		setIsEditing(true);
 	};
 
-	// DatePicker change: same logic as CreatePostPage — save exact time as UTC
+	// DatePicker change: persist selected time as ISO instant
 	const handleScheduledDateChange = (date: Date | null) => {
 		if (date) {
-			const y = date.getFullYear();
-			const m = date.getMonth();
-			const d = date.getDate();
-			const h = date.getHours();
-			const min = date.getMinutes();
-			const utcDate = new Date(Date.UTC(y, m, d, h, min, 0, 0));
-			setEditForm((prev) => ({ ...prev, scheduledAt: utcDate.toISOString() }));
+			setEditForm((prev) => ({ ...prev, scheduledAt: date.toISOString() }));
 		} else {
 			setEditForm((prev) => ({ ...prev, scheduledAt: '' }));
 		}
@@ -432,12 +430,7 @@ export function PostDetailPage() {
 										<label className="text-xs font-medium uppercase tracking-wider text-gray-400">Planifié pour</label>
 										<DatePicker
 											selected={
-												editForm.scheduledAt
-													? (() => {
-															const d = new Date(editForm.scheduledAt);
-															return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes());
-														})()
-													: null
+											editForm.scheduledAt ? new Date(editForm.scheduledAt) : null
 											}
 											onChange={handleScheduledDateChange}
 											showTimeSelect
@@ -445,7 +438,7 @@ export function PostDetailPage() {
 											timeIntervals={15}
 											dateFormat="d MMM yyyy HH:mm"
 											locale="fr"
-											timeZone="UTC"
+											timeZone={APP_TIMEZONE}
 											minDate={new Date()}
 											placeholderText="Date et heure"
 											className="w-full mt-1 px-3 py-2 rounded-lg text-gray-100 focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none bg-[#0E0E13] border border-white/10"

@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePostsStore } from '../stores/postsStore';
+import type { Post } from '../types/api';
 
 import dash1Image from '../assets/dash1.png';
 import dash2Image from '../assets/dash2.png';
@@ -21,6 +22,19 @@ export function DashboardPage() {
 	} = usePostsStore();
 
 	const [histogramPlatforms, setHistogramPlatforms] = useState<('facebook' | 'instagram')[]>(['facebook']);
+
+	const getPostImage = (post: Post) => {
+		if (post.images && post.images.length > 0) {
+			return post.images[0];
+		}
+		if (post.mediaUrl) {
+			return post.mediaUrl;
+		}
+		if (post.backgroundUrl) {
+			return post.backgroundUrl;
+		}
+		return 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop';
+	};
 
 	const toggleHistogramPlatform = (platform: 'facebook' | 'instagram') => {
 		if (histogramPlatforms.includes(platform)) {
@@ -528,6 +542,15 @@ export function DashboardPage() {
 									}}
 								>
 									<div className="relative aspect-[4/5] w-full overflow-hidden">
+										<img
+											src={getPostImage(post)}
+											alt={post.caption || post.productName || 'Post image'}
+											className="w-full h-full object-cover"
+											onError={(e) => {
+												(e.target as HTMLImageElement).src =
+													'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=400&h=300&fit=crop';
+											}}
+										/>
 										
 										<div className="absolute top-2 right-2 flex gap-1">
 											{post.platform.includes('facebook') && (

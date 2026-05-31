@@ -12,7 +12,7 @@ export function SchedulerPage() {
 	const [currentDate, setCurrentDate] = useState(new Date());
 	const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-	const DISPLAY_TZ = 'UTC'; // same as DB: 14 in DB → 14 in UI
+	const DISPLAY_TZ = 'Africa/Tunis';
 
 	// Fetch all posts (we filter for scheduledAt client-side so we don't miss posts with any status)
 	useEffect(() => {
@@ -30,20 +30,15 @@ export function SchedulerPage() {
 	const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
 	const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-	// Get local date string (YYYY-MM-DD) to avoid timezone mismatches
-	const toLocalDateString = (d: Date) => {
-		const y = d.getFullYear();
-		const m = String(d.getMonth() + 1).padStart(2, '0');
-		const day = String(d.getDate()).padStart(2, '0');
-		return `${y}-${m}-${day}`;
-	};
+	// Get date string (YYYY-MM-DD) in Tunisia timezone to avoid timezone mismatches
+	const toTunisDateString = (d: Date) => d.toLocaleDateString('en-CA', { timeZone: DISPLAY_TZ });
 
 	// Get scheduled posts for a specific date (all posts on that day, using local date)
 	const getPostsForDate = (date: Date): Post[] => {
-		const dateStr = toLocalDateString(date);
+			const dateStr = toTunisDateString(date);
 		return posts.filter(post => {
 			if (!post.scheduledAt) return false;
-			const postDateStr = toLocalDateString(new Date(post.scheduledAt));
+			const postDateStr = toTunisDateString(new Date(post.scheduledAt));
 			return postDateStr === dateStr;
 		});
 	};
@@ -82,16 +77,19 @@ export function SchedulerPage() {
 		);
 	};
 
-	// Format time in UTC like MongoDB: "15:00:00"
+	// Format time in Tunisia timezone: "15:00:00"
 	const formatTime = (dateString: string) => {
 		const date = new Date(dateString);
-		const h = date.getUTCHours();
-		const m = date.getUTCMinutes();
-		const s = date.getUTCSeconds();
-		return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+		return new Intl.DateTimeFormat('fr-FR', {
+			timeZone: DISPLAY_TZ,
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit',
+			hour12: false,
+		}).format(date);
 	};
 
-	// Format date in UTC, French locale; time like MongoDB "15:00:00"
+	// Format date in Tunisia timezone, French locale
 	const formatDate = (dateString: string) => {
 		const date = new Date(dateString);
 		const today = new Date();

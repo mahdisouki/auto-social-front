@@ -9,6 +9,7 @@ import instagramIcon from '../assets/insta.png';
 import facebookIcon from '../assets/fb.png';
 
 export function MyPostsPage() {
+	const APP_TIMEZONE = 'Africa/Tunis';
 	const navigate = useNavigate();
 	const { posts, isLoading, error, fetchPosts, deletePost, clearError } = usePostsStore();
 	
@@ -62,6 +63,7 @@ export function MyPostsPage() {
 		if (!dateString) return 'N/A';
 		const date = new Date(dateString);
 		return date.toLocaleDateString('en-US', {
+			timeZone: APP_TIMEZONE,
 			year: 'numeric',
 			month: 'short',
 			day: 'numeric',
@@ -110,6 +112,8 @@ export function MyPostsPage() {
 		e?.stopPropagation();
 		setDeleteConfirmPostId(null);
 	};
+
+	const canDeletePost = (status: string) => status !== 'posted';
 
 	// Get first image from post
 	const getPostImage = (post: Post) => {
@@ -288,16 +292,18 @@ export function MyPostsPage() {
 											<img src={facebookIcon} alt="Facebook" className="w-8 h-8" />
 										)}
 									</div>
-									{/* Delete button - hidden by default, shown on hover */}
-									<button
-										type="button"
-										onClick={(e) => handleDeleteClick(e, post._id)}
-										className="absolute top-3 left-3 p-1.5 rounded-lg text-white transition-opacity hover:opacity-90 opacity-0 hover:opacity-100"
-										style={{ background: 'rgba(239, 68, 68, 0.8)' }}
-										title="Supprimer"
-									>
-										<TrashIcon className="w-4 h-4" />
-									</button>
+									{/* Delete button only for non-posted statuses */}
+									{canDeletePost(post.status) && (
+										<button
+											type="button"
+											onClick={(e) => handleDeleteClick(e, post._id)}
+											className="absolute top-3 left-3 p-1.5 rounded-lg text-white transition-opacity hover:opacity-90 opacity-100"
+											style={{ background: 'rgba(239, 68, 68, 0.8)' }}
+											title="Supprimer"
+										>
+											<TrashIcon className="w-4 h-4" />
+										</button>
+									)}
 								</div>
 								<div className="p-4">
 									{/* Category and Status row */}
