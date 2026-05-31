@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/layout';
 import { MenuIcon } from './components/icons';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AdminRoute } from './components/auth/AdminRoute';
 import { PublicRoute } from './components/auth/PublicRoute';
 import { 
 	LoginPage,
@@ -20,6 +21,12 @@ import {
 	PrivacyPolicyPage,
 	TermsPage
 } from './pages';
+import {
+	AdminUsersPage,
+	AdminUserDetailPage,
+	AdminPostsPage,
+	AdminPostDetailPage,
+} from './pages/admin';
 import { initializeAuth } from './stores/authStore';
 
 function Shell() {
@@ -82,6 +89,31 @@ function Shell() {
 						<ProtectedRoute>
 							<SettingsPage />
 						</ProtectedRoute>
+					} />
+					<Route path="/admin" element={
+						<AdminRoute>
+							<Navigate to="/admin/users" replace />
+						</AdminRoute>
+					} />
+					<Route path="/admin/users" element={
+						<AdminRoute>
+							<AdminUsersPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/users/:userId" element={
+						<AdminRoute>
+							<AdminUserDetailPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/posts" element={
+						<AdminRoute>
+							<AdminPostsPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/posts/:id" element={
+						<AdminRoute>
+							<AdminPostDetailPage />
+						</AdminRoute>
 					} />
 				</Routes>
 			</div>

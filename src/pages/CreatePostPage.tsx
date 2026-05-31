@@ -9,6 +9,18 @@ import { UploadIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
 import { postsApi, uploadApi } from '../lib/api';
 import postsL from '../assets/postsL.png';
+import {
+	getBestScheduledAtForDate,
+	mapPostTypeToBestTimeCategory,
+} from '../lib/bestTimeToPost';
+import {
+	getDayOrder,
+	getBestTimesWeekForCategory,
+} from '../lib/bestTimeToPostWeek';
+import type { BestTimeCategoryKey } from '../lib/bestTimeToPost';
+
+
+
 
 // Scene images from Cloudinary (single source of truth for UI + API)
 const SCENE_MAP: Record<string, { url: string; ext: string; mime: string }> = {
@@ -125,6 +137,9 @@ export function CreatePostPage() {
 	const [openSections, setOpenSections] = useState<number[]>([1]);
 	const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 	const [backgroundTab, setBackgroundTab] = useState<'color' | 'scene' | 'personnaliser'>('color');
+	const [bestTimeAutoMessage, setBestTimeAutoMessage] = useState<string>('');
+	const [bestTimesWeek, setBestTimesWeek] = useState<Record<string, string | null> | null>(null);
+	const [isBestTimesLoading, setIsBestTimesLoading] = useState(false);
 
 	const toggleSection = (num: number) => {
 		setOpenSections(prev =>
@@ -186,6 +201,42 @@ export function CreatePostPage() {
 			}));
 		}
 	};
+
+	const applyBestTimeForPostType = async (postType: string) => {
+		const bestCat = mapPostTypeToBestTimeCategory(postType);
+		if (!bestCat) return;
+
+		const now = new Date();
+		const { scheduledAtUtc } = await getBestScheduledAtForDate(bestCat, now);
+
+		setSelectedDate(scheduledAtUtc);
+		setFormData(prev => ({
+			...prev,
+			scheduledAt: scheduledAtUtc.toISOString(),
+		}));
+	};
+
+	const loadBestTimesWeekForPostType = async (postType: string) => {
+		const bestCat = mapPostTypeToBestTimeCategory(postType);
+		if (!bestCat) {
+			setBestTimesWeek(null);
+			return;
+		}
+
+		setIsBestTimesLoading(true);
+		try {
+			const weekTimes = await getBestTimesWeekForCategory(bestCat);
+			setBestTimesWeek(weekTimes);
+		} catch {
+			setBestTimesWeek(null);
+		} finally {
+			setIsBestTimesLoading(false);
+		}
+	};
+
+
+
+
 
 	const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const files = Array.from(e.target.files || []);
@@ -914,9 +965,22 @@ export function CreatePostPage() {
 										<select
 											name="postType"
 											value={formData.postType}
-											onChange={(e) => {
+											onChange={async (e) => {
 												const value = e.target.value;
 												setFormData(prev => ({ ...prev, postType: value, sceneId: prev.postType !== value ? '' : prev.sceneId }));
+												setBestTimeAutoMessage('');
+												setBestTimesWeek(null);
+
+												const mappedCategory = mapPostTypeToBestTimeCategory(value);
+												if (!mappedCategory) return;
+
+												try {
+													await loadBestTimesWeekForPostType(value);
+													await applyBestTimeForPostType(value);
+													setBestTimeAutoMessage('Horaires recommandes charges et heure optimale appliquee automatiquement.');
+												} catch {
+													setBestTimeAutoMessage('Impossible de charger les horaires recommandes automatiquement.');
+												}
 											}}
 											className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
 											style={{ background: '#0E0E13', border: '1px solid rgba(255,255,255,0.1)' }}
@@ -991,10 +1055,57 @@ export function CreatePostPage() {
 										</div>
 									</div>
 									
-									{/* Planification moved after LÉGENDE to be last */}
-								</div>
-							)}
-						</div>
+										{/* Best time (liste par jour) */}
+										{(formData.postType && mapPostTypeToBestTimeCategory(formData.postType) !== null) && (
+											<div className="mt-3 space-y-3">
+												<div>
+													<p className="text-xs text-gray-400 mb-2">Horaires recommandes pour chaque jour selon la categorie</p>
+													{bestTimeAutoMessage && (
+														<p className="text-[11px] text-[#C6A7FF] mb-2">{bestTimeAutoMessage}</p>
+													)}
+													{isBestTimesLoading && (
+														<p className="text-[11px] text-gray-500 mb-2">Chargement des horaires recommandes...</p>
+													)}
+													<ul className="grid grid-cols-2 gap-2">
+														{getDayOrder().map((day) => (
+															<li key={day}>
+																<button
+																	type="button"
+																	className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors"
+																	style={{ background: '#111118', color: '#FFFFFF', border: '1px solid rgba(151,71,255,0.22)' }}
+																	onClick={async () => {
+																		const timeHHmm = bestTimesWeek?.[day] ?? null;
+																		if (!timeHHmm) return;
+
+																		// set scheduledAt to the next occurrence of that weekday (UTC)
+																		const now = new Date();
+																		const currentDay = now.getUTCDay();
+																		const targetIndex = getDayOrder().indexOf(day as any);
+																		const diffDays = (targetIndex - currentDay + 7) % 7;
+																		const [hh, mm] = timeHHmm.split(':');
+
+																		const y = now.getUTCFullYear();
+																		const m = now.getUTCMonth();
+																		const d = now.getUTCDate() + diffDays;
+																		const scheduledAtUtc = new Date(Date.UTC(y, m, d, Number(hh), Number(mm), 0, 0));
+																		setSelectedDate(scheduledAtUtc);
+																		setFormData(prev => ({ ...prev, scheduledAt: scheduledAtUtc.toISOString() }));
+																	}}
+																>
+																	{day}
+																	<span className="block text-[11px] font-semibold opacity-90">{bestTimesWeek?.[day] ?? '--:--'}</span>
+																</button>
+															</li>
+														))}
+													</ul>
+												</div>
+											</div>
+										)}
+										</div>
+									)}
+
+										</div>
+
 
 						{/* 3. BACKGROUND & SCÈNE */}
 						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>

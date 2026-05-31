@@ -7,7 +7,9 @@ import {
 	ImageIcon, 
 	SettingsIcon,
 	CloseIcon,
-	LogoutIcon
+	LogoutIcon,
+	PersonIcon,
+	ListIcon,
 } from '../icons';
 import { useAuthStore } from '../../stores/authStore';
 import logoImage from '../../assets/postoruai.png';
@@ -21,19 +23,27 @@ interface SidebarProps {
 	onMenuToggle?: () => void;
 }
 
-const nav = [
+const baseNav = [
 	{ to: '/dashboard', label: 'Dashboard', icon: GridIcon },
 	{ to: '/create', label: 'Créer un Post', icon: PlusIcon },
 	{ to: '/scheduler', label: 'Scheduler', icon: CalendarIcon },
 	{ to: '/posts', label: 'Mes Posts', icon: ImageIcon },
-	// { to: '/chatbot', label: 'Chatbot', icon: ChatIcon },
-	// { to: '/automations', label: 'Automations', icon: LightningIcon },
 	{ to: '/settings', label: 'Paramètres', icon: SettingsIcon },
 ];
 
 export function Sidebar({ isOpen, onClose, onMenuToggle }: SidebarProps) {
 	const navigate = useNavigate();
 	const { user, logout } = useAuthStore();
+
+	const nav =
+		user?.role === 'admin'
+			? [
+					...baseNav.slice(0, -1),
+					{ to: '/admin/users', label: 'Admin · Utilisateurs', icon: PersonIcon },
+					{ to: '/admin/posts', label: 'Admin · Posts', icon: ListIcon },
+					baseNav[baseNav.length - 1],
+				]
+			: baseNav;
 	const credits = user?.credits ?? 0;
 	const creditsPercent = Math.min(100, (credits / CREDITS_MAX) * 100);
 	const [userMenuOpen, setUserMenuOpen] = useState(false);

@@ -1,5 +1,11 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
 import type { ApiResponse, FacebookPage } from '../types/api';
+import type {
+  AdminUserDetailData,
+  AdminUsersListData,
+  AdminPostsListData,
+  AdminPost,
+} from '../types/admin';
 
 // API Configuration
 // Use VITE_API_URL if set, otherwise default to the provided backend endpoint
@@ -54,7 +60,12 @@ api.interceptors.response.use(
       if (requestUrl.includes('/meta/')) {
         return Promise.reject(error);
       }
-      // Clear invalid token and redirect for other 401s (e.g. expired token)
+      // Forbidden — stay logged in (e.g. non-admin hitting admin routes)
+      if (error.response?.status === 403) {
+        return Promise.reject(error);
+      }
+
+      // Clear invalid token
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -222,6 +233,55 @@ export const metaApi = {
   
   disconnectPage: (pageId: string) =>
     api.delete<ApiResponse>(`/meta/pages/${pageId}`),
+};
+
+// Admin API (JWT + role admin required)
+export const adminApi = {
+  listUsers: (params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    role?: 'admin' | 'user';
+    plan?: 'free' | 'pro';
+  }) =>
+    api.get<ApiResponse<AdminUsersListData>>('/admin/users', { params }),
+
+  getUser: (userId: string) =>
+    api.get<ApiResponse<AdminUserDetailData>>(`/admin/users/${userId}`),
+
+  updateUser: (
+    userId: string,
+    data: Partial<{
+      name: string;
+      email: string;
+      role: 'admin' | 'user';
+      plan: 'free' | 'pro';
+      credits: number;
+      generationCount: number;
+    }>
+  ) => api.patch<ApiResponse>(`/admin/users/${userId}`, data),
+
+  deleteUser: (userId: string) =>
+    api.delete<ApiResponse>(`/admin/users/${userId}`),
+
+  listPosts: (params?: {
+    page?: number;
+    limit?: number;
+    userId?: string;
+    status?: 'draft' | 'scheduled' | 'posted' | 'failed';
+    platform?: string;
+    createdAt?: string;
+  }) =>
+    api.get<ApiResponse<AdminPostsListData>>('/admin/posts', { params }),
+
+  getPost: (id: string) =>
+    api.get<ApiResponse<AdminPost>>(`/admin/posts/${id}`),
+
+  updatePost: (id: string, data: Record<string, unknown>) =>
+    api.put<ApiResponse>(`/admin/posts/${id}`, data),
+
+  deletePost: (id: string) =>
+    api.delete<ApiResponse>(`/admin/posts/${id}`),
 };
 
 export default api;
