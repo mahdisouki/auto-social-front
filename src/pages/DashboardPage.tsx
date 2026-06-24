@@ -2,7 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { usePostsStore } from '../stores/postsStore';
-import type { Post } from '../types/api';
+import { postsApi } from '../lib/api';
+import type { Post, PostsEngagementTotals } from '../types/api';
 
 import dash1Image from '../assets/dash1.png';
 import dash2Image from '../assets/dash2.png';
@@ -22,6 +23,8 @@ export function DashboardPage() {
 	} = usePostsStore();
 
 	const [histogramPlatforms, setHistogramPlatforms] = useState<('facebook' | 'instagram')[]>(['facebook']);
+	const [engagementTotals, setEngagementTotals] = useState<PostsEngagementTotals | null>(null);
+	const [isEngagementLoading, setIsEngagementLoading] = useState(true);
 
 	const getPostImage = (post: Post) => {
 		if (post.images && post.images.length > 0) {
@@ -51,13 +54,26 @@ export function DashboardPage() {
 	};
 
 	useEffect(() => {
-		// Fetch data on component mount and reload
-		Promise.all([
-			fetchPosts({ limit: 1000 }),
-			
-		]).catch((err) => {
-			console.error('Failed to fetch dashboard data:', err);
-		});
+		const loadDashboardData = async () => {
+			try {
+				await fetchPosts({ limit: 1000 });
+			} catch (err) {
+				console.error('Failed to fetch dashboard data:', err);
+			}
+
+			try {
+				setIsEngagementLoading(true);
+				const response = await postsApi.getAllPostsEngagement();
+				setEngagementTotals(response.data.data?.totals ?? null);
+			} catch (err) {
+				console.error('Failed to fetch engagement totals:', err);
+				setEngagementTotals(null);
+			} finally {
+				setIsEngagementLoading(false);
+			}
+		};
+
+		loadDashboardData();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
@@ -102,6 +118,11 @@ export function DashboardPage() {
 			height: (monthCounts[month] / maxCount) * 100
 		}));
 	}, [posts, histogramPlatforms]);
+
+	const formatEngagementValue = (value: number | undefined) => {
+		if (isEngagementLoading) return '...';
+		return String(value ?? 0);
+	};
 
 	// Calculate social account counts from posts
 	const facebookPostsCount = posts.filter(post => post.platform.includes('facebook')).length;
@@ -625,8 +646,10 @@ export function DashboardPage() {
 								border: '1px solid rgba(255,255,255,0.08)',
 							}}
 						>
-							<p className="text-gray-300 text-sm font-normal mb-1">Publications totales</p>
-							<p className="text-white text-3xl font-bold">123</p>
+							<p className="text-gray-300 text-sm font-normal mb-1">Publications publiées</p>
+							<p className="text-white text-3xl font-bold">
+								{formatEngagementValue(engagementTotals?.postsCount)}
+							</p>
 						</div>
 						<div
 							className="rounded-xl p-5"
@@ -635,8 +658,10 @@ export function DashboardPage() {
 								border: '1px solid rgba(255,255,255,0.08)',
 							}}
 						>
-							<p className="text-gray-300 text-sm font-normal mb-1">Publications</p>
-							<p className="text-white text-3xl font-bold">123</p>
+							<p className="text-gray-300 text-sm font-normal mb-1">J'aime</p>
+							<p className="text-white text-3xl font-bold">
+								{formatEngagementValue(engagementTotals?.likesCount)}
+							</p>
 						</div>
 						<div
 							className="rounded-xl p-5"
@@ -645,8 +670,10 @@ export function DashboardPage() {
 								border: '1px solid rgba(255,255,255,0.08)',
 							}}
 						>
-							<p className="text-gray-300 text-sm font-normal mb-1">Publications programmées</p>
-							<p className="text-white text-3xl font-bold">123</p>
+							<p className="text-gray-300 text-sm font-normal mb-1">Commentaires</p>
+							<p className="text-white text-3xl font-bold">
+								{formatEngagementValue(engagementTotals?.commentsCount)}
+							</p>
 						</div>
 					</div>
 				</div>

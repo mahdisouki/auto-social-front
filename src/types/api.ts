@@ -70,6 +70,32 @@ export interface DashboardStats {
   };
 }
 
+export interface PostsEngagementTotals {
+  postsCount: number;
+  likesCount: number;
+  commentsCount: number;
+}
+
+export interface PostsEngagementData {
+  totals: PostsEngagementTotals;
+  sync?: {
+    synced: number;
+    failed: number;
+  };
+}
+
+export interface PostEngagement {
+  likesCount: number;
+  commentsCount: number;
+  lastSyncedAt?: string | null;
+}
+
+export interface PostEngagementData {
+  postId: string;
+  engagement: PostEngagement;
+  platformPosts?: Array<Record<string, unknown>>;
+}
+
 // Facebook Page interface
 export interface FacebookPage {
   pageId: string;

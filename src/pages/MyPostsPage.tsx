@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { SearchIcon, EyeIcon, TrashIcon } from '../components/icons';
+import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { SearchIcon, TrashIcon } from '../components/icons';
 import { usePostsStore } from '../stores/postsStore';
+import { postsApi } from '../lib/api';
 import type { Post } from '../types/api';
 import postsRightImg from '../assets/postsR.png';
 import postsLeftImg from '../assets/postsL.png';
@@ -10,7 +11,6 @@ import facebookIcon from '../assets/fb.png';
 
 export function MyPostsPage() {
 	const APP_TIMEZONE = 'Africa/Tunis';
-	const navigate = useNavigate();
 	const { posts, isLoading, error, fetchPosts, deletePost, clearError } = usePostsStore();
 	
 	// Filter and pagination state
@@ -21,6 +21,9 @@ export function MyPostsPage() {
 	const [limit, setLimit] = useState(10);
 	// Delete confirmation toast: post id when waiting for confirm, null otherwise
 	const [deleteConfirmPostId, setDeleteConfirmPostId] = useState<string | null>(null);
+	const [engagementByPostId, setEngagementByPostId] = useState<
+		Record<string, { likesCount: number; commentsCount: number; loading: boolean }>
+	>({});
 
 	// Fetch posts on mount and when filters change
 	useEffect(() => {
@@ -48,15 +51,83 @@ export function MyPostsPage() {
 	}, [currentPage, selectedPlatform, selectedStatus, limit, fetchPosts]);
 
 	// Filter posts by search query (client-side filtering)
-	const filteredPosts = posts.filter((post) => {
-		if (!searchQuery) return true;
+	const filteredPosts = useMemo(() => {
+		if (!searchQuery) return posts;
 		const query = searchQuery.toLowerCase();
-		return (
-			post.caption?.toLowerCase().includes(query) ||
-			post.productName?.toLowerCase().includes(query) ||
-			post.description?.toLowerCase().includes(query)
+		return posts.filter(
+			(post) =>
+				post.caption?.toLowerCase().includes(query) ||
+				post.productName?.toLowerCase().includes(query) ||
+				post.description?.toLowerCase().includes(query)
 		);
-	});
+	}, [posts, searchQuery]);
+
+	const postedPosts = useMemo(
+		() => filteredPosts.filter((post) => post.status === 'posted'),
+		[filteredPosts]
+	);
+
+	// Fetch likes/comments for published posts
+	useEffect(() => {
+		if (postedPosts.length === 0) {
+			setEngagementByPostId({});
+			return;
+		}
+
+		let cancelled = false;
+
+		setEngagementByPostId(
+			Object.fromEntries(
+				postedPosts.map((post) => [
+					post._id,
+					{ likesCount: 0, commentsCount: 0, loading: true },
+				])
+			)
+		);
+
+		const fetchEngagements = async () => {
+			const results = await Promise.all(
+				postedPosts.map(async (post) => {
+					try {
+						const response = await postsApi.getPostEngagement(post._id, { sync: false });
+						const engagement = response.data.data?.engagement;
+						return {
+							postId: post._id,
+							likesCount: engagement?.likesCount ?? 0,
+							commentsCount: engagement?.commentsCount ?? 0,
+						};
+					} catch {
+						return {
+							postId: post._id,
+							likesCount: 0,
+							commentsCount: 0,
+						};
+					}
+				})
+			);
+
+			if (cancelled) return;
+
+			setEngagementByPostId(
+				Object.fromEntries(
+					results.map((result) => [
+						result.postId,
+						{
+							likesCount: result.likesCount,
+							commentsCount: result.commentsCount,
+							loading: false,
+						},
+					])
+				)
+			);
+		};
+
+		fetchEngagements();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [postedPosts]);
 
 	// Format date helper
 	const formatDate = (dateString?: string) => {
@@ -92,6 +163,7 @@ export function MyPostsPage() {
 	};
 
 	const handleDeleteClick = (e: React.MouseEvent, postId: string) => {
+		e.preventDefault();
 		e.stopPropagation();
 		setDeleteConfirmPostId(postId);
 	};
@@ -265,10 +337,10 @@ export function MyPostsPage() {
 				{!isLoading && filteredPosts.length > 0 && (
 					<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full mt-8">
 						{filteredPosts.map((post) => (
-							<div
+							<Link
 								key={post._id}
-								onClick={() => navigate(`/posts/${post._id}`)}
-								className="overflow-hidden rounded-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02]"
+								to={`/posts/${post._id}`}
+								className="block overflow-hidden rounded-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02] no-underline"
 								style={{
 									background: '#0E0E13',
 									border: '1px solid #FFFFFF1A',
@@ -332,8 +404,29 @@ export function MyPostsPage() {
 									<div className="text-sm text-white">
 										{formatDate(post.scheduledAt || post.createdAt)}
 									</div>
+
+									{post.status === 'posted' && (
+										<div className="mt-3 flex items-center gap-4 text-sm">
+											<div className="text-gray-400">
+												J'aime{' '}
+												<span className="text-white font-medium">
+													{engagementByPostId[post._id]?.loading
+														? '...'
+														: engagementByPostId[post._id]?.likesCount ?? 0}
+												</span>
+											</div>
+											<div className="text-gray-400">
+												Commentaires{' '}
+												<span className="text-white font-medium">
+													{engagementByPostId[post._id]?.loading
+														? '...'
+														: engagementByPostId[post._id]?.commentsCount ?? 0}
+												</span>
+											</div>
+										</div>
+									)}
 								</div>
-							</div>
+							</Link>
 						))}
 					</div>
 				)}

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { Sidebar } from './components/layout';
 import { MenuIcon } from './components/icons';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -49,73 +49,7 @@ function Shell() {
 				>
 					<MenuIcon />
 				</button>
-				<Routes>
-					<Route path="/dashboard" element={
-						<ProtectedRoute>
-							<DashboardPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/create" element={
-						<ProtectedRoute>
-							<CreatePostPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/scheduler" element={
-						<ProtectedRoute>
-							<SchedulerPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/posts" element={
-						<ProtectedRoute>
-							<MyPostsPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/posts/:id" element={
-						<ProtectedRoute>
-							<PostDetailPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/chatbot" element={
-						<ProtectedRoute>
-							<ChatbotPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/automations" element={
-						<ProtectedRoute>
-							<AutomationsPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/settings" element={
-						<ProtectedRoute>
-							<SettingsPage />
-						</ProtectedRoute>
-					} />
-					<Route path="/admin" element={
-						<AdminRoute>
-							<Navigate to="/admin/users" replace />
-						</AdminRoute>
-					} />
-					<Route path="/admin/users" element={
-						<AdminRoute>
-							<AdminUsersPage />
-						</AdminRoute>
-					} />
-					<Route path="/admin/users/:userId" element={
-						<AdminRoute>
-							<AdminUserDetailPage />
-						</AdminRoute>
-					} />
-					<Route path="/admin/posts" element={
-						<AdminRoute>
-							<AdminPostsPage />
-						</AdminRoute>
-					} />
-					<Route path="/admin/posts/:id" element={
-						<AdminRoute>
-							<AdminPostDetailPage />
-						</AdminRoute>
-					} />
-				</Routes>
+				<Outlet />
 			</div>
 		</div>
 	);
@@ -154,8 +88,73 @@ export default function App() {
 				<Route path="/auth/facebook/error" element={<FacebookCallbackPage />} />
 				<Route path="/privacy" element={<PrivacyPolicyPage />} />
 				<Route path="/terms" element={<TermsPage />} />
-				{/* Single selector: all app routes (dashboard, create, posts, etc.) render Shell */}
-				<Route path="*" element={<Shell />} />
+				<Route element={<Shell />}>
+					<Route path="/dashboard" element={
+						<ProtectedRoute>
+							<DashboardPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/create" element={
+						<ProtectedRoute>
+							<CreatePostPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/scheduler" element={
+						<ProtectedRoute>
+							<SchedulerPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/posts/:id" element={
+						<ProtectedRoute>
+							<PostDetailPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/posts" element={
+						<ProtectedRoute>
+							<MyPostsPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/chatbot" element={
+						<ProtectedRoute>
+							<ChatbotPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/automations" element={
+						<ProtectedRoute>
+							<AutomationsPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/settings" element={
+						<ProtectedRoute>
+							<SettingsPage />
+						</ProtectedRoute>
+					} />
+					<Route path="/admin" element={
+						<AdminRoute>
+							<Navigate to="/admin/users" replace />
+						</AdminRoute>
+					} />
+					<Route path="/admin/users" element={
+						<AdminRoute>
+							<AdminUsersPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/users/:userId" element={
+						<AdminRoute>
+							<AdminUserDetailPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/posts/:id" element={
+						<AdminRoute>
+							<AdminPostDetailPage />
+						</AdminRoute>
+					} />
+					<Route path="/admin/posts" element={
+						<AdminRoute>
+							<AdminPostsPage />
+						</AdminRoute>
+					} />
+				</Route>
 			</Routes>
 		</BrowserRouter>
 	);

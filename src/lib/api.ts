@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios';
-import type { ApiResponse, FacebookPage } from '../types/api';
+import type { ApiResponse, FacebookPage, PostsEngagementData, PostEngagementData } from '../types/api';
 import type {
   AdminUserDetailData,
   AdminUsersListData,
@@ -141,6 +141,12 @@ export const postsApi = {
     platform?: string;
   }) =>
     api.get<ApiResponse>('/posts', { params }),
+
+  getAllPostsEngagement: (params?: { sync?: boolean }) =>
+    api.get<ApiResponse<PostsEngagementData>>('/posts/engagement', { params }),
+
+  getPostEngagement: (id: string, params?: { sync?: boolean }) =>
+    api.get<ApiResponse<PostEngagementData>>(`/posts/${id}/engagement`, { params }),
   
   getPost: (id: string) =>
     api.get<ApiResponse>(`/posts/${id}`),

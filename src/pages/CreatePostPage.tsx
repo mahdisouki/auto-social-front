@@ -322,7 +322,7 @@ export function CreatePostPage() {
 		e.stopPropagation();
 		if (enhancedImagePreview) {
 			if (enhancedImagePreview.startsWith('blob:')) {
-				URL.revokeObjectURL(enhancedImagePreview);
+			URL.revokeObjectURL(enhancedImagePreview);
 			}
 			setEnhancedImagePreview(null);
 		}
@@ -414,7 +414,7 @@ export function CreatePostPage() {
 			formDataAI.append('generate_caption', generateCaption ? 'yes' : 'no');
 			formDataAI.append('caption_language', captionLanguage || 'french');
 			formDataAI.append('post_type', formData.postType || 'other');
-		
+			
 
 			// Convert uploaded image to base64
 			const imageBase64 = await new Promise<string>((resolve, reject) => {
@@ -523,7 +523,7 @@ export function CreatePostPage() {
 				...prev,
 				caption: generateCaption ? generatedCaption : prev.caption,
 			}));
-
+			
 			return enhancedBlob;
 		} catch (aiError: any) {
 			console.error('Failed to generate image:', aiError);
@@ -561,24 +561,24 @@ export function CreatePostPage() {
 
 
 			// Create post with uploaded image
-			await createPost({
-				caption: formData.caption || '',
-				aiPrompt: '',
-				platform: formData.platform,
+		await createPost({
+			caption: formData.caption || '',
+			aiPrompt: '',
+			platform: formData.platform,
 				scheduledAt: effectiveScheduledAt,
-				images: uploadedImageUrls,
-				postType: formData.postType || undefined,
-				currency: formData.currency || undefined,
+			images: uploadedImageUrls,
+			postType: formData.postType || undefined,
+			currency: formData.currency || undefined,
 				price: formData.price as any,
-				productName: formData.productName || undefined,
-				description: formData.description || undefined,
-				backgroundType: formData.backgroundType,
-				backgroundColor: formData.backgroundColor,
-				useModel: formData.useModel,
-				modelType: formData.modelType,
-				modelEthnicity: formData.modelEthnicity,
-				modelGender: formData.modelGender,
-				addText: formData.addText,
+			productName: formData.productName || undefined,
+			description: formData.description || undefined,
+			backgroundType: formData.backgroundType,
+			backgroundColor: formData.backgroundColor,
+			useModel: formData.useModel,
+			modelType: formData.modelType,
+			modelEthnicity: formData.modelEthnicity,
+			modelGender: formData.modelGender,
+			addText: formData.addText,
 			});
 			
 			console.log('✅ Post created successfully');
@@ -605,12 +605,12 @@ export function CreatePostPage() {
 			alert('Générez d\'abord l\'image avec l\'IA');
 			return;
 		}
-
+		
 		if (formData.platform.length === 0) {
 			alert('Please select at least one platform');
 			return;
 		}
-
+		
 		setIsUploading(true);
 		try {
 			await handleSaveAndCreatePost(enhancedImageBlob);
@@ -1058,7 +1058,7 @@ export function CreatePostPage() {
 										{/* Best time (liste par jour) */}
 										{(formData.postType && mapPostTypeToBestTimeCategory(formData.postType) !== null) && (
 											<div className="mt-3 space-y-3">
-												<div>
+									<div>
 													<p className="text-xs text-gray-400 mb-2">Horaires recommandes pour chaque jour selon la categorie</p>
 													{bestTimeAutoMessage && (
 														<p className="text-[11px] text-[#C6A7FF] mb-2">{bestTimeAutoMessage}</p>
@@ -1098,10 +1098,10 @@ export function CreatePostPage() {
 															</li>
 														))}
 													</ul>
-												</div>
-											</div>
-										)}
-										</div>
+									</div>
+								</div>
+							)}
+						</div>
 									)}
 
 										</div>
@@ -1187,23 +1187,23 @@ export function CreatePostPage() {
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('cloth_')).map(([id, { url }]) => (
-																<button
+															<button
 																	key={id}
-																	type="button"
+																type="button"
 																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
-																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																	style={{
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																	}}
-																>
+																}}
+															>
 																	<img src={url} alt={`Vêtements ${id.replace('cloth_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
-																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																		</div>
-																	)}
-																</button>
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
 															))}
 														</div>
 													</div>
@@ -1213,23 +1213,23 @@ export function CreatePostPage() {
 														<p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Accessoires</p>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('acc_')).map(([id, { url }]) => (
-																<button
+															<button
 																	key={id}
-																	type="button"
+																type="button"
 																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
-																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																	style={{
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																	}}
-																>
+																}}
+															>
 																	<img src={url} alt={`Accessoires ${id.replace('acc_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
-																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																		</div>
-																	)}
-																</button>
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
 															))}
 														</div>
 													</div>
@@ -1238,23 +1238,23 @@ export function CreatePostPage() {
 													<div>
 														<div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
 															{Object.entries(SCENE_MAP).filter(([k]) => k.startsWith('beauty_')).map(([id, { url }]) => (
-																<button
+															<button
 																	key={id}
-																	type="button"
+																type="button"
 																	onClick={() => setFormData(prev => ({ ...prev, backgroundType: 'scene', sceneId: prev.sceneId === id ? '' : id }))}
-																	className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
-																	style={{
+																className="relative rounded-lg overflow-hidden border-2 transition-all focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
+																style={{
 																		borderColor: formData.sceneId === id ? '#9747FF' : 'rgba(255,255,255,0.1)',
 																		boxShadow: formData.sceneId === id ? '0 0 0 1px rgba(187, 134, 252, 0.3)' : 'none',
-																	}}
-																>
+																}}
+															>
 																	<img src={url} alt={`Beauté ${id.replace('beauty_', '')}`} className="w-full aspect-square object-cover" />
 																	{formData.sceneId === id && (
-																		<div className="absolute inset-0 flex items-center justify-center bg-black/40">
-																			<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
-																		</div>
-																	)}
-																</button>
+																	<div className="absolute inset-0 flex items-center justify-center bg-black/40">
+																		<span className="text-white text-xs font-semibold uppercase">Sélectionné</span>
+																	</div>
+																)}
+															</button>
 															))}
 														</div>
 													</div>
@@ -1475,7 +1475,7 @@ export function CreatePostPage() {
 												>
 													{formData.addText === 'yes' ? 'Oui' : 'Non'}
 												</button>
-											</div>
+										</div>
 											<div>
 												<label className="block text-xs font-medium text-gray-300 mb-1">Prix sur l'image</label>
 												<button
@@ -1594,7 +1594,7 @@ export function CreatePostPage() {
 								</div>
 							)}
 						</div>
-
+						
 						{/* Planification - placed after LÉGENDE so it's the last control */}
 						<div className="rounded-xl overflow-hidden" style={{ background: '#0E0E13' }}>
 							<div className="p-4 space-y-3 border-t border-white/10" style={{ background: '#0E0E13' }}>
@@ -1616,12 +1616,12 @@ export function CreatePostPage() {
 										className="w-full px-3 py-2 rounded-lg text-white text-sm border border-white/20 focus:ring-2 focus:ring-purple-500 bg-black/30"
 										wrapperClassName="w-full"
 									/>
-								</div>
+					</div>
 								<div>
 									<label className="block text-xs font-medium text-gray-300 mb-1">Plateformes</label>
 									<div className="flex gap-0 rounded-lg overflow-hidden" style={{ border: '1px solid #FFFFFF1A' }}>
-										<button
-											type="button"
+								<button
+									type="button"
 											onClick={() => {
 												setFormData(prev => ({
 													...prev,
@@ -1638,9 +1638,9 @@ export function CreatePostPage() {
 											}}
 										>
 											Facebook
-										</button>
-										<button
-											type="button"
+								</button>
+								<button
+									type="button"
 											onClick={() => {
 												setFormData(prev => ({
 													...prev,
@@ -1657,8 +1657,8 @@ export function CreatePostPage() {
 											}}
 										>
 											Instagram
-										</button>
-									</div>
+								</button>
+							</div>
 								</div>
 							</div>
 						</div>
@@ -1666,25 +1666,25 @@ export function CreatePostPage() {
 
 					{/* Sidebar footer: step 1 generate, step 2 publish */}
 					<div className="p-4 border-t border-white/10 space-y-3 lg:mt-0" style={{ background: '#0E0E13' }}>
-						<button
+							<button
 							type="button"
 							onClick={handleGenerateClick}
 							disabled={uploadedImages.length === 0 || isGenerating || isUploading || isLoading}
-							className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-							style={{ background: '#9747FF' }}
-						>
+								className="w-full py-3 px-4 rounded-xl text-white text-sm font-semibold uppercase tracking-wider transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+								style={{ background: '#9747FF' }}
+							>
 							{isGenerating ? (
-								<span className="flex items-center justify-center gap-2">
-									<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-										<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-										<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-									</svg>
-									Génération...
-								</span>
-							) : (
+									<span className="flex items-center justify-center gap-2">
+										<svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+											<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+											<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+										</svg>
+										Génération...
+									</span>
+								) : (
 								'GÉNÉRER'
-							)}
-						</button>
+								)}
+							</button>
 						<button
 							type="button"
 							onClick={handlePublishClick}
