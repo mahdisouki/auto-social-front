@@ -122,8 +122,8 @@ export function SettingsPage() {
 		{ id: 'account', label: 'Account', icon: PersonIcon },
 		{ id: 'facebook', label: 'Facebook', icon: FacebookIcon },
 		{ id: 'api', label: 'API Keys', icon: KeyIcon },
-		{ id: 'notifications', label: 'Notifications', icon: ShieldIcon },
-		{ id: 'billing', label: 'Billing', icon: CreditCardIcon }
+		// { id: 'notifications', label: 'Notifications', icon: ShieldIcon },
+		// { id: 'billing', label: 'Billing', icon: CreditCardIcon }
 	];
 
 	const handleConnectFacebook = async () => {
