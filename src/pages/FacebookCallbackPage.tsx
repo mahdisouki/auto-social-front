@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useMetaStore } from '../stores/metaStore';
+import { getErrorMessage } from '../lib/getErrorMessage';
 
 export function FacebookCallbackPage() {
 	const navigate = useNavigate();
@@ -18,8 +19,9 @@ export function FacebookCallbackPage() {
 				setTimeout(() => {
 					navigate('/settings?tab=facebook');
 				}, 2000);
-			}).catch(() => {
-				navigate('/settings?tab=facebook');
+			}).catch((err) => {
+				const message = getErrorMessage(err, 'Connexion reussie mais impossible de charger les pages Facebook');
+				navigate(`/settings?tab=facebook&error=${encodeURIComponent(message)}`);
 			});
 		} else if (error) {
 			// OAuth failed, redirect to settings with error

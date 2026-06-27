@@ -18,6 +18,7 @@ import {
 	getBestTimesWeekForCategory,
 } from '../lib/bestTimeToPostWeek';
 import type { BestTimeCategoryKey } from '../lib/bestTimeToPost';
+import { getErrorMessage } from '../lib/getErrorMessage';
 
 
 
@@ -138,6 +139,7 @@ export function CreatePostPage() {
 	const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 	const [backgroundTab, setBackgroundTab] = useState<'color' | 'scene' | 'personnaliser'>('color');
 	const [bestTimeAutoMessage, setBestTimeAutoMessage] = useState<string>('');
+	const [bestTimeError, setBestTimeError] = useState<string>('');
 	const [bestTimesWeek, setBestTimesWeek] = useState<Record<string, string | null> | null>(null);
 	const [isBestTimesLoading, setIsBestTimesLoading] = useState(false);
 
@@ -227,8 +229,9 @@ export function CreatePostPage() {
 		try {
 			const weekTimes = await getBestTimesWeekForCategory(bestCat);
 			setBestTimesWeek(weekTimes);
-		} catch {
+		} catch (error) {
 			setBestTimesWeek(null);
+			throw new Error(getErrorMessage(error, 'Impossible de charger les horaires recommandes'));
 		} finally {
 			setIsBestTimesLoading(false);
 		}
@@ -265,7 +268,7 @@ export function CreatePostPage() {
 			
 		} catch (error) {
 			console.error('ERROR creating object URL:', error);
-			alert('Failed to load image preview. Please try again.');
+			alert(getErrorMessage(error, 'Impossible de charger l\'apercu de l\'image. Veuillez reessayer.'));
 		}
 
 		// Clear the input so the same file can be selected again
@@ -304,6 +307,7 @@ export function CreatePostPage() {
 			setImagePreviews([objectURL]);
 		} catch (error) {
 			console.error('Error creating object URL for dropped file:', file.name, error);
+			alert(getErrorMessage(error, 'Impossible de charger l\'apercu de l\'image. Veuillez reessayer.'));
 		}
 	};
 
@@ -525,9 +529,9 @@ export function CreatePostPage() {
 			}));
 			
 			return enhancedBlob;
-		} catch (aiError: any) {
+		} catch (aiError: unknown) {
 			console.error('Failed to generate image:', aiError);
-			const errorMessage = aiError.response?.data?.message || aiError.message || 'Failed to generate image';
+			const errorMessage = getErrorMessage(aiError, 'Echec de la generation de l\'image');
 			alert(`Failed to generate image: ${errorMessage}. Please try again or adjust settings.`);
 			return null;
 		}
@@ -583,9 +587,9 @@ export function CreatePostPage() {
 			
 			console.log('✅ Post created successfully');
 			navigate('/posts');
-		} catch (err: any) {
+		} catch (err: unknown) {
 			console.error('Failed to create post:', err);
-			const errorMessage = err.response?.data?.message || err.message;
+			const errorMessage = getErrorMessage(err, 'Echec de la creation de la publication');
 			alert(`Failed to create post: ${errorMessage}`);
 			throw err;
 		}
@@ -969,6 +973,7 @@ export function CreatePostPage() {
 												const value = e.target.value;
 												setFormData(prev => ({ ...prev, postType: value, sceneId: prev.postType !== value ? '' : prev.sceneId }));
 												setBestTimeAutoMessage('');
+												setBestTimeError('');
 												setBestTimesWeek(null);
 
 												const mappedCategory = mapPostTypeToBestTimeCategory(value);
@@ -978,8 +983,8 @@ export function CreatePostPage() {
 													await loadBestTimesWeekForPostType(value);
 													await applyBestTimeForPostType(value);
 													setBestTimeAutoMessage('Horaires recommandes charges et heure optimale appliquee automatiquement.');
-												} catch {
-													setBestTimeAutoMessage('Impossible de charger les horaires recommandes automatiquement.');
+												} catch (error) {
+													setBestTimeError(getErrorMessage(error, 'Impossible de charger les horaires recommandes automatiquement.'));
 												}
 											}}
 											className="w-full px-3 py-2 rounded-lg text-white text-sm focus:ring-2 focus:ring-[#9747FF] focus:border-[#9747FF] focus:outline-none"
@@ -1063,6 +1068,9 @@ export function CreatePostPage() {
 													{bestTimeAutoMessage && (
 														<p className="text-[11px] text-[#C6A7FF] mb-2">{bestTimeAutoMessage}</p>
 													)}
+													{bestTimeError && (
+														<p className="text-[11px] text-red-400 mb-2">{bestTimeError}</p>
+													)}
 													{isBestTimesLoading && (
 														<p className="text-[11px] text-gray-500 mb-2">Chargement des horaires recommandes...</p>
 													)}
@@ -1075,7 +1083,12 @@ export function CreatePostPage() {
 																	style={{ background: '#111118', color: '#FFFFFF', border: '1px solid rgba(151,71,255,0.22)' }}
 																	onClick={async () => {
 																		const timeHHmm = bestTimesWeek?.[day] ?? null;
-																		if (!timeHHmm) return;
+																		if (!timeHHmm) {
+																			setBestTimeError(`Aucun horaire recommande pour ${day}.`);
+																			return;
+																		}
+
+																		setBestTimeError('');
 
 																		// set scheduledAt to the next occurrence of that weekday (UTC)
 																		const now = new Date();

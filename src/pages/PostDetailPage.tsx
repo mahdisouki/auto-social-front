@@ -5,6 +5,7 @@ import { fr } from 'date-fns/locale';
 import 'react-datepicker/dist/react-datepicker.css';
 import { postsApi } from '../lib/api';
 import { usePostsStore } from '../stores/postsStore';
+import { getErrorMessage } from '../lib/getErrorMessage';
 import { CheckIcon, CloseIcon } from '../components/icons';
 import type { Post } from '../types/api';
 import postsRightImg from '../assets/postsR.png';
@@ -57,8 +58,8 @@ export function PostDetailPage() {
 				setError(null);
 				const response = await postsApi.getPost(id);
 				setPost(response.data.data);
-			} catch (err: any) {
-				setError(err.response?.data?.message || 'Failed to load post');
+			} catch (err: unknown) {
+				setError(getErrorMessage(err, 'Failed to load post'));
 				console.error('Error fetching post:', err);
 			} finally {
 				setIsLoading(false);
@@ -187,7 +188,7 @@ export function PostDetailPage() {
 			setIsEditing(false);
 		} catch (err: unknown) {
 			console.error('Failed to update post:', err);
-			setError(err instanceof Error ? err.message : 'Failed to update post');
+			setError(getErrorMessage(err, 'Failed to update post'));
 		} finally {
 			setIsSaving(false);
 		}

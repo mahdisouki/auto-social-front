@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { postsApi } from '../lib/api';
+import { getErrorMessage } from '../lib/getErrorMessage';
 
 interface CaptionGeneratorProps {
   onCaptionGenerated: (caption: string) => void;
@@ -92,9 +93,9 @@ export function CaptionGenerator({
       } else {
         setError('Failed to generate caption');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error generating caption:', err);
-      setError(err.response?.data?.message || 'Failed to generate caption');
+      setError(getErrorMessage(err, 'Failed to generate caption'));
     } finally {
       setIsGenerating(false);
     }

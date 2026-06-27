@@ -1,4 +1,5 @@
 import type { BestTimeCategoryKey } from './bestTimeToPost';
+import { getErrorMessage } from './getErrorMessage';
 
 export type BestTimeRecommendation = {
   day_name: string;
@@ -33,19 +34,37 @@ export async function fetchBestTimeRecommendations(
   if (inFlight) return inFlight;
 
   const promise = (async () => {
-    const res = await fetch(`${RECOMMEND_API_URL}/recommend-best-time`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ category }),
-    });
+    let res: Response;
 
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}`);
+    try {
+      res = await fetch(`${RECOMMEND_API_URL}/recommend-best-time`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category }),
+      });
+    } catch (error) {
+      throw new Error(
+        getErrorMessage(error, 'Impossible de contacter le service de recommandation d\'horaires')
+      );
     }
 
-    const json: RecommendBestTimeResponse = await res.json();
+    if (!res.ok) {
+      throw new Error(`Echec du chargement des horaires recommandes (HTTP ${res.status})`);
+    }
+
+    let json: RecommendBestTimeResponse;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error('Reponse invalide du service de recommandation d\'horaires');
+    }
+
     if (json.status !== 'success') {
-      throw new Error('API returned non-success status');
+      throw new Error('Le service de recommandation d\'horaires a renvoye une erreur');
+    }
+
+    if (!Array.isArray(json.recommendations) || json.recommendations.length === 0) {
+      throw new Error('Aucun horaire recommande disponible pour cette categorie');
     }
 
     cache.set(category, json.recommendations);

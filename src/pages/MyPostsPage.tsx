@@ -24,6 +24,7 @@ export function MyPostsPage() {
 	const [engagementByPostId, setEngagementByPostId] = useState<
 		Record<string, { likesCount: number; commentsCount: number; loading: boolean }>
 	>({});
+	const [engagementError, setEngagementError] = useState<string | null>(null);
 
 	// Fetch posts on mount and when filters change
 	useEffect(() => {
@@ -75,7 +76,9 @@ export function MyPostsPage() {
 		}
 
 		let cancelled = false;
+		let failedCount = 0;
 
+		setEngagementError(null);
 		setEngagementByPostId(
 			Object.fromEntries(
 				postedPosts.map((post) => [
@@ -95,18 +98,27 @@ export function MyPostsPage() {
 							postId: post._id,
 							likesCount: engagement?.likesCount ?? 0,
 							commentsCount: engagement?.commentsCount ?? 0,
+							failed: false,
 						};
-					} catch {
+					} catch (error) {
+						failedCount += 1;
 						return {
 							postId: post._id,
 							likesCount: 0,
 							commentsCount: 0,
+							failed: true,
 						};
 					}
 				})
 			);
 
 			if (cancelled) return;
+
+			if (failedCount > 0) {
+				setEngagementError(
+					`Impossible de charger l'engagement pour ${failedCount} publication${failedCount > 1 ? 's' : ''}.`
+				);
+			}
 
 			setEngagementByPostId(
 				Object.fromEntries(
@@ -239,6 +251,25 @@ export function MyPostsPage() {
 						<p className="text-white mb-4">{error}</p>
 						<button
 							onClick={clearError}
+							className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
+							style={{ background: '#9747FF' }}
+						>
+							Fermer
+						</button>
+					</div>
+				)}
+
+				{engagementError && (
+					<div
+						className="mb-6 p-4 rounded-xl"
+						style={{
+							background: '#0E0E13',
+							border: '1px solid rgba(239, 68, 68, 0.3)',
+						}}
+					>
+						<p className="text-red-400 mb-4">{engagementError}</p>
+						<button
+							onClick={() => setEngagementError(null)}
 							className="px-4 py-2 rounded-lg text-white text-sm font-medium transition-opacity hover:opacity-90"
 							style={{ background: '#9747FF' }}
 						>

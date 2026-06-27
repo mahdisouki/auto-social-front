@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { PersonIcon, KeyIcon, CreditCardIcon, ShieldIcon, ToggleOnIcon, ToggleOffIcon, FacebookIcon } from '../components/icons';
 import { useAuthStore } from '../stores/authStore';
 import { useMetaStore } from '../stores/metaStore';
+import { getErrorMessage } from '../lib/getErrorMessage';
 
 export function SettingsPage() {
 	const { user, updateProfile, changePassword, isLoading, error, clearError } = useAuthStore();
@@ -86,6 +87,7 @@ export function SettingsPage() {
 			alert('Profile updated successfully!');
 		} catch (err) {
 			console.error('Profile update failed:', err);
+			alert(getErrorMessage(err, 'Echec de la mise a jour du profil'));
 		}
 	};
 	
@@ -112,6 +114,7 @@ export function SettingsPage() {
 			});
 		} catch (err) {
 			console.error('Password change failed:', err);
+			alert(getErrorMessage(err, 'Echec du changement de mot de passe'));
 		}
 	};
 

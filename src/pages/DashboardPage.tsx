@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { usePostsStore } from '../stores/postsStore';
 import { postsApi } from '../lib/api';
+import { getErrorMessage } from '../lib/getErrorMessage';
 import type { Post, PostsEngagementTotals } from '../types/api';
 
 import dash1Image from '../assets/dash1.png';
@@ -25,6 +26,7 @@ export function DashboardPage() {
 	const [histogramPlatforms, setHistogramPlatforms] = useState<('facebook' | 'instagram')[]>(['facebook']);
 	const [engagementTotals, setEngagementTotals] = useState<PostsEngagementTotals | null>(null);
 	const [isEngagementLoading, setIsEngagementLoading] = useState(true);
+	const [engagementError, setEngagementError] = useState<string | null>(null);
 
 	const getPostImage = (post: Post) => {
 		if (post.images && post.images.length > 0) {
@@ -63,11 +65,13 @@ export function DashboardPage() {
 
 			try {
 				setIsEngagementLoading(true);
+				setEngagementError(null);
 				const response = await postsApi.getAllPostsEngagement();
 				setEngagementTotals(response.data.data?.totals ?? null);
 			} catch (err) {
 				console.error('Failed to fetch engagement totals:', err);
 				setEngagementTotals(null);
+				setEngagementError(getErrorMessage(err, 'Impossible de charger les statistiques d\'engagement'));
 			} finally {
 				setIsEngagementLoading(false);
 			}
@@ -638,6 +642,9 @@ export function DashboardPage() {
 							borderRadius: '2px',
 						}}
 					/>
+					{engagementError && (
+						<p className="text-sm text-red-400 mb-4">{engagementError}</p>
+					)}
 					<div className="flex flex-col gap-4">
 						<div
 							className="rounded-xl p-5"
