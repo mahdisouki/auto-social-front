@@ -1,3 +1,8 @@
+import {
+  fetchBestTimeRecommendations,
+  getBestTimeForDay,
+} from './recommendBestTime';
+
 export type BestTimeCategoryKey =
   | 'accessoires'
   | 'beauty'
@@ -8,8 +13,7 @@ export type BestTimeCategoryKey =
 const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
 
 function toDayKey(date: Date): typeof DAY_ORDER[number] {
-  // Use UTC day so we don't shift with timezone.
-  const dayIndex = date.getUTCDay(); // 0..6 (Sun..Sat)
+  const dayIndex = date.getUTCDay();
   return DAY_ORDER[dayIndex];
 }
 
@@ -18,9 +22,6 @@ function parseHHmm(hhmm: string): { hours: number; minutes: number } {
   return { hours: Number(h), minutes: Number(m) };
 }
 
-/**
- * Fallback dataset (kept so the UI still works if DB isn't seeded yet).
- */
 const FALLBACK_DATA: Record<BestTimeCategoryKey, Record<string, string>> = {
   accessoires: {
     Monday: '16:00',
@@ -69,9 +70,6 @@ const FALLBACK_DATA: Record<BestTimeCategoryKey, Record<string, string>> = {
   },
 };
 
-/**
- * UI postType -> DB category key.
- */
 export function mapPostTypeToBestTimeCategory(postType: string): BestTimeCategoryKey | null {
   switch (postType) {
     case 'accessories':
@@ -94,69 +92,30 @@ export function getBestTimesForCategory(category: BestTimeCategoryKey) {
 }
 
 /**
- * Convert DB response into a normalized mapping compatible with getBestScheduledAtForDate.
- */
-function normalizeDbData(dbData: any): Record<BestTimeCategoryKey, Record<string, string>> {
-  const out: any = {
-    accessoires: {},
-    beauty: {},
-    clothes: {},
-    food: {},
-    technology: {},
-  };
-
-  for (const cat of Object.keys(out)) {
-    const catKey = cat as BestTimeCategoryKey;
-    const catDays = dbData?.[catKey] ?? dbData?.[cat] ?? {};
-    for (const day of DAY_ORDER) {
-      const t = catDays?.[day] ?? catDays?.[day.toLowerCase()];
-      if (typeof t === 'string' && t) out[catKey][day] = t;
-    }
-  }
-
-  return out as Record<BestTimeCategoryKey, Record<string, string>>;
-}
-
-let cachedDbData: Record<BestTimeCategoryKey, Record<string, string>> | null = null;
-let cachePromise: Promise<void> | null = null;
-
-async function loadBestTimesFromApi(): Promise<void> {
-  if (cachedDbData) return;
-  if (cachePromise) return cachePromise;
-
-  cachePromise = (async () => {
-    try {
-      const apiBase = (import.meta as any).env?.VITE_API_URL || 'https://api.postoryai.com/api';
-      const res = await fetch(`${apiBase}/meta/best-time-to-post`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json?.success) throw new Error('API returned success=false');
-
-      cachedDbData = normalizeDbData(json.data);
-    } catch {
-      // keep fallback
-      cachedDbData = null;
-    }
-  })();
-
-  await cachePromise;
-}
-
-/**
  * Returns the best UTC Date for a given day.
- * - Tries to use DB data (seeded from all.csv)
- * - Falls back to in-code dataset if DB isn't available.
+ * Uses the recommend-best-time API, falling back to in-code data if unavailable.
  */
 export async function getBestScheduledAtForDate(
   category: BestTimeCategoryKey,
   date: Date
 ): Promise<{ scheduledAtUtc: Date; timeHHmm: string }> {
-
-  await loadBestTimesFromApi();
-
   const dayKey = toDayKey(date);
-  const timeHHmm =
-    cachedDbData?.[category]?.[dayKey] ?? FALLBACK_DATA[category]?.[dayKey] ?? FALLBACK_DATA[category]?.[dayKey as any];
+  let timeHHmm: string | null = null;
+
+  try {
+    const recommendations = await fetchBestTimeRecommendations(category);
+    timeHHmm = getBestTimeForDay(recommendations, dayKey);
+  } catch {
+    // fall through to fallback
+  }
+
+  if (!timeHHmm) {
+    timeHHmm = FALLBACK_DATA[category]?.[dayKey] ?? null;
+  }
+
+  if (!timeHHmm) {
+    throw new Error(`No best time found for ${dayKey}`);
+  }
 
   const { hours, minutes } = parseHHmm(timeHHmm);
 
@@ -167,4 +126,3 @@ export async function getBestScheduledAtForDate(
   const scheduledAtUtc = new Date(Date.UTC(y, m, d, hours, minutes, 0, 0));
   return { scheduledAtUtc, timeHHmm };
 }
-

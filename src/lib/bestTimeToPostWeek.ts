@@ -1,4 +1,8 @@
 import type { BestTimeCategoryKey } from './bestTimeToPost';
+import {
+  fetchBestTimeRecommendations,
+  recommendationsToWeekByDay,
+} from './recommendBestTime';
 
 const DAY_ORDER = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
 
@@ -52,64 +56,24 @@ const FALLBACK_WEEK: Record<BestTimeCategoryKey, BestTimeByDay> = {
   },
 };
 
-function normalizeDbData(dbData: any): Record<BestTimeCategoryKey, Record<string, string>> {
-  const out: any = {
-    accessoires: {},
-    beauty: {},
-    clothes: {},
-    food: {},
-    technology: {},
-  };
-
-  for (const cat of Object.keys(out)) {
-    const catKey = cat as BestTimeCategoryKey;
-    const catDays = dbData?.[catKey] ?? dbData?.[cat] ?? {};
-    for (const day of DAY_ORDER) {
-      const t = catDays?.[day] ?? catDays?.[day.toLowerCase()];
-      if (typeof t === 'string' && t) out[catKey][day] = t;
-    }
-  }
-
-  return out as Record<BestTimeCategoryKey, Record<string, string>>;
-}
-
-let cachedWeekData: Record<BestTimeCategoryKey, Record<string, string>> | null = null;
-let cachePromise: Promise<void> | null = null;
-
-async function loadBestTimesFromApi(): Promise<void> {
-  if (cachedWeekData) return;
-  if (cachePromise) return cachePromise;
-
-  cachePromise = (async () => {
-    try {
-      const apiBase = (import.meta as any).env?.VITE_API_URL || 'https://api.postoryai.com/api';
-      const res = await fetch(`${apiBase}/meta/best-time-to-post`);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json?.success) throw new Error('API returned success=false');
-
-      cachedWeekData = normalizeDbData(json.data);
-    } catch {
-      cachedWeekData = null;
-    }
-  })();
-
-  await cachePromise;
-}
-
 export async function getBestTimesWeekForCategory(category: BestTimeCategoryKey): Promise<BestTimeByDay> {
-  await loadBestTimesFromApi();
+  let weekByDay: Record<string, string> = {};
 
-  const out: any = {};
-  for (const day of DAY_ORDER) {
-    const fromDb = cachedWeekData?.[category]?.[day];
-    out[day] = (fromDb as string | undefined) ?? FALLBACK_WEEK[category]?.[day] ?? null;
+  try {
+    const recommendations = await fetchBestTimeRecommendations(category);
+    weekByDay = recommendationsToWeekByDay(recommendations);
+  } catch {
+    // fall through to fallback
   }
 
-  return out as BestTimeByDay;
+  const out: BestTimeByDay = {} as BestTimeByDay;
+  for (const day of DAY_ORDER) {
+    out[day] = weekByDay[day] ?? FALLBACK_WEEK[category]?.[day] ?? null;
+  }
+
+  return out;
 }
 
 export function getDayOrder() {
   return [...DAY_ORDER];
 }
-
