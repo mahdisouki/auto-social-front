@@ -39,6 +39,7 @@ export function Sidebar({ isOpen, onClose, onMenuToggle }: SidebarProps) {
 		user?.role === 'admin'
 			? [
 					...baseNav.slice(0, -1),
+					{ to: '/admin/dashboard', label: 'Admin · Dashboard', icon: GridIcon },
 					{ to: '/admin/users', label: 'Admin · Utilisateurs', icon: PersonIcon },
 					{ to: '/admin/posts', label: 'Admin · Posts', icon: ListIcon },
 					baseNav[baseNav.length - 1],

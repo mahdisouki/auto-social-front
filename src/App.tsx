@@ -22,6 +22,7 @@ import {
 	TermsPage
 } from './pages';
 import {
+	AdminDashboardPage,
 	AdminUsersPage,
 	AdminUserDetailPage,
 	AdminPostsPage,
@@ -131,7 +132,12 @@ export default function App() {
 					} />
 					<Route path="/admin" element={
 						<AdminRoute>
-							<Navigate to="/admin/users" replace />
+							<Navigate to="/admin/dashboard" replace />
+						</AdminRoute>
+					} />
+					<Route path="/admin/dashboard" element={
+						<AdminRoute>
+							<AdminDashboardPage />
 						</AdminRoute>
 					} />
 					<Route path="/admin/users" element={

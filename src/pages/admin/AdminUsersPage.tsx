@@ -69,12 +69,20 @@ export function AdminUsersPage() {
 					<h1 className="text-xl font-semibold text-gray-100">Admin · Utilisateurs</h1>
 					<p className="text-sm text-gray-400 mt-1">Gérer les comptes et les crédits</p>
 				</div>
-				<Link
-					to="/admin/posts"
-					className="text-sm text-primary hover:text-primary/80 shrink-0"
-				>
-					Voir tous les posts →
-				</Link>
+				<div className="flex items-center gap-3 flex-wrap">
+					<Link
+						to="/admin/dashboard"
+						className="text-sm text-primary hover:text-primary/80 shrink-0"
+					>
+						← Dashboard admin
+					</Link>
+					<Link
+						to="/admin/posts"
+						className="text-sm text-primary hover:text-primary/80 shrink-0"
+					>
+						Voir tous les posts →
+					</Link>
+				</div>
 			</div>
 
 			<div className="flex flex-col lg:flex-row gap-4 mb-6 flex-wrap">
